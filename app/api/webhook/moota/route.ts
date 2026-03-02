@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.text();
+    const _body = await request.text();
     // TODO: Verify Moota signature
     // TODO: Parse body, match uniqueCode and amount to find unpaid invoice
     // TODO: Mark invoice as paid via Appwrite Server SDK

@@ -2,13 +2,13 @@ import Link from "next/link";
 
 export function Sidebar() {
   const links = [
-    { href: "/", label: "Overview" },
-    { href: "/units", label: "Units" },
-    { href: "/owners", label: "Owners" },
-    { href: "/tenants", label: "Tenants" },
-    { href: "/vehicles", label: "Vehicles" },
-    { href: "/invoices", label: "Invoices" },
-    { href: "/news", label: "News" },
+    { href: "/admin", label: "Overview" },
+    { href: "/admin/units", label: "Units" },
+    { href: "/admin/owners", label: "Owners" },
+    { href: "/admin/tenants", label: "Tenants" },
+    { href: "/admin/vehicles", label: "Vehicles" },
+    { href: "/admin/invoices", label: "Invoices" },
+    { href: "/admin/news", label: "News" },
   ];
 
   return (
