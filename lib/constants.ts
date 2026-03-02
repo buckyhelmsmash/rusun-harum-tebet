@@ -1,0 +1,17 @@
+export const APPWRITE = {
+  ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string,
+  PROJECT_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID as string,
+  API_KEY: process.env.APPWRITE_API_KEY as string,
+  DATABASE_ID: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+  COLLECTIONS: {
+    UNITS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_UNITS as string,
+    OWNERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_OWNERS as string,
+    TENANTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_TENANTS as string,
+    VEHICLES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_VEHICLES as string,
+    INVOICES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_INVOICES as string,
+    NEWS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_NEWS as string,
+  },
+  STORAGE: {
+    NEWS_COVERS: process.env.NEXT_PUBLIC_APPWRITE_STORAGE_NEWS_COVERS as string,
+  },
+} as const;

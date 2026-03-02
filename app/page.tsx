@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { client } from "@/lib/appwrite";
 import { AppwriteException } from "appwrite";
-import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { client } from "@/lib/appwrite/client";
 
 interface Log {
   date: Date;
@@ -25,7 +24,7 @@ export default function Home() {
     if (detailsRef.current) {
       setDetailHeight(detailsRef.current.clientHeight);
     }
-  }, [logs, showLogs]);
+  }, []);
 
   useEffect(() => {
     updateHeight();
@@ -41,7 +40,7 @@ export default function Home() {
       if (!detailsRef.current) return;
       detailsRef.current.removeEventListener("toggle", updateHeight);
     };
-  }, []);
+  }, [updateHeight]);
 
   async function sendPing() {
     if (status === "loading") return;
@@ -82,7 +81,7 @@ export default function Home() {
       <section className="mt-12 flex h-52 flex-col items-center">
         {status === "loading" ? (
           <div className="flex flex-row gap-4">
-            <div role="status">
+            <output>
               <svg
                 aria-hidden="true"
                 className="h-5 w-5 animate-spin fill-[#FD366E] text-gray-200 dark:text-gray-600"
@@ -100,7 +99,7 @@ export default function Home() {
                 />
               </svg>
               <span className="sr-only">Loading...</span>
-            </div>
+            </output>
             <span>Waiting for connection...</span>
           </div>
         ) : status === "success" ? (
@@ -122,6 +121,7 @@ export default function Home() {
         </p>
 
         <button
+          type="button"
           onClick={sendPing}
           className={`cursor-pointer rounded-md bg-[#FD366E] px-2.5 py-1.5 ${status === "loading" ? "hidden" : "visible"}`}
         >
