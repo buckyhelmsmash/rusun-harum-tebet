@@ -21,8 +21,13 @@ A specialized Property Management & Billing System for **Rusun Harum Tebet**. Th
 * **Relationships:** `owner` (Many-to-One), `tenant` (Many-to-One), `vehicles` (One-to-Many).
 * **Logic:** `occupancyStatus` (Enum: owner_occupied, rented, vacant), `billRecipient` (Enum: owner, tenant).
 
-### 👥 Owners & Tenants 
+### 👤 Owners
 * `fullName`, `phoneNumber`, `ktpNumber` (16 digits), `email` (Opt), `dateOfBirth`.
+* **Relationship:** `units` (One-to-Many -> Units). *(An owner can own multiple units).*
+
+### 👥 Tenants
+* `fullName`, `phoneNumber`, `ktpNumber` (16 digits), `email` (Opt), `dateOfBirth`.
+* **Relationship:** `units` (One-to-Many -> Units). *(A tenant can rent multiple units).*
 
 ### 🚗 Vehicles
 * `licensePlate` (Indexed), `type`, `brand`.
