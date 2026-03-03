@@ -3,7 +3,7 @@
 import { LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { toast } from "sonner"; // Provided by shadcn/ui
 import { Button } from "@/components/ui/button";
 import {
@@ -19,8 +19,9 @@ import { useAuth } from "@/contexts/auth-context";
 export default function AdminLoginPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const params = use(searchParams);
   const { loginWithGoogle, user, isLoading } = useAuth();
   const router = useRouter();
 
@@ -31,10 +32,10 @@ export default function AdminLoginPage({
     }
 
     // Check for query param from failed Login redirect
-    if (searchParams?.error === "auth_failed") {
+    if (params?.error === "auth_failed") {
       toast.error("Authentication failed or was cancelled.");
     }
-  }, [user, isLoading, router, searchParams]);
+  }, [user, isLoading, router, params]);
 
   if (isLoading) {
     return (
