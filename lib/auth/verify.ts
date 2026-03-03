@@ -1,4 +1,4 @@
-import { Client, Users } from "node-appwrite";
+import { Account, Client } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 
 export class AuthError extends Error {
@@ -22,8 +22,8 @@ export async function verifyAuth(request: Request) {
       .setProject(APPWRITE.PROJECT_ID)
       .setJWT(token);
 
-    const users = new Users(client);
-    return await users.get("me");
+    const account = new Account(client);
+    return await account.get();
   } catch {
     throw new AuthError("Invalid or expired token");
   }
