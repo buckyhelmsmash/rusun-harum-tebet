@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner"; // Provided by shadcn/ui setup
 import { useAuth } from "@/contexts/auth-context";
 import { APPWRITE } from "@/lib/constants";
@@ -9,11 +9,13 @@ import { APPWRITE } from "@/lib/constants";
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const isKickingOut = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
 
     if (!user) {
+      if (isKickingOut.current) return;
       // User is not logged in
       toast.error("You must be logged in to access the admin dashboard.");
       router.replace("/admin/login");
@@ -25,6 +27,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const isWhitelisted = APPWRITE.AUTH.ADMIN_EMAILS.includes(userEmail);
 
     if (!isWhitelisted) {
+      isKickingOut.current = true;
       // User is logged in with Google, but not on the admin email whitelist
       toast.error(
         "Access Denied: Your email is not authorized for Admin access.",

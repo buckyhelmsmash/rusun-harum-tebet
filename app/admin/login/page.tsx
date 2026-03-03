@@ -34,6 +34,10 @@ export default function AdminLoginPage({
     // Check for query param from failed Login redirect
     if (params?.error === "auth_failed") {
       toast.error("Authentication failed or was cancelled.");
+    } else if (params?.error === "access_denied") {
+      toast.error(
+        "Access Denied: Your email is not authorized for Admin access.",
+      );
     }
   }, [user, isLoading, router, params]);
 
