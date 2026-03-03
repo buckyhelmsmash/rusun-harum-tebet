@@ -12,19 +12,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createAdminClient } from "@/lib/appwrite/server";
+import { APPWRITE } from "@/lib/constants";
 
 export default async function UnitsPage() {
-  const { databases } = await createAdminClient();
+  const { tablesDb } = await createAdminClient();
 
-  // Fetch all units. Default limit is 25, we override to get all 384 units at once for this admin view.
-  // In a real-world scenario with 10k+ rows we'd use pagination.
-  const unitsData = await databases.listDocuments(
-    "69a47644000b6bb85e41", // Replace with actual DB ID if abstracted
-    "units",
-    [Query.limit(500), Query.orderAsc("displayId")],
-  );
+  const unitsData = await tablesDb.listRows({
+    databaseId: APPWRITE.DATABASE_ID,
+    tableId: APPWRITE.COLLECTIONS.UNITS,
+    queries: [Query.limit(500), Query.orderAsc("displayId")],
+  });
 
-  const units = unitsData.documents;
+  const units = unitsData.rows;
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -65,7 +64,6 @@ export default async function UnitsPage() {
                   {unit.billRecipient}
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* Link to future /edit page component */}
                   <Button variant="ghost" size="icon" asChild>
                     <Link href={`/admin/units/${unit.$id}/edit`}>
                       <Pencil className="h-4 w-4" />

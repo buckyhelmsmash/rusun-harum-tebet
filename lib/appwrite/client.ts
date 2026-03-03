@@ -1,4 +1,4 @@
-import { Account, Client, Databases } from "appwrite";
+import { Account, Client, TablesDB } from "appwrite";
 import { APPWRITE } from "../constants";
 
 export const client = new Client()
@@ -6,4 +6,4 @@ export const client = new Client()
   .setProject(APPWRITE.PROJECT_ID);
 
 export const account = new Account(client);
-export const databases = new Databases(client);
+export const tablesDb = new TablesDB(client);

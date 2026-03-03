@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from "node-appwrite";
+import { Client, ID, TablesDB } from "node-appwrite";
 import "dotenv/config";
 
 // Hardcoded for the one-off script because bun's dotenv resolution is struggling
@@ -7,14 +7,14 @@ const projectId = "rusun-harum-tebet";
 const apiKey =
   "standard_20f610fdf7b305d44f2c240db327ed25b9ea2802ec02216e377ae6fe4c55c16ef6f783c21ee0eba89404eccade10c102041f5f4543edfd90e93c8226669d12a92e658feffcde6a39c5146d764200b45daf64a8fc057318a62c054978c40e44ead5cfea9c29c056f50eeb8bd420cf46334d6067fb5d0bf12d6fee686d334c1210";
 const databaseId = "69a47644000b6bb85e41";
-const collectionId = "units";
+const tableId = "units";
 
 const client = new Client()
   .setEndpoint(endpoint)
   .setProject(projectId)
   .setKey(apiKey);
 
-const databases = new Databases(client);
+const tablesDb = new TablesDB(client);
 
 const blocks = ["A", "B", "C", "D"];
 const regularFloors = [1, 2, 3, 4];
@@ -30,11 +30,11 @@ async function seedUnits() {
         for (let unitNum = 1; unitNum <= 20; unitNum++) {
           const displayId = `${block}${floor}${unitNum.toString().padStart(2, "0")}`;
 
-          await databases.createDocument(
+          await tablesDb.createRow({
             databaseId,
-            collectionId,
-            ID.unique(),
-            {
+            tableId,
+            rowId: ID.unique(),
+            data: {
               block,
               floor,
               unitNumber: unitNum,
@@ -44,7 +44,7 @@ async function seedUnits() {
               occupancyStatus: "vacant",
               billRecipient: "owner", // default
             },
-          );
+          });
           totalSeeded++;
           console.log(`Created unit: ${displayId}`);
         }
@@ -54,15 +54,20 @@ async function seedUnits() {
       for (let unitNum = 1; unitNum <= 16; unitNum++) {
         const displayId = `${block}-B${unitNum.toString().padStart(2, "0")}`;
 
-        await databases.createDocument(databaseId, collectionId, ID.unique(), {
-          block,
-          floor: 0,
-          unitNumber: unitNum,
-          displayId,
-          unitType: "basement",
-          isOccupied: false,
-          occupancyStatus: "vacant",
-          billRecipient: "owner", // default
+        await tablesDb.createRow({
+          databaseId,
+          tableId,
+          rowId: ID.unique(),
+          data: {
+            block,
+            floor: 0,
+            unitNumber: unitNum,
+            displayId,
+            unitType: "basement",
+            isOccupied: false,
+            occupancyStatus: "vacant",
+            billRecipient: "owner", // default
+          },
         });
         totalSeeded++;
         console.log(`Created basement unit: ${displayId}`);
