@@ -1,23 +1,11 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Bell } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/auth-context";
 
 export function Topbar() {
-  const { user, logout } = useAuth();
-
   return (
-    <header className="h-16 shrink-0 bg-card border-b flex items-center justify-between px-6">
+    <header className="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="-ml-3" />
         <div className="flex items-center md:hidden">
@@ -26,37 +14,13 @@ export function Topbar() {
       </div>
       <div className="flex-1" />
       <div className="flex items-center space-x-4">
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user.name || "Admin"}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={logout}
-                className="text-red-500 cursor-pointer"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <span className="text-sm text-muted-foreground">Loading...</span>
-        )}
+        <button
+          type="button"
+          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white relative"
+        >
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white dark:ring-slate-900 bg-red-500 transform translate-x-1/4 -translate-y-1/4" />
+        </button>
       </div>
     </header>
   );
