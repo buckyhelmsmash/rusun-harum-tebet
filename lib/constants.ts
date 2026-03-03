@@ -11,6 +11,12 @@ export const APPWRITE = {
     INVOICES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_INVOICES as string,
     NEWS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_NEWS as string,
   },
+  AUTH: {
+    ADMIN_EMAILS: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  },
   STORAGE: {
     NEWS_COVERS: process.env.NEXT_PUBLIC_APPWRITE_STORAGE_NEWS_COVERS as string,
   },

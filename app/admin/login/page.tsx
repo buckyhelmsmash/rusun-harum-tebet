@@ -1,4 +1,10 @@
+"use client";
+
+import { LogIn } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner"; // Provided by shadcn/ui
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,37 +14,52 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/auth-context";
 
-export default function AdminLoginPage() {
+export default function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const { loginWithGoogle, user, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already logged in and whitelisted
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace("/admin");
+    }
+
+    // Check for query param from failed Login redirect
+    if (searchParams?.error === "auth_failed") {
+      toast.error("Authentication failed or was cancelled.");
+    }
+  }, [user, isLoading, router, searchParams]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access the dashboard.
+            Sign in with your authorized Google Account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none" htmlFor="email">
-              Email
-            </label>
-            <Input id="email" type="email" placeholder="m@example.com" />
-          </div>
-          <div className="space-y-2">
-            <label
-              className="text-sm font-medium leading-none"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <Input id="password" type="password" />
-          </div>
+        <CardContent className="flex justify-center p-6">
+          <Button onClick={loginWithGoogle} size="lg" className="w-full">
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign in with Google
+          </Button>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full">Sign In</Button>
+        <CardFooter className="flex justify-center">
           <div className="text-sm text-center text-muted-foreground">
             <Link href="/" className="underline hover:text-primary">
               Return to Home
