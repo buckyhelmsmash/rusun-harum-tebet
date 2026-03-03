@@ -1,53 +1,56 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/appwrite/server";
-import { APPWRITE } from "@/lib/constants";
+import { ZodError } from "zod";
+import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { getErrorMessage } from "@/lib/repositories/base";
+import { VehicleRepository } from "@/lib/repositories/vehicles";
+import { updateVehicleSchema } from "@/lib/schemas/vehicles";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await verifyAuth(request);
     const { id } = await params;
-    const { tablesDb } = await createAdminClient();
     const body = await request.json();
-    const payload = body.data || body;
-
-    const updatedVehicle = await tablesDb.updateRow({
-      databaseId: APPWRITE.DATABASE_ID,
-      tableId: APPWRITE.COLLECTIONS.VEHICLES,
-      rowId: id,
-      data: payload,
-    });
-
-    return NextResponse.json({ result: updatedVehicle });
-  } catch (error: any) {
-    console.error(`PATCH /api/vehicles - Error:`, error);
+    const payload = body.data ?? body;
+    const validated = updateVehicleSchema.parse(payload);
+    const vehicle = await VehicleRepository.update(id, validated);
+    return NextResponse.json({ result: vehicle });
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Invalid payload", details: error.flatten() },
+        { status: 400 },
+      );
+    }
+    console.error("PATCH /api/vehicles/[id] -", getErrorMessage(error));
     return NextResponse.json(
-      { error: error?.message || "Failed to update vehicle" },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await verifyAuth(request);
     const { id } = await params;
-    const { tablesDb } = await createAdminClient();
-
-    await tablesDb.deleteRow({
-      databaseId: APPWRITE.DATABASE_ID,
-      tableId: APPWRITE.COLLECTIONS.VEHICLES,
-      rowId: id,
-    });
-
+    await VehicleRepository.delete(id);
     return NextResponse.json({ result: { success: true } });
-  } catch (error: any) {
-    console.error(`DELETE /api/vehicles - Error:`, error);
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    console.error("DELETE /api/vehicles/[id] -", getErrorMessage(error));
     return NextResponse.json(
-      { error: error?.message || "Failed to delete vehicle" },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }

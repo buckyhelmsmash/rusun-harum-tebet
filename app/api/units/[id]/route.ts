@@ -1,26 +1,26 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/appwrite/server";
-import { APPWRITE } from "@/lib/constants";
+import { ZodError } from "zod";
+import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { getErrorMessage } from "@/lib/repositories/base";
+import { UnitRepository } from "@/lib/repositories/units";
+import { updateUnitSchema } from "@/lib/schemas/units";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await verifyAuth(request);
     const { id } = await params;
-    const { tablesDb } = await createAdminClient();
-
-    const unitData = await tablesDb.getRow({
-      databaseId: APPWRITE.DATABASE_ID,
-      tableId: APPWRITE.COLLECTIONS.UNITS,
-      rowId: id,
-    });
-
-    return NextResponse.json({ result: unitData });
-  } catch (error: any) {
-    console.error(`GET /api/units - Error:`, error);
+    const unit = await UnitRepository.getById(id);
+    return NextResponse.json({ result: unit });
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    console.error("GET /api/units/[id] -", getErrorMessage(error));
     return NextResponse.json(
-      { error: error?.message || "Failed to fetch unit details" },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }
@@ -31,25 +31,26 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await verifyAuth(request);
     const { id } = await params;
-    const { tablesDb } = await createAdminClient();
     const body = await request.json();
-
-    // The payload wrapper is typically { data: { ...fields } }
-    const patchData = body.data || body;
-
-    const unitData = await tablesDb.updateRow({
-      databaseId: APPWRITE.DATABASE_ID,
-      tableId: APPWRITE.COLLECTIONS.UNITS,
-      rowId: id,
-      data: patchData,
-    });
-
-    return NextResponse.json({ result: unitData });
-  } catch (error: any) {
-    console.error(`PATCH /api/units - Error:`, error);
+    const payload = body.data ?? body;
+    const validated = updateUnitSchema.parse(payload);
+    const unit = await UnitRepository.update(id, validated);
+    return NextResponse.json({ result: unit });
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Invalid payload", details: error.flatten() },
+        { status: 400 },
+      );
+    }
+    console.error("PATCH /api/units/[id] -", getErrorMessage(error));
     return NextResponse.json(
-      { error: error?.message || "Failed to update unit" },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }

@@ -1,8 +1,9 @@
 "use client";
 
-import { Eye, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,6 +23,8 @@ import {
 import { useGetUnits } from "@/hooks/api/use-units";
 import { cn } from "@/lib/utils";
 
+const PAGE_SIZE = 25;
+
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     owner_occupied:
@@ -33,7 +36,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize",
         styles[status] ?? "bg-slate-100 text-slate-800",
       )}
     >
@@ -42,23 +45,40 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 export function UnitsClient() {
   const [search, setSearch] = useState("");
   const [blockFilter, setBlockFilter] = useState("all");
   const [floorFilter, setFloorFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(0);
 
-  const { data: allUnits, isLoading, isError } = useGetUnits();
+  const debouncedSearch = useDebounce(search, 300);
 
-  const units = (allUnits ?? []).filter((u) => {
-    if (blockFilter !== "all" && u.block !== blockFilter) return false;
-    if (floorFilter !== "all" && String(u.floor) !== floorFilter) return false;
-    if (statusFilter !== "all" && u.occupancyStatus !== statusFilter)
-      return false;
-    if (search && !u.displayId.toLowerCase().includes(search.toLowerCase()))
-      return false;
-    return true;
-  });
+  const resetPage = useCallback(() => setPage(0), []);
+
+  const filters = {
+    ...(blockFilter !== "all" && { block: blockFilter }),
+    ...(floorFilter !== "all" && { floor: floorFilter }),
+    ...(statusFilter !== "all" && { status: statusFilter }),
+    ...(debouncedSearch.length >= 2 && { search: debouncedSearch }),
+    limit: PAGE_SIZE,
+    offset: page * PAGE_SIZE,
+  };
+
+  const { data, isLoading, isError } = useGetUnits(filters);
+
+  const units = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   if (isLoading) {
     return (
@@ -89,11 +109,20 @@ export function UnitsClient() {
               placeholder="Search by unit ID..."
               className="pl-10 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                resetPage();
+              }}
             />
           </div>
           <div className="flex items-center gap-3">
-            <Select value={blockFilter} onValueChange={setBlockFilter}>
+            <Select
+              value={blockFilter}
+              onValueChange={(v) => {
+                setBlockFilter(v);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-[120px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                 <SelectValue placeholder="Block: All" />
               </SelectTrigger>
@@ -106,7 +135,13 @@ export function UnitsClient() {
               </SelectContent>
             </Select>
 
-            <Select value={floorFilter} onValueChange={setFloorFilter}>
+            <Select
+              value={floorFilter}
+              onValueChange={(v) => {
+                setFloorFilter(v);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-[120px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                 <SelectValue placeholder="Floor: All" />
               </SelectTrigger>
@@ -120,7 +155,13 @@ export function UnitsClient() {
               </SelectContent>
             </Select>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v);
+                resetPage();
+              }}
+            >
               <SelectTrigger className="w-[140px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                 <SelectValue placeholder="Status: All" />
               </SelectTrigger>
@@ -223,13 +264,42 @@ export function UnitsClient() {
             </TableBody>
           </Table>
         </div>
-        {units.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              Showing <span className="font-medium">{units.length}</span> units
-            </div>
+
+        {/* Pagination Footer */}
+        <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
+            Showing{" "}
+            <span className="font-medium">
+              {total === 0 ? 0 : page * PAGE_SIZE + 1}
+            </span>
+            {" – "}
+            <span className="font-medium">
+              {Math.min((page + 1) * PAGE_SIZE, total)}
+            </span>{" "}
+            of <span className="font-medium">{total}</span> units
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-slate-600 dark:text-slate-300 min-w-[80px] text-center">
+              Page {page + 1} of {totalPages || 1}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Card View */}
@@ -259,10 +329,31 @@ export function UnitsClient() {
             </div>
           </Link>
         ))}
-        {units.length > 0 && (
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 pt-2">
-            Showing {units.length} units
-          </p>
+        {total > 0 && (
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)}{" "}
+              of {total}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

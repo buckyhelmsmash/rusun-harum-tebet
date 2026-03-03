@@ -1,39 +1,32 @@
 import { NextResponse } from "next/server";
-import { Query } from "node-appwrite";
-import { createAdminClient } from "@/lib/appwrite/server";
-import { APPWRITE } from "@/lib/constants";
+import { ZodError } from "zod";
+import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { getErrorMessage } from "@/lib/repositories/base";
+import { UnitRepository } from "@/lib/repositories/units";
+import { unitListSchema } from "@/lib/schemas/units";
 
 export async function GET(request: Request) {
   try {
-    const { tablesDb } = await createAdminClient();
+    await verifyAuth(request);
+
     const { searchParams } = new URL(request.url);
+    const params = unitListSchema.parse(Object.fromEntries(searchParams));
+    const result = await UnitRepository.list(params);
 
-    const queries: string[] = [Query.limit(500), Query.orderAsc("displayId")];
-
-    // Optional filters from search params
-    const block = searchParams.get("block");
-    if (block) queries.push(Query.equal("block", block));
-
-    const floor = searchParams.get("floor");
-    if (floor) queries.push(Query.equal("floor", Number.parseInt(floor, 10)));
-
-    const status = searchParams.get("status");
-    if (status) queries.push(Query.equal("occupancyStatus", status));
-
-    const search = searchParams.get("search");
-    if (search) queries.push(Query.contains("displayId", search));
-
-    const unitsData = await tablesDb.listRows({
-      databaseId: APPWRITE.DATABASE_ID,
-      tableId: APPWRITE.COLLECTIONS.UNITS,
-      queries,
-    });
-
-    return NextResponse.json({ result: unitsData.rows });
-  } catch (error: any) {
-    console.error("GET /api/units - Error:", error);
+    return NextResponse.json(result);
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Invalid query parameters", details: error.flatten() },
+        { status: 400 },
+      );
+    }
+    console.error("GET /api/units -", getErrorMessage(error));
     return NextResponse.json(
-      { error: error?.message || "Failed to fetch units" },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }

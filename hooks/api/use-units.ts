@@ -13,12 +13,32 @@ import type {
 } from "@/types/api";
 import { unitKeys } from "./keys/unit-keys";
 
-export const useGetUnits = (filters?: Record<string, unknown>) => {
+export interface UnitFilters {
+  block?: string;
+  floor?: string;
+  status?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+function buildQueryString(filters: UnitFilters): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== "" && value !== "all") {
+      params.set(key, String(value));
+    }
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export const useGetUnits = (filters: UnitFilters = {}) => {
   return useQuery({
     queryKey: unitKeys.list(filters),
     queryFn: async () => {
-      // In a real scenario, convert filters to URL search params
-      return await ApiClient.get<GetUnitsResponse>("/api/units");
+      const qs = buildQueryString(filters);
+      return await ApiClient.get<GetUnitsResponse>(`/api/units${qs}`);
     },
   });
 };

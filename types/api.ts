@@ -1,12 +1,10 @@
 import type { Unit } from "@/types";
 
-/**
- * Standard API Response wrapper for all endpoints
- */
-export interface ApiResponse<T> {
-  result?: T;
-  message?: string;
-  error?: string;
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 /**
@@ -14,7 +12,7 @@ export interface ApiResponse<T> {
  */
 
 // GET /api/units
-export type GetUnitsResponse = Unit[];
+export type GetUnitsResponse = PaginatedResponse<Unit>;
 
 // GET /api/units/:id
 export type GetUnitResponse = Unit;
