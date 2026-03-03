@@ -1,21 +1,15 @@
-import { Account, Client, Databases, Users } from "node-appwrite";
+import { Client, Databases } from "node-appwrite";
 import { APPWRITE } from "../constants";
 
-export function createAdminClient() {
+export const createAdminClient = async () => {
   const client = new Client()
     .setEndpoint(APPWRITE.ENDPOINT)
     .setProject(APPWRITE.PROJECT_ID)
-    .setKey(APPWRITE.API_KEY);
+    .setKey(process.env.APPWRITE_API_KEY!); // Ensure this is available in your server environment
 
   return {
-    get account() {
-      return new Account(client);
-    },
     get databases() {
       return new Databases(client);
     },
-    get users() {
-      return new Users(client);
-    },
   };
-}
+};
