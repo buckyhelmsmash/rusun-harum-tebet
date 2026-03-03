@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE } from "@/lib/constants";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {

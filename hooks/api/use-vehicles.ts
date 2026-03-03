@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api/api-client";
+import { ApiClient } from "@/lib/api/api-client";
 import type { Vehicle } from "@/types";
 
 // Note: We don't typically need a useGetVehicles hook because vehicles
@@ -9,8 +9,13 @@ export function useCreateVehicle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Partial<Vehicle> & { unit: string }) => {
-      return apiClient.post<{ result: Vehicle }>("/api/vehicles", data);
+    mutationFn: async (
+      data: Omit<Partial<Vehicle>, "unit"> & { unit: string },
+    ) => {
+      return ApiClient.post<typeof data, { result: Vehicle }>(
+        "/api/vehicles",
+        data,
+      );
     },
     onSuccess: (_, variables) => {
       // Invalidate the specific unit query to refresh its vehicles list
@@ -26,13 +31,15 @@ export function useUpdateVehicle() {
     mutationFn: async ({
       id,
       data,
-      unitId,
     }: {
       id: string;
       data: Partial<Vehicle>;
       unitId: string;
     }) => {
-      return apiClient.patch<{ result: Vehicle }>(`/api/vehicles/${id}`, data);
+      return ApiClient.patch<typeof data, { result: Vehicle }>(
+        `/api/vehicles/${id}`,
+        data,
+      );
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["unit", variables.unitId] });
@@ -44,8 +51,8 @@ export function useDeleteVehicle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, unitId }: { id: string; unitId: string }) => {
-      return apiClient.delete<{ result: { success: boolean } }>(
+    mutationFn: async ({ id }: { id: string; unitId: string }) => {
+      return ApiClient.delete<{ result: { success: boolean } }>(
         `/api/vehicles/${id}`,
       );
     },

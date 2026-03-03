@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     if (block) queries.push(Query.equal("block", block));
 
     const floor = searchParams.get("floor");
-    if (floor) queries.push(Query.equal("floor", Number.parseInt(floor)));
+    if (floor) queries.push(Query.equal("floor", Number.parseInt(floor, 10)));
 
     const status = searchParams.get("status");
     if (status) queries.push(Query.equal("occupancyStatus", status));

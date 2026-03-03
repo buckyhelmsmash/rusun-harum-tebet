@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Pencil, Search } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";

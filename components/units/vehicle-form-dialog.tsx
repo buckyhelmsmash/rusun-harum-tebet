@@ -1,19 +1,16 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "@tanstack/react-form";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ResponsiveFormContainer } from "@/components/responsive-form-container";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -51,13 +48,35 @@ export function VehicleFormDialog({
   const updateMutation = useUpdateVehicle();
   const isEditing = !!vehicle;
 
-  const form = useForm<VehicleFormValues>({
-    resolver: zodResolver(vehicleSchema),
+  const form = useForm({
     defaultValues: {
       licensePlate: "",
-      vehicleType: "car",
+      vehicleType: "car" as VehicleFormValues["vehicleType"],
       brand: "",
       color: "",
+    },
+    validators: {
+      // biome-ignore lint/suspicious/noExplicitAny: required for ts type inference inside tanstack form
+      onSubmit: vehicleSchema as any,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        if (isEditing && vehicle) {
+          await updateMutation.mutateAsync({
+            id: vehicle.$id,
+            unitId,
+            data: value,
+          });
+        } else {
+          await createMutation.mutateAsync({
+            ...value,
+            unit: unitId,
+          });
+        }
+        onOpenChange(false);
+      } catch (error) {
+        console.error("Failed to save vehicle", error);
+      }
     },
   });
 
@@ -77,28 +96,7 @@ export function VehicleFormDialog({
         color: "",
       });
     }
-  }, [vehicle, open, form]);
-
-  async function onSubmit(data: VehicleFormValues) {
-    try {
-      if (isEditing && vehicle) {
-        await updateMutation.mutateAsync({
-          id: vehicle.$id,
-          unitId,
-          data,
-        });
-      } else {
-        await createMutation.mutateAsync({
-          ...data,
-          unit: unitId,
-        });
-      }
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to save vehicle", error);
-      // TODO: add toast notification
-    }
-  }
+  }, [vehicle, open, form.reset]);
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
@@ -113,92 +111,167 @@ export function VehicleFormDialog({
           : "Register a new vehicle for this unit."
       }
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+        className="space-y-4"
+      >
+        <FieldGroup>
+          <form.Field
             name="licensePlate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>License Plate</FormLabel>
-                <FormControl>
-                  <Input placeholder="B 1234 ABC" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            validators={{
+              onChange: vehicleSchema.shape.licensePlate,
+            }}
+          >
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid}>
+                  <FieldLabel htmlFor={field.name}>License Plate</FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    placeholder="B 1234 ABC"
+                  />
+                  {isInvalid && (
+                    <FieldError>
+                      {field.state.meta.errors.join(", ")}
+                    </FieldError>
+                  )}
+                </Field>
+              );
+            }}
+          </form.Field>
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="vehicleType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Vehicle Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="capitalize">
+            validators={{
+              onChange: vehicleSchema.shape.vehicleType,
+            }}
+          >
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid}>
+                  <FieldLabel htmlFor={field.name}>Vehicle Type</FieldLabel>
+                  <Select
+                    onValueChange={(val) =>
+                      field.handleChange(
+                        val as VehicleFormValues["vehicleType"],
+                      )
+                    }
+                    defaultValue={field.state.value}
+                    value={field.state.value}
+                  >
+                    <SelectTrigger
+                      className="capitalize"
+                      aria-invalid={isInvalid}
+                    >
                       <SelectValue placeholder="Select vehicle type" />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="car">Car</SelectItem>
-                    <SelectItem value="motorcycle">Motorcycle</SelectItem>
-                    <SelectItem value="box_car">Box Car</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <SelectContent>
+                      <SelectItem value="car">Car</SelectItem>
+                      <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                      <SelectItem value="box_car">Box Car</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {isInvalid && (
+                    <FieldError>
+                      {field.state.meta.errors.join(", ")}
+                    </FieldError>
+                  )}
+                </Field>
+              );
+            }}
+          </form.Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="brand"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Brand</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Toyota" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Black" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+            <form.Field name="brand">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Brand</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      placeholder="e.g. Toyota"
+                    />
+                    {isInvalid && (
+                      <FieldError>
+                        {field.state.meta.errors.join(", ")}
+                      </FieldError>
+                    )}
+                  </Field>
+                );
+              }}
+            </form.Field>
 
-          <div className="pt-4 flex w-full justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Vehicle"}
-            </Button>
+            <form.Field name="color">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Color</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      placeholder="e.g. Black"
+                    />
+                    {isInvalid && (
+                      <FieldError>
+                        {field.state.meta.errors.join(", ")}
+                      </FieldError>
+                    )}
+                  </Field>
+                );
+              }}
+            </form.Field>
           </div>
-        </form>
-      </Form>
+        </FieldGroup>
+
+        <div className="pt-4 flex w-full justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={!canSubmit || isLoading || isSubmitting}
+              >
+                {isLoading || isSubmitting ? "Saving..." : "Save Vehicle"}
+              </Button>
+            )}
+          </form.Subscribe>
+        </div>
+      </form>
     </ResponsiveFormContainer>
   );
 }
