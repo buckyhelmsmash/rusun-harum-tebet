@@ -131,7 +131,7 @@ export function Sidebar() {
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-14 hover:bg-white/5 border-0"
                   >
                     <div className="flex items-center gap-3 w-full">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground font-bold flex-shrink-0">
                         <UserIcon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col flex-1 overflow-hidden text-left">
