@@ -10,15 +10,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
 
 export function Topbar() {
   const { user, logout } = useAuth();
 
   return (
-    <header className="h-16 bg-card border-b flex items-center justify-between px-6">
-      <div className="flex items-center md:hidden">
-        <span className="font-bold text-lg tracking-tight">Rusun Harum</span>
+    <header className="h-16 shrink-0 bg-card border-b flex items-center justify-between px-6">
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="-ml-3" />
+        <div className="flex items-center md:hidden">
+          <span className="font-bold text-lg tracking-tight">Rusun Harum</span>
+        </div>
       </div>
       <div className="flex-1" />
       <div className="flex items-center space-x-4">
