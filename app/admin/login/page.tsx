@@ -1,10 +1,10 @@
 "use client";
 
+import { goeyToast } from "goey-toast";
 import { LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect } from "react";
-import { toast } from "sonner"; // Provided by shadcn/ui
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,13 +31,8 @@ export default function AdminLoginPage({
       router.replace("/admin");
     }
 
-    // Check for query param from failed Login redirect
     if (params?.error === "auth_failed") {
-      toast.error("Authentication failed or was cancelled.");
-    } else if (params?.error === "access_denied") {
-      toast.error(
-        "Access Denied: Your email is not authorized for Admin access.",
-      );
+      goeyToast.error("Gagal Login");
     }
   }, [user, isLoading, router, params]);
 

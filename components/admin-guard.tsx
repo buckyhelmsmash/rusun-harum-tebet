@@ -1,8 +1,8 @@
 "use client";
 
+import { goeyToast } from "goey-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { toast } from "sonner"; // Provided by shadcn/ui setup
 import { useAuth } from "@/contexts/auth-context";
 import { APPWRITE } from "@/lib/constants";
 
@@ -17,7 +17,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     if (!user) {
       if (isKickingOut.current) return;
       // User is not logged in
-      toast.error("You must be logged in to access the admin dashboard.");
+      goeyToast.error("Akses Ditolak", {
+        description: "Anda harus login untuk mengakses halaman admin.",
+      });
       router.replace("/admin/login");
       return;
     }
@@ -29,9 +31,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     if (!isWhitelisted) {
       isKickingOut.current = true;
       // User is logged in with Google, but not on the admin email whitelist
-      toast.error(
-        "Access Denied: Your email is not authorized for Admin access.",
-      );
+      goeyToast.error("Akses Ditolak", {
+        description: "Anda tidak memiliki hak akses untuk login sebagai admin.",
+      });
       logout().then(() => {
         router.replace("/admin/login");
       });
