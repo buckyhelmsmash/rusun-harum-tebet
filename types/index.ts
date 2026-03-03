@@ -1,15 +1,18 @@
 import type { Models } from "appwrite";
 
 export interface Unit extends Models.Document {
-  block: string;
+  block: "A" | "B" | "C" | "D";
   floor: number;
   unitNumber: number;
   displayId: string;
+  unitType: "regular" | "basement";
+  isOccupied: boolean;
   occupancyStatus: "owner_occupied" | "rented" | "vacant";
   billRecipient: "owner" | "tenant";
   owner?: Owner;
   tenant?: Tenant;
   vehicles?: Vehicle[];
+  invoice?: Invoice[];
 }
 
 export interface Owner extends Models.Document {
@@ -27,28 +30,30 @@ export interface Tenant extends Models.Document {
   ktpNumber: string;
   email?: string;
   dateOfBirth?: string;
-  units?: Unit[];
+  unit?: Unit;
 }
 
 export interface Vehicle extends Models.Document {
+  vehicleType: "car" | "motorcycle" | "box_car";
   licensePlate: string;
-  type: string;
-  brand: string;
+  monthlyRate?: number;
+  color?: string;
+  brand?: string;
   unit?: Unit;
 }
 
 export interface Invoice extends Models.Document {
+  accessToken: string;
   period: string; // e.g., '2023-10'
   status: "paid" | "unpaid";
   dueDate: string;
-  payDate?: string;
+  arrears: number;
+  totalDue: number;
   iplFee: number;
   waterFee: number;
   vehicleFee: number;
-  arrears: number;
-  uniqueCode: number; // 3-digit
-  totalDue: number;
-  accessToken: string; // Magic Link string
+  payDate?: string;
+  receiptId?: string;
   unit?: Unit;
 }
 
