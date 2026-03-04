@@ -32,6 +32,8 @@ export interface Tenant extends Models.Document {
   ktpNumber: string;
   email?: string;
   dateOfBirth?: string;
+  startDate?: string;
+  endDate?: string;
   unit?: Unit;
 }
 
@@ -74,8 +76,14 @@ export type ActivityAction =
   | "vehicle.create"
   | "vehicle.update"
   | "vehicle.delete"
+  | "owner.create"
+  | "owner.update"
+  | "owner.delete"
   | "owner.assign"
   | "owner.remove"
+  | "tenant.create"
+  | "tenant.update"
+  | "tenant.delete"
   | "tenant.assign"
   | "tenant.remove"
   | "invoice.create"
