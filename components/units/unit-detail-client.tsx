@@ -15,77 +15,30 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DetailCard, DetailCardHeader } from "@/components/ui/detail-card";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useGetUnit } from "@/hooks/api/use-units";
 import { useDeleteVehicle } from "@/hooks/api/use-vehicles";
-import { cn } from "@/lib/utils";
 import type { Vehicle } from "@/types";
 
 interface UnitDetailClientProps {
   unitId: string;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    owner_occupied:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
-    rented:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
-    vacant:
-      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50",
-  };
-
-  return (
-    <span
-      className={cn(
-        "px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border capitalize",
-        styles[status] ?? "bg-slate-100 text-slate-700",
-      )}
-    >
-      {status.replace("_", " ")}
-    </span>
-  );
-}
-
-function CardHeader({
-  icon,
-  title,
-  action,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
-      <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-        <span className="text-blue-600 dark:text-blue-400">{icon}</span>
-        {title}
-      </h3>
-      {action}
-    </div>
-  );
-}
-
-function DetailCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+function getStatusVariant(status: string) {
+  switch (status) {
+    case "owner_occupied":
+      return "success";
+    case "rented":
+      return "info";
+    case "vacant":
+      return "destructive";
+    default:
+      return "default";
+  }
 }
 
 function VehicleIcon({ type }: { type: string }) {
@@ -181,14 +134,16 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               </p>
             </div>
           </div>
-          <StatusBadge status={unit.occupancyStatus} />
+          <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
+            {unit.occupancyStatus.replace("_", " ")}
+          </StatusBadge>
         </div>
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Card 1 — Unit Information */}
           <DetailCard>
-            <CardHeader
+            <DetailCardHeader
               icon={<Info className="h-4 w-4" />}
               title="Unit Information"
             />
@@ -230,7 +185,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
           {/* Card 2 — Owner */}
           <DetailCard>
-            <CardHeader
+            <DetailCardHeader
               icon={<User className="h-4 w-4" />}
               title="Owner"
               action={
@@ -292,7 +247,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
           {/* Card 3 — Current Tenant */}
           <DetailCard>
-            <CardHeader
+            <DetailCardHeader
               icon={<Users className="h-4 w-4" />}
               title="Current Tenant"
               action={
@@ -346,7 +301,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
           {/* Card 4 — Registered Vehicles */}
           <DetailCard>
-            <CardHeader
+            <DetailCardHeader
               icon={<Car className="h-4 w-4" />}
               title="Registered Vehicles"
               action={
