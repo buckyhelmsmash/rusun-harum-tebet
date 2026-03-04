@@ -22,6 +22,7 @@ export const ActivityLogRepository = {
     ];
 
     if (params.unitId) queries.push(Query.equal("unitId", params.unitId));
+    if (params.targetId) queries.push(Query.equal("targetId", params.targetId));
     if (params.action) queries.push(Query.equal("action", params.action));
     if (params.actorId) queries.push(Query.equal("actorId", params.actorId));
 

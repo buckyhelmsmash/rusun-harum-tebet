@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable } from "@/components/shared/data-table";
+import { TimelineSheet } from "@/components/shared/timeline-sheet";
 import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -147,6 +148,11 @@ export function ResidentsClient() {
             >
               <Trash2 className="h-4 w-4" />
             </Button>
+            <TimelineSheet
+              targetId={row.original.$id}
+              targetType="owner"
+              title={`Owner ${row.original.fullName}`}
+            />
           </div>
         ),
       },
@@ -231,6 +237,11 @@ export function ResidentsClient() {
             >
               <Trash2 className="h-4 w-4" />
             </Button>
+            <TimelineSheet
+              targetId={row.original.$id}
+              targetType="tenant"
+              title={`Tenant ${row.original.fullName}`}
+            />
           </div>
         ),
       },

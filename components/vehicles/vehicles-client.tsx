@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { TimelineSheet } from "@/components/shared/timeline-sheet";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -103,17 +104,16 @@ export function VehiclesClient() {
         accessorKey: "unit",
         header: "Unit",
         cell: ({ row }) => {
-          const unitId =
-            typeof row.original.unit === "string"
-              ? row.original.unit
-              : row.original.unit?.$id;
-          if (!unitId) return "—";
+          const unit = row.original.unit;
+          if (!unit) return "—";
+          const unitId = typeof unit === "string" ? unit : unit.$id;
+          const displayId = typeof unit === "object" ? unit.displayId : unitId;
           return (
             <Link
               href={`/admin/units/${unitId}`}
-              className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+              className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
             >
-              View Unit
+              {displayId}
             </Link>
           );
         },
@@ -122,17 +122,28 @@ export function VehiclesClient() {
         id: "actions",
         header: "",
         cell: ({ row }) => {
-          const unitId =
-            typeof row.original.unit === "string"
-              ? row.original.unit
-              : row.original.unit?.$id;
-          if (!unitId) return null;
+          const unit = row.original.unit;
+          const unitId = typeof unit === "string" ? unit : unit?.$id;
           return (
-            <Link href={`/admin/units/${unitId}`}>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Eye className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-1">
+              {unitId && (
+                <Link href={`/admin/units/${unitId}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    View Unit
+                  </Button>
+                </Link>
+              )}
+              <TimelineSheet
+                targetId={row.original.$id}
+                targetType="vehicle"
+                title={`Vehicle ${row.original.licensePlate}`}
+              />
+            </div>
           );
         },
       },

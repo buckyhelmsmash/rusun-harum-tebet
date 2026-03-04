@@ -1,5 +1,6 @@
 export interface ActivityFilters {
   unitId?: string;
+  targetId?: string;
   action?: string;
   actorId?: string;
   limit?: number;
