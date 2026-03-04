@@ -22,11 +22,7 @@ const tenantSchema = z.object({
   ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
-  startDate: z.string().optional().or(z.literal("")),
-  endDate: z.string().optional().or(z.literal("")),
 });
-
-type TenantFormValues = z.infer<typeof tenantSchema>;
 
 interface TenantFormDialogProps {
   open: boolean;
@@ -50,20 +46,17 @@ export function TenantFormDialog({
       ktpNumber: "",
       email: "",
       dateOfBirth: "",
-      startDate: "",
-      endDate: "",
-    } as TenantFormValues,
+    },
     validators: {
       // biome-ignore lint/suspicious/noExplicitAny: required for tanstack form
       onSubmit: tenantSchema as any,
     },
     onSubmit: async ({ value }) => {
       try {
+        const { ktpNumber: _ktp, ...updateFields } = value;
         const payload = {
-          ...value,
+          ...updateFields,
           email: value.email || undefined,
-          startDate: value.startDate || undefined,
-          endDate: value.endDate || undefined,
         };
         if (isEditing && tenant) {
           await updateMutation.mutateAsync({ id: tenant.$id, data: payload });
@@ -91,8 +84,6 @@ export function TenantFormDialog({
         dateOfBirth: tenant.dateOfBirth
           ? tenant.dateOfBirth.substring(0, 10)
           : "",
-        startDate: tenant.startDate ? tenant.startDate.substring(0, 10) : "",
-        endDate: tenant.endDate ? tenant.endDate.substring(0, 10) : "",
       });
     } else if (!open) {
       form.reset({
@@ -101,8 +92,6 @@ export function TenantFormDialog({
         ktpNumber: "",
         email: "",
         dateOfBirth: "",
-        startDate: "",
-        endDate: "",
       });
     }
   }, [tenant, open, form.reset]);
@@ -171,6 +160,12 @@ export function TenantFormDialog({
                     aria-invalid={isInvalid}
                     placeholder="3201234567890001"
                     maxLength={16}
+                    disabled={isEditing}
+                    className={
+                      isEditing
+                        ? "bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
+                        : ""
+                    }
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
@@ -253,40 +248,6 @@ export function TenantFormDialog({
               );
             }}
           </form.Field>
-
-          <div className="grid grid-cols-2 gap-4">
-            <form.Field name="startDate">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>Lease Start Date</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="date"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </Field>
-              )}
-            </form.Field>
-
-            <form.Field name="endDate">
-              {(field) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>Lease End Date</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="date"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </Field>
-              )}
-            </form.Field>
-          </div>
         </FieldGroup>
 
         <div className="pt-4 flex w-full justify-end gap-2">

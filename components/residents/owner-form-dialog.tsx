@@ -53,8 +53,9 @@ export function OwnerFormDialog({
     },
     onSubmit: async ({ value }) => {
       try {
+        const { ktpNumber: _ktp, ...updateFields } = value;
         const payload = {
-          ...value,
+          ...updateFields,
           email: value.email || undefined,
         };
         if (isEditing && owner) {
@@ -159,6 +160,12 @@ export function OwnerFormDialog({
                     aria-invalid={isInvalid}
                     placeholder="3201234567890001"
                     maxLength={16}
+                    disabled={isEditing}
+                    className={
+                      isEditing
+                        ? "bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
+                        : ""
+                    }
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>

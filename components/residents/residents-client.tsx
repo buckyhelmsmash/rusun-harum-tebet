@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarDays, Pencil, Plus, Trash2, User } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable } from "@/components/shared/data-table";
@@ -101,9 +102,26 @@ export function ResidentsClient() {
         cell: ({ row }) => row.original.email || "—",
       },
       {
-        accessorKey: "dateOfBirth",
-        header: "DOB",
-        cell: ({ row }) => formatDate(row.original.dateOfBirth),
+        id: "unit",
+        header: "Unit",
+        cell: ({ row }) => {
+          const units = row.original.units;
+          if (!units || units.length === 0)
+            return <span className="text-slate-400">—</span>;
+          return (
+            <div className="flex flex-wrap gap-1">
+              {units.map((u) => (
+                <Link
+                  key={u.$id}
+                  href={`/admin/units/${u.$id}`}
+                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                >
+                  {u.displayId}
+                </Link>
+              ))}
+            </div>
+          );
+        },
       },
       {
         id: "actions",
@@ -158,14 +176,36 @@ export function ResidentsClient() {
         header: "Phone",
       },
       {
-        accessorKey: "startDate",
-        header: "Lease Start",
-        cell: ({ row }) => formatDate(row.original.startDate),
+        id: "unit",
+        header: "Unit",
+        cell: ({ row }) => {
+          const unit = row.original.unit;
+          if (!unit || typeof unit === "string")
+            return <span className="text-slate-400">—</span>;
+          return (
+            <Link
+              href={`/admin/units/${unit.$id}`}
+              className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+            >
+              {unit.displayId}
+            </Link>
+          );
+        },
       },
       {
-        accessorKey: "endDate",
-        header: "Lease End",
-        cell: ({ row }) => formatDate(row.original.endDate),
+        id: "lease",
+        header: "Lease Period",
+        cell: ({ row }) => {
+          if (!row.original.startDate && !row.original.endDate)
+            return <span className="text-slate-400">—</span>;
+          return (
+            <span className="text-xs flex items-center gap-1">
+              <CalendarDays className="h-3 w-3" />
+              {formatDate(row.original.startDate)} —{" "}
+              {row.original.endDate ? formatDate(row.original.endDate) : "∞"}
+            </span>
+          );
+        },
       },
       {
         id: "actions",

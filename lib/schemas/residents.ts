@@ -11,7 +11,10 @@ const baseResidentSchema = z.object({
 export const createOwnerSchema = baseResidentSchema;
 export type CreateOwnerInput = z.infer<typeof createOwnerSchema>;
 
-export const updateOwnerSchema = baseResidentSchema.partial().strict();
+export const updateOwnerSchema = baseResidentSchema
+  .omit({ ktpNumber: true })
+  .partial()
+  .strict();
 export type UpdateOwnerInput = z.infer<typeof updateOwnerSchema>;
 
 export const createTenantSchema = baseResidentSchema.extend({
@@ -20,7 +23,14 @@ export const createTenantSchema = baseResidentSchema.extend({
 });
 export type CreateTenantInput = z.infer<typeof createTenantSchema>;
 
-export const updateTenantSchema = createTenantSchema.partial().strict();
+export const updateTenantSchema = baseResidentSchema
+  .omit({ ktpNumber: true })
+  .extend({
+    startDate: z.string().nullable().optional(),
+    endDate: z.string().nullable().optional(),
+  })
+  .partial()
+  .strict();
 export type UpdateTenantInput = z.infer<typeof updateTenantSchema>;
 
 export const residentListParamsSchema = z.object({

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarDays,
   Car,
   ChevronLeft,
   Info,
@@ -11,6 +12,7 @@ import {
   Trash2,
   User,
   Users,
+  UserX,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,6 +24,7 @@ import { goeyToast } from "@/components/ui/goey-toaster";
 import { ActivitySection } from "@/components/units/activity-section";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
+import { useRemoveResident } from "@/hooks/api/use-unit-assignment";
 import { useGetUnit } from "@/hooks/api/use-units";
 import { useDeleteVehicle } from "@/hooks/api/use-vehicles";
 import type { Vehicle } from "@/types";
@@ -68,6 +71,11 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   const [residentModalOpen, setResidentModalOpen] = useState(false);
   const [residentType, setResidentType] = useState<"owner" | "tenant">("owner");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [removeResidentType, setRemoveResidentType] = useState<
+    "owner" | "tenant" | null
+  >(null);
+
+  const removeMutation = useRemoveResident();
 
   if (isLoading) {
     return (
@@ -194,14 +202,26 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               icon={<User className="h-4 w-4" />}
               title="Owner"
               action={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-slate-500 hover:text-slate-700"
-                  onClick={() => handleOpenResidentPicker("owner")}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  {unit.owner && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                      onClick={() => setRemoveResidentType("owner")}
+                    >
+                      <UserX className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                    onClick={() => handleOpenResidentPicker("owner")}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               }
             />
             {unit.owner ? (
@@ -256,14 +276,26 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               icon={<Users className="h-4 w-4" />}
               title="Current Tenant"
               action={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-slate-500 hover:text-slate-700"
-                  onClick={() => handleOpenResidentPicker("tenant")}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  {unit.tenant && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                      onClick={() => setRemoveResidentType("tenant")}
+                    >
+                      <UserX className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                    onClick={() => handleOpenResidentPicker("tenant")}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               }
             />
             {unit.tenant ? (
@@ -283,6 +315,24 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                     <Mail className="h-3.5 w-3.5" />
                     {unit.tenant.email || "No email provided"}
                   </div>
+                  {(unit.tenant.startDate || unit.tenant.endDate) && (
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm pt-1">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {unit.tenant.startDate
+                        ? new Date(unit.tenant.startDate).toLocaleDateString(
+                            "id-ID",
+                            { day: "2-digit", month: "short", year: "numeric" },
+                          )
+                        : "—"}
+                      {" — "}
+                      {unit.tenant.endDate
+                        ? new Date(unit.tenant.endDate).toLocaleDateString(
+                            "id-ID",
+                            { day: "2-digit", month: "short", year: "numeric" },
+                          )
+                        : "∞"}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -412,6 +462,32 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
         confirmText="Remove"
         variant="destructive"
         isLoading={isDeleting}
+      />
+
+      <ConfirmDialog
+        isOpen={!!removeResidentType}
+        onClose={() => setRemoveResidentType(null)}
+        onConfirm={async () => {
+          if (!removeResidentType) return;
+          try {
+            await removeMutation.mutateAsync({
+              unitId,
+              type: removeResidentType,
+            });
+            goeyToast.success(
+              `${removeResidentType === "owner" ? "Owner" : "Tenant"} removed from unit`,
+            );
+          } catch {
+            goeyToast.error(`Failed to remove ${removeResidentType}`);
+          } finally {
+            setRemoveResidentType(null);
+          }
+        }}
+        title={`Remove ${removeResidentType === "owner" ? "Owner" : "Tenant"}`}
+        description={`Are you sure you want to remove the current ${removeResidentType} from this unit?`}
+        confirmText="Remove"
+        variant="destructive"
+        isLoading={removeMutation.isPending}
       />
     </>
   );
