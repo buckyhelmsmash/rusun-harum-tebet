@@ -7,7 +7,7 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-50 h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ml-1 hidden md:flex" />
         <h1 className="text-lg font-semibold tracking-tight md:hidden">
           Rusun Harum Tebet
         </h1>

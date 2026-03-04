@@ -176,7 +176,7 @@ export function VehiclesClient() {
             {formatType(vehicle.vehicleType)}
           </StatusBadge>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-sm mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
           {vehicle.monthlyRate ? (
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               Rp {vehicle.monthlyRate.toLocaleString("id-ID")}/mo
@@ -184,14 +184,32 @@ export function VehiclesClient() {
           ) : (
             <span className="text-slate-400">No rate set</span>
           )}
-          {unitId && (
-            <Link
-              href={`/admin/units/${unitId}`}
-              className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-medium"
-            >
-              View Unit →
-            </Link>
-          )}
+          <div className="flex items-center gap-1">
+            <TimelineSheet
+              targetId={vehicle.$id}
+              targetType="vehicle"
+              title={`Vehicle ${vehicle.licensePlate}`}
+            />
+            {unitId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                asChild
+              >
+                <Link href={`/admin/units/${unitId}`}>
+                  View Unit
+                  <span className="sr-only">
+                    (
+                    {typeof vehicle.unit === "object"
+                      ? vehicle.unit.displayId
+                      : unitId}
+                    )
+                  </span>
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );

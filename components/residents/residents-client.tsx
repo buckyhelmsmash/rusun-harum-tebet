@@ -280,11 +280,16 @@ export function ResidentsClient() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-red-500"
+            className="h-8 w-8 text-red-500 hover:text-red-600"
             onClick={() => setDeletingOwner(owner)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
+          <TimelineSheet
+            targetId={owner.$id}
+            targetType="owner"
+            title={`Owner ${owner.fullName}`}
+          />
         </div>
       </div>
       <div className="flex items-center justify-between text-sm text-slate-500">
@@ -325,11 +330,16 @@ export function ResidentsClient() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-red-500"
+            className="h-8 w-8 text-red-500 hover:text-red-600"
             onClick={() => setDeletingTenant(tenant)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
+          <TimelineSheet
+            targetId={tenant.$id}
+            targetType="tenant"
+            title={`Tenant ${tenant.fullName}`}
+          />
         </div>
       </div>
       <div className="flex items-center justify-between text-sm text-slate-500">
