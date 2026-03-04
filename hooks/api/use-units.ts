@@ -11,6 +11,7 @@ import type {
   UpdateUnitPayload,
   UpdateUnitResponse,
 } from "@/types/api";
+import { activityKeys } from "./keys/activity-keys";
 import { unitKeys } from "./keys/unit-keys";
 
 export interface UnitFilters {
@@ -75,6 +76,9 @@ export const useUpdateUnit = (
       queryClient.invalidateQueries({ queryKey: unitKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: unitKeys.detail(variables.id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.lists(),
       });
 
       if (options?.onSuccess) {

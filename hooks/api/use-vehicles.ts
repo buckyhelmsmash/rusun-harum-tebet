@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { activityKeys } from "@/hooks/api/keys/activity-keys";
 import { unitKeys } from "@/hooks/api/keys/unit-keys";
 import {
   type VehicleFilters,
@@ -50,6 +51,9 @@ export function useCreateVehicle() {
       queryClient.invalidateQueries({
         queryKey: vehicleKeys.lists(),
       });
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.lists(),
+      });
     },
   });
 }
@@ -75,6 +79,9 @@ export function useUpdateVehicle() {
       queryClient.invalidateQueries({
         queryKey: unitKeys.detail(variables.unitId),
       });
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.lists(),
+      });
     },
   });
 }
@@ -94,6 +101,9 @@ export function useDeleteVehicle() {
       });
       queryClient.invalidateQueries({
         queryKey: vehicleKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.lists(),
       });
     },
   });

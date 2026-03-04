@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
@@ -7,11 +8,26 @@ import { createVehicleSchema } from "@/lib/schemas/vehicles";
 
 export async function POST(request: Request) {
   try {
-    await verifyAuth(request);
+    const session = await verifyAuth(request);
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createVehicleSchema.parse(payload);
     const vehicle = await VehicleRepository.create(validated);
+
+    logActivity({
+      actorId: session.$id,
+      actorName: session.name || session.email,
+      action: "vehicle.create",
+      description: `Added vehicle ${validated.licensePlate}`,
+      targetType: "vehicle",
+      targetId: vehicle.$id,
+      unitId: validated.unit,
+      metadata: {
+        licensePlate: validated.licensePlate,
+        vehicleType: validated.vehicleType,
+      },
+    });
+
     return NextResponse.json({ result: vehicle });
   } catch (error: unknown) {
     if (error instanceof AuthError) {

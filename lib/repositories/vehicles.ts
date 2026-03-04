@@ -42,6 +42,16 @@ export const VehicleRepository = {
     };
   },
 
+  async getById(id: string): Promise<Vehicle> {
+    const db = await getAdminDb();
+    const row = await db.getRow({
+      databaseId: DB_ID,
+      tableId: TABLE_ID,
+      rowId: id,
+    });
+    return row as unknown as Vehicle;
+  },
+
   async create(data: CreateVehicleInput): Promise<Vehicle> {
     const db = await getAdminDb();
     const row = await db.createRow({

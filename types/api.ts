@@ -1,4 +1,4 @@
-import type { Unit, Vehicle } from "@/types";
+import type { ActivityLog, Unit, Vehicle } from "@/types";
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -29,3 +29,10 @@ export type UpdateUnitResponse = Unit;
 
 // GET /api/vehicles/list
 export type GetVehiclesResponse = PaginatedResponse<Vehicle>;
+
+/**
+ * ACTIVITY LOG ENDPOINTS
+ */
+
+// GET /api/activity
+export type GetActivityResponse = PaginatedResponse<ActivityLog>;

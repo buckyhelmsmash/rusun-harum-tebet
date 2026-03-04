@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { UnitRepository } from "@/lib/repositories/units";
@@ -31,12 +32,24 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await verifyAuth(request);
+    const session = await verifyAuth(request);
     const { id } = await params;
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = updateUnitSchema.parse(payload);
     const unit = await UnitRepository.update(id, validated);
+
+    logActivity({
+      actorId: session.$id,
+      actorName: session.name || session.email,
+      action: "unit.update",
+      description: `Updated unit ${unit.displayId}`,
+      targetType: "unit",
+      targetId: unit.$id,
+      unitId: unit.$id,
+      metadata: { updatedFields: Object.keys(validated) },
+    });
+
     return NextResponse.json({ result: unit });
   } catch (error: unknown) {
     if (error instanceof AuthError) {

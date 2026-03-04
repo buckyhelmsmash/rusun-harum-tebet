@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { ActivitySection } from "@/components/units/activity-section";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useGetUnit } from "@/hooks/api/use-units";
@@ -121,7 +122,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
   return (
     <>
-      <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="space-y-6 max-w-5xl mx-auto pb-8">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
@@ -390,6 +391,8 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           </DetailCard>
         </div>
       </div>
+
+      <ActivitySection unitId={unitId} />
 
       <VehicleFormDialog
         open={vehicleModalOpen}

@@ -65,3 +65,31 @@ export interface News extends Models.Document {
   publishedDate?: string;
   isPublished: boolean;
 }
+
+export type ActivityAction =
+  | "unit.update"
+  | "vehicle.create"
+  | "vehicle.update"
+  | "vehicle.delete"
+  | "owner.assign"
+  | "owner.remove"
+  | "tenant.assign"
+  | "tenant.remove"
+  | "invoice.create"
+  | "invoice.update"
+  | "news.create"
+  | "news.update"
+  | "news.delete";
+
+export type TargetType = "unit" | "vehicle" | "owner" | "tenant" | "invoice";
+
+export interface ActivityLog extends Models.Document {
+  actorId: string;
+  actorName: string;
+  action: ActivityAction;
+  description: string;
+  targetType: TargetType;
+  targetId?: string;
+  unitId?: string;
+  metadata?: string;
+}
