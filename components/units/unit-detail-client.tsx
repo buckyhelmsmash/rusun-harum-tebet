@@ -14,18 +14,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
 import { StatusBadge } from "@/components/shared/status-badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
 import { ActivitySection } from "@/components/units/activity-section";
@@ -69,7 +60,8 @@ function VehicleIcon({ type }: { type: string }) {
 
 export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   const { data: unit, isLoading, isError } = useGetUnit(unitId);
-  const deleteVehicleMutation = useDeleteVehicle();
+  const { mutateAsync: deleteVehicle, isPending: isDeleting } =
+    useDeleteVehicle();
 
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -106,7 +98,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   const confirmDeleteVehicle = async () => {
     if (!deleteTarget) return;
     try {
-      await deleteVehicleMutation.mutateAsync({ id: deleteTarget, unitId });
+      await deleteVehicle({ id: deleteTarget, unitId });
       goeyToast.success("Vehicle removed successfully");
     } catch {
       goeyToast.error("Failed to remove vehicle");
@@ -411,29 +403,16 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
         }
       />
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Vehicle</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this vehicle? This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeleteVehicle}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDeleteVehicle}
+        title="Remove Vehicle"
+        description="Are you sure you want to remove this vehicle? This action cannot be undone."
+        confirmText="Remove"
+        variant="destructive"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
