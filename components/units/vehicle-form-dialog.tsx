@@ -11,6 +11,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { goeyToast } from "@/components/ui/goey-toaster";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -67,15 +68,18 @@ export function VehicleFormDialog({
             unitId,
             data: value,
           });
+          goeyToast.success("Vehicle updated successfully");
         } else {
           await createMutation.mutateAsync({
             ...value,
             unit: unitId,
           });
+          goeyToast.success("Vehicle added successfully");
         }
         onOpenChange(false);
       } catch (error) {
         console.error("Failed to save vehicle", error);
+        goeyToast.error("Failed to save vehicle. Please try again.");
       }
     },
   });
@@ -141,11 +145,7 @@ export function VehicleFormDialog({
                     aria-invalid={isInvalid}
                     placeholder="B 1234 ABC"
                   />
-                  {isInvalid && (
-                    <FieldError>
-                      {field.state.meta.errors.join(", ")}
-                    </FieldError>
-                  )}
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               );
             }}
@@ -184,11 +184,7 @@ export function VehicleFormDialog({
                       <SelectItem value="box_car">Box Car</SelectItem>
                     </SelectContent>
                   </Select>
-                  {isInvalid && (
-                    <FieldError>
-                      {field.state.meta.errors.join(", ")}
-                    </FieldError>
-                  )}
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               );
             }}
@@ -212,9 +208,7 @@ export function VehicleFormDialog({
                       placeholder="e.g. Toyota"
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors.join(", ")}
-                      </FieldError>
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 );
@@ -238,9 +232,7 @@ export function VehicleFormDialog({
                       placeholder="e.g. Black"
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors.join(", ")}
-                      </FieldError>
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 );

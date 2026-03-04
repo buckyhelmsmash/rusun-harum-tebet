@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { unitKeys } from "@/hooks/api/keys/unit-keys";
 import { ApiClient } from "@/lib/api/api-client";
 import type { Vehicle } from "@/types";
-
-// Note: We don't typically need a useGetVehicles hook because vehicles
-// are fetched as part of the Unit relations in useGetUnit.
 
 export function useCreateVehicle() {
   const queryClient = useQueryClient();
@@ -18,8 +16,9 @@ export function useCreateVehicle() {
       );
     },
     onSuccess: (_, variables) => {
-      // Invalidate the specific unit query to refresh its vehicles list
-      queryClient.invalidateQueries({ queryKey: ["unit", variables.unit] });
+      queryClient.invalidateQueries({
+        queryKey: unitKeys.detail(variables.unit),
+      });
     },
   });
 }
@@ -42,7 +41,9 @@ export function useUpdateVehicle() {
       );
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["unit", variables.unitId] });
+      queryClient.invalidateQueries({
+        queryKey: unitKeys.detail(variables.unitId),
+      });
     },
   });
 }
@@ -57,7 +58,9 @@ export function useDeleteVehicle() {
       );
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["unit", variables.unitId] });
+      queryClient.invalidateQueries({
+        queryKey: unitKeys.detail(variables.unitId),
+      });
     },
   });
 }

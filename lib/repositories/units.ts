@@ -1,7 +1,7 @@
 import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import type { UnitListParams, UpdateUnitInput } from "@/lib/schemas/units";
-import type { Unit } from "@/types";
+import type { Unit, Vehicle } from "@/types";
 import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.UNITS;
@@ -41,12 +41,32 @@ export const UnitRepository = {
 
   async getById(id: string): Promise<Unit> {
     const db = await getAdminDb();
-    const row = await db.getRow({
-      databaseId: DB_ID,
-      tableId: TABLE_ID,
-      rowId: id,
-    });
-    return row as unknown as Unit;
+
+    // Fetch the unit and its vehicles concurrently
+    const [unitRow, vehiclesResult] = await Promise.all([
+      db.getRow({
+        databaseId: DB_ID,
+        tableId: TABLE_ID,
+        rowId: id,
+      }),
+      db
+        .listRows({
+          databaseId: DB_ID,
+          tableId: APPWRITE.COLLECTIONS.VEHICLES,
+          queries: [Query.equal("unit", id)],
+        })
+        .catch((err) => {
+          console.warn(`Failed to fetch vehicles for unit ${id}:`, err);
+          return { rows: [] };
+        }),
+    ]);
+
+    const unit = unitRow as unknown as Unit;
+
+    return {
+      ...unit,
+      vehicles: vehiclesResult.rows as unknown as Vehicle[],
+    };
   },
 
   async update(id: string, data: UpdateUnitInput): Promise<Unit> {

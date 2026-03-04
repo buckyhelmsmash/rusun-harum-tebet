@@ -1,35 +1,120 @@
 "use client";
 
-import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
+import {
+  Car,
+  ChevronLeft,
+  Info,
+  Mail,
+  Pencil,
+  Phone,
+  Plus,
+  Trash2,
+  User,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { goeyToast } from "@/components/ui/goey-toaster";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useGetUnit } from "@/hooks/api/use-units";
 import { useDeleteVehicle } from "@/hooks/api/use-vehicles";
+import { cn } from "@/lib/utils";
 import type { Vehicle } from "@/types";
 
 interface UnitDetailClientProps {
   unitId: string;
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    owner_occupied:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
+    rented:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
+    vacant:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50",
+  };
+
+  return (
+    <span
+      className={cn(
+        "px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border capitalize",
+        styles[status] ?? "bg-slate-100 text-slate-700",
+      )}
+    >
+      {status.replace("_", " ")}
+    </span>
+  );
+}
+
+function CardHeader({
+  icon,
+  title,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+      <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+        <span className="text-blue-600 dark:text-blue-400">{icon}</span>
+        {title}
+      </h3>
+      {action}
+    </div>
+  );
+}
+
+function DetailCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function VehicleIcon({ type }: { type: string }) {
+  if (type === "motorcycle") {
+    return (
+      <div className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 p-2 rounded-lg">
+        <Car className="h-5 w-5" />
+      </div>
+    );
+  }
+  return (
+    <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 p-2 rounded-lg">
+      <Car className="h-5 w-5" />
+    </div>
+  );
+}
+
 export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   const { data: unit, isLoading, isError } = useGetUnit(unitId);
   const deleteVehicleMutation = useDeleteVehicle();
 
-  // Dialog states
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-
   const [residentModalOpen, setResidentModalOpen] = useState(false);
   const [residentType, setResidentType] = useState<"owner" | "tenant">("owner");
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
+      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
         Loading unit details...
       </div>
     );
@@ -37,7 +122,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
   if (isError || !unit) {
     return (
-      <div className="p-8 text-center text-destructive">
+      <div className="p-8 text-center text-red-600 dark:text-red-400">
         Failed to load unit details.
       </div>
     );
@@ -55,7 +140,12 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
   const handleDeleteVehicle = async (vehicleId: string) => {
     if (confirm("Are you sure you want to remove this vehicle?")) {
-      await deleteVehicleMutation.mutateAsync({ id: vehicleId, unitId });
+      try {
+        await deleteVehicleMutation.mutateAsync({ id: vehicleId, unitId });
+        goeyToast.success("Vehicle removed successfully");
+      } catch {
+        goeyToast.error("Failed to remove vehicle");
+      }
     }
   };
 
@@ -67,201 +157,265 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   return (
     <>
       <div className="space-y-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/admin/units">
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Back</span>
-            </Link>
-          </Button>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Unit {unit.displayId}
-          </h2>
-          <Badge
-            className="ml-auto capitalize"
-            variant={
-              unit.occupancyStatus === "vacant"
-                ? "destructive"
-                : unit.occupancyStatus === "owner_occupied"
-                  ? "default"
-                  : "secondary"
-            }
-          >
-            {unit.occupancyStatus.replace("_", " ")}
-          </Badge>
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="mt-1 shadow-sm"
+              asChild
+            >
+              <Link href="/admin/units">
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Unit {unit.displayId}
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Block {unit.block}, Floor {unit.floor}, Unit {unit.unitNumber} •{" "}
+                <span className="capitalize">{unit.unitType} Unit</span>
+              </p>
+            </div>
+          </div>
+          <StatusBadge status={unit.occupancyStatus} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Unit Information Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">
-                Unit Information
-              </CardTitle>
-              <Button variant="ghost" size="icon">
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground font-medium">Block</p>
-                  <p>{unit.block}</p>
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Card 1 — Unit Information */}
+          <DetailCard>
+            <CardHeader
+              icon={<Info className="h-4 w-4" />}
+              title="Unit Information"
+            />
+            <div className="p-6 grid grid-cols-2 gap-y-6 gap-x-4">
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                  Block
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {unit.block}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                  Floor
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {unit.floor}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                  Unit Type
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
+                  {unit.unitType}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                  Billing Recipient
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
+                  {unit.billRecipient}
+                </p>
+              </div>
+            </div>
+          </DetailCard>
+
+          {/* Card 2 — Owner */}
+          <DetailCard>
+            <CardHeader
+              icon={<User className="h-4 w-4" />}
+              title="Owner"
+              action={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                  onClick={() => handleOpenResidentPicker("owner")}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              }
+            />
+            {unit.owner ? (
+              <div className="p-6 flex items-start gap-4">
+                <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                  <User className="h-7 w-7" />
                 </div>
-                <div>
-                  <p className="text-muted-foreground font-medium">Floor</p>
-                  <p>{unit.floor}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground font-medium">Unit Type</p>
-                  <p className="capitalize">{unit.unitType}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground font-medium">
-                    Billing Recipient
+                <div className="flex-1 space-y-1">
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
+                    {unit.owner.fullName}
                   </p>
-                  <p className="capitalize">{unit.billRecipient}</p>
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                    <Phone className="h-3.5 w-3.5" />
+                    {unit.owner.phoneNumber}
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                    <Mail className="h-3.5 w-3.5" />
+                    {unit.owner.email || "No email provided"}
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      KTP Number
+                    </p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {unit.owner.ktpNumber}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Owner Information Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">Owner</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleOpenResidentPicker("owner")}
-              >
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {unit.owner ? (
-                <div className="text-sm space-y-2">
-                  <p className="font-medium text-base">{unit.owner.fullName}</p>
-                  <p className="text-muted-foreground">
-                    {unit.owner.phoneNumber}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {unit.owner.email || "No email provided"}
-                  </p>
+            ) : (
+              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-slate-300" />
                 </div>
-              ) : (
-                <div className="text-sm text-muted-foreground py-2 italic flex items-center justify-between">
-                  No owner assigned
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenResidentPicker("owner")}
-                  >
-                    Assign
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                <p className="italic text-slate-500 dark:text-slate-400">
+                  No owner assigned to this unit
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => handleOpenResidentPicker("owner")}
+                >
+                  Assign Owner
+                </Button>
+              </div>
+            )}
+          </DetailCard>
 
-          {/* Tenant Information Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">
-                Current Tenant
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleOpenResidentPicker("tenant")}
-              >
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {unit.tenant ? (
-                <div className="text-sm space-y-2">
-                  <p className="font-medium text-base">
+          {/* Card 3 — Current Tenant */}
+          <DetailCard>
+            <CardHeader
+              icon={<Users className="h-4 w-4" />}
+              title="Current Tenant"
+              action={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                  onClick={() => handleOpenResidentPicker("tenant")}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              }
+            />
+            {unit.tenant ? (
+              <div className="p-6 flex items-start gap-4">
+                <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                  <User className="h-7 w-7" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
                     {unit.tenant.fullName}
                   </p>
-                  <p className="text-muted-foreground">
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                    <Phone className="h-3.5 w-3.5" />
                     {unit.tenant.phoneNumber}
-                  </p>
-                  <p className="text-muted-foreground">
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                    <Mail className="h-3.5 w-3.5" />
                     {unit.tenant.email || "No email provided"}
-                  </p>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-sm text-muted-foreground py-2 italic flex items-center justify-between">
-                  No active tenant
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenResidentPicker("tenant")}
-                  >
-                    Assign
-                  </Button>
+              </div>
+            ) : (
+              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-slate-300" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <p className="italic text-slate-500 dark:text-slate-400">
+                  No active tenant registered for this unit
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => handleOpenResidentPicker("tenant")}
+                >
+                  Assign Tenant
+                </Button>
+              </div>
+            )}
+          </DetailCard>
 
-          {/* Registered Vehicles Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">
-                Registered Vehicles
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8"
-                onClick={handleAddVehicle}
-              >
-                Add Vehicle
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {unit.vehicles && unit.vehicles.length > 0 ? (
-                <div className="space-y-4">
-                  {unit.vehicles.map((v) => (
-                    <div
-                      key={v.$id}
-                      className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0"
-                    >
+          {/* Card 4 — Registered Vehicles */}
+          <DetailCard>
+            <CardHeader
+              icon={<Car className="h-4 w-4" />}
+              title="Registered Vehicles"
+              action={
+                <button
+                  type="button"
+                  className="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline flex items-center gap-1"
+                  onClick={handleAddVehicle}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Vehicle
+                </button>
+              }
+            />
+            {unit.vehicles && unit.vehicles.length > 0 ? (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {unit.vehicles.map((v) => (
+                  <div
+                    key={v.$id}
+                    className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <VehicleIcon type={v.vehicleType} />
                       <div>
-                        <p className="font-medium">{v.licensePlate}</p>
-                        <p className="text-muted-foreground capitalize">
-                          {v.vehicleType} • {v.brand || "Unknown Brand"}{" "}
-                          {v.color ? `(${v.color})` : ""}
+                        <p className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+                          {v.licensePlate}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {v.brand || "Unknown"} {v.color ? `(${v.color})` : ""}
                         </p>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditVehicle(v as Vehicle)}
-                        >
-                          <Pencil className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteVehicle(v.$id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        onClick={() => handleEditVehicle(v as Vehicle)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-1.5 text-slate-400 hover:text-red-500"
+                        onClick={() => handleDeleteVehicle(v.$id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
+                  <Car className="h-6 w-6 text-slate-300" />
                 </div>
-              ) : (
-                <div className="text-sm text-muted-foreground py-2 italic">
-                  No vehicles registered
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                <p className="italic text-slate-500 dark:text-slate-400">
+                  No vehicles registered for this unit
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={handleAddVehicle}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Vehicle
+                </Button>
+              </div>
+            )}
+          </DetailCard>
         </div>
       </div>
 
