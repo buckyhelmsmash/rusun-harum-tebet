@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Newspaper, Settings } from "lucide-react";
+import { Car, LogOut, Newspaper, Settings } from "lucide-react";
 import Link from "next/link";
 import {
   Drawer,
@@ -31,6 +31,16 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
         </DrawerHeader>
         <nav className="px-2 pb-6">
           <ul className="space-y-1">
+            <li>
+              <Link
+                href="/admin/vehicles"
+                onClick={() => onOpenChange(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+              >
+                <Car className="h-5 w-5 text-muted-foreground" />
+                Vehicles
+              </Link>
+            </li>
             <li>
               <Link
                 href="/admin/news"

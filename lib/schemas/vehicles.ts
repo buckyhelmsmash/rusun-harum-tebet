@@ -17,3 +17,12 @@ export const updateVehicleSchema = createVehicleSchema
   .strict();
 
 export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
+
+export const vehicleListParamsSchema = z.object({
+  search: z.string().optional(),
+  vehicleType: z.enum(["car", "motorcycle", "box_car"]).optional(),
+  limit: z.coerce.number().min(1).max(100).optional(),
+  offset: z.coerce.number().min(0).optional(),
+});
+
+export type VehicleListParams = z.infer<typeof vehicleListParamsSchema>;

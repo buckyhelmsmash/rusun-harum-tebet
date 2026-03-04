@@ -1,4 +1,4 @@
-import type { Unit } from "@/types";
+import type { Unit, Vehicle } from "@/types";
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -22,3 +22,10 @@ export interface UpdateUnitPayload {
   data: Partial<Unit>;
 }
 export type UpdateUnitResponse = Unit;
+
+/**
+ * VEHICLE ENDPOINTS
+ */
+
+// GET /api/vehicles/list
+export type GetVehiclesResponse = PaginatedResponse<Vehicle>;

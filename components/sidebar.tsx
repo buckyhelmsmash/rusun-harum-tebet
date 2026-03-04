@@ -3,6 +3,7 @@
 import {
   BarChart3,
   Building2,
+  Car,
   FileText,
   LogOut,
   Newspaper,
@@ -38,6 +39,7 @@ const navItems = [
   { href: "/admin", label: "Analytics", icon: BarChart3 },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
   { href: "/admin/units", label: "Units", icon: Building2 },
+  { href: "/admin/vehicles", label: "Vehicles", icon: Car },
   { href: "/admin/residents", label: "Residents", icon: Users },
   { href: "/admin/news", label: "News", icon: Newspaper },
 ];

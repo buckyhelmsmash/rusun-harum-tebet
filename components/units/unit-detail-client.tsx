@@ -16,6 +16,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
 import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
@@ -64,6 +74,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [residentModalOpen, setResidentModalOpen] = useState(false);
   const [residentType, setResidentType] = useState<"owner" | "tenant">("owner");
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -91,14 +102,15 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
     setVehicleModalOpen(true);
   };
 
-  const handleDeleteVehicle = async (vehicleId: string) => {
-    if (confirm("Are you sure you want to remove this vehicle?")) {
-      try {
-        await deleteVehicleMutation.mutateAsync({ id: vehicleId, unitId });
-        goeyToast.success("Vehicle removed successfully");
-      } catch {
-        goeyToast.error("Failed to remove vehicle");
-      }
+  const confirmDeleteVehicle = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteVehicleMutation.mutateAsync({ id: deleteTarget, unitId });
+      goeyToast.success("Vehicle removed successfully");
+    } catch {
+      goeyToast.error("Failed to remove vehicle");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -331,6 +343,11 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                         <p className="text-xs text-slate-500">
                           {v.brand || "Unknown"} {v.color ? `(${v.color})` : ""}
                         </p>
+                        {v.monthlyRate != null && v.monthlyRate > 0 && (
+                          <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                            Rp {v.monthlyRate.toLocaleString("id-ID")}/mo
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -344,7 +361,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                       <button
                         type="button"
                         className="p-1.5 text-slate-400 hover:text-red-500"
-                        onClick={() => handleDeleteVehicle(v.$id)}
+                        onClick={() => setDeleteTarget(v.$id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -390,6 +407,30 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           residentType === "owner" ? unit.owner?.$id : unit.tenant?.$id
         }
       />
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Vehicle</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this vehicle? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteVehicle}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

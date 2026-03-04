@@ -28,6 +28,7 @@ const vehicleSchema = z.object({
   vehicleType: z.enum(["car", "motorcycle", "box_car"]),
   brand: z.string().optional(),
   color: z.string().optional(),
+  monthlyRate: z.coerce.number().min(0, "Must be 0 or more").optional(),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -55,6 +56,7 @@ export function VehicleFormDialog({
       vehicleType: "car" as VehicleFormValues["vehicleType"],
       brand: "",
       color: "",
+      monthlyRate: undefined as number | undefined,
     },
     validators: {
       // biome-ignore lint/suspicious/noExplicitAny: required for ts type inference inside tanstack form
@@ -91,6 +93,7 @@ export function VehicleFormDialog({
         vehicleType: vehicle.vehicleType,
         brand: vehicle.brand || "",
         color: vehicle.color || "",
+        monthlyRate: vehicle.monthlyRate ?? undefined,
       });
     } else if (!open) {
       form.reset({
@@ -98,6 +101,7 @@ export function VehicleFormDialog({
         vehicleType: "car",
         brand: "",
         color: "",
+        monthlyRate: undefined,
       });
     }
   }, [vehicle, open, form.reset]);
@@ -239,6 +243,36 @@ export function VehicleFormDialog({
               }}
             </form.Field>
           </div>
+
+          <form.Field name="monthlyRate">
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid}>
+                  <FieldLabel htmlFor={field.name}>
+                    Monthly Rate (Rp)
+                  </FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type="number"
+                    min={0}
+                    value={field.state.value ?? ""}
+                    onBlur={field.handleBlur}
+                    onChange={(e) =>
+                      field.handleChange(
+                        e.target.value ? Number(e.target.value) : undefined,
+                      )
+                    }
+                    aria-invalid={isInvalid}
+                    placeholder="e.g. 50000"
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          </form.Field>
         </FieldGroup>
 
         <div className="pt-4 flex w-full justify-end gap-2">
