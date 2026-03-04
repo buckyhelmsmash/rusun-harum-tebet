@@ -3,6 +3,7 @@ import { ZodError, z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
+import { OwnerRepository } from "@/lib/repositories/owners";
 import { TenantRepository } from "@/lib/repositories/tenants";
 import { UnitRepository } from "@/lib/repositories/units";
 
@@ -43,11 +44,18 @@ export async function POST(
       });
     }
 
+    // Fetch the resident name for the activity log
+    const resident =
+      type === "owner"
+        ? await OwnerRepository.getById(residentId)
+        : await TenantRepository.getById(residentId);
+    const residentName = resident?.fullName ?? "Unknown";
+
     logActivity({
       actorId: session.$id,
       actorName: session.name || session.email,
       action: `${type}.assign`,
-      description: `Assigned ${type} to unit ${unit.displayId}`,
+      description: `Assigned ${type} ${residentName} to unit ${unit.displayId}`,
       targetType: type,
       targetId: residentId,
       unitId,
@@ -103,11 +111,14 @@ export async function DELETE(
 
     await UnitRepository.update(unitId, { [type]: null });
 
+    const removedName =
+      type === "owner" ? unit.owner?.fullName : unit.tenant?.fullName;
+
     logActivity({
       actorId: session.$id,
       actorName: session.name || session.email,
       action: `${type}.remove`,
-      description: `Removed ${type} from unit ${unit.displayId}`,
+      description: `Removed ${type} ${removedName ?? "Unknown"} from unit ${unit.displayId}`,
       targetType: type,
       targetId: removedId,
       unitId,

@@ -1,7 +1,7 @@
 import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import type { UnitListParams, UpdateUnitInput } from "@/lib/schemas/units";
-import type { Unit, Vehicle } from "@/types";
+import type { Owner, Tenant, Unit, Vehicle } from "@/types";
 import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.UNITS;
@@ -61,7 +61,6 @@ export const UnitRepository = {
   async getById(id: string): Promise<Unit> {
     const db = await getAdminDb();
 
-    // Fetch the unit and its vehicles concurrently
     const [unitRow, vehiclesResult] = await Promise.all([
       db.getRow({
         databaseId: DB_ID,
@@ -82,8 +81,46 @@ export const UnitRepository = {
 
     const unit = mapRowToUnit(unitRow);
 
+    // Appwrite manyToOne relationships may come back as plain string IDs.
+    // Manually expand them into full objects when needed.
+    const ownerRaw = unit.owner;
+    const tenantRaw = unit.tenant;
+    const ownerId = typeof ownerRaw === "string" ? ownerRaw : ownerRaw?.$id;
+    const tenantId = typeof tenantRaw === "string" ? tenantRaw : tenantRaw?.$id;
+
+    const [ownerDoc, tenantDoc] = await Promise.all([
+      ownerId
+        ? db
+            .getRow({
+              databaseId: DB_ID,
+              tableId: APPWRITE.COLLECTIONS.OWNERS,
+              rowId: ownerId,
+            })
+            .catch(() => null)
+        : null,
+      tenantId
+        ? db
+            .getRow({
+              databaseId: DB_ID,
+              tableId: APPWRITE.COLLECTIONS.TENANTS,
+              rowId: tenantId,
+            })
+            .catch(() => null)
+        : null,
+    ]);
+
     return {
       ...unit,
+      owner:
+        (ownerDoc as unknown as Owner) ??
+        (unit.owner && typeof unit.owner !== "string" ? unit.owner : undefined),
+      tenant:
+        (tenantDoc as unknown as Tenant) ??
+        (unit.tenant && typeof unit.tenant !== "string"
+          ? unit.tenant
+          : undefined),
+      ownerId,
+      tenantId,
       vehicles: vehiclesResult.rows as unknown as Vehicle[],
     };
   },
