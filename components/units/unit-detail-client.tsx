@@ -333,6 +333,14 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                         : "∞"}
                     </div>
                   )}
+                  <div className="pt-2">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      KTP Number
+                    </p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {unit.tenant.ktpNumber}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
