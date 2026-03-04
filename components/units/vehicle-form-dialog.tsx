@@ -24,7 +24,18 @@ import { useCreateVehicle, useUpdateVehicle } from "@/hooks/api/use-vehicles";
 import type { Vehicle } from "@/types";
 
 const vehicleSchema = z.object({
-  licensePlate: z.string().min(2, "License plate is required"),
+  licensePlate: z
+    .string()
+    .min(2, "License plate is required")
+    .transform((val) => val.toUpperCase().replace(/\s+/g, " ").trim())
+    .pipe(
+      z
+        .string()
+        .regex(
+          /^[A-Z]{1,2}\s?\d{1,4}\s?[A-Z]{0,3}$/,
+          "Invalid plate format (e.g. B 1234 ABC)",
+        ),
+    ),
   vehicleType: z.enum(["car", "motorcycle", "box_car"]),
   brand: z.string().optional(),
   color: z.string().optional(),

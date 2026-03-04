@@ -19,7 +19,7 @@ import type { Tenant } from "@/types";
 const tenantSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   phoneNumber: z.string().min(1, "Phone number is required"),
-  ktpNumber: z.string().min(16, "KTP must be 16 digits").max(16),
+  ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   startDate: z.string().optional().or(z.literal("")),

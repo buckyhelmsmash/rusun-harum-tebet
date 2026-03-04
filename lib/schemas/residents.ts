@@ -3,7 +3,7 @@ import { z } from "zod";
 const baseResidentSchema = z.object({
   fullName: z.string().min(1, "Full name is required").max(255),
   phoneNumber: z.string().min(1, "Phone number is required").max(20),
-  ktpNumber: z.string().min(16, "KTP must be 16 digits").max(16),
+  ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
   email: z.string().email().nullable().optional(),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
 });
