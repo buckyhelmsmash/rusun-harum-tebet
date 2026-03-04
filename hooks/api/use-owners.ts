@@ -19,13 +19,17 @@ function buildQueryString(filters: ResidentFilters): string {
   return qs ? `?${qs}` : "";
 }
 
-export function useGetOwners(filters: ResidentFilters = {}) {
+export function useGetOwners(
+  filters: ResidentFilters = {},
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: ownerKeys.list(filters),
     queryFn: async () => {
       const qs = buildQueryString(filters);
       return await ApiClient.get<GetOwnersResponse>(`/api/owners${qs}`);
     },
+    enabled: options?.enabled,
   });
 }
 

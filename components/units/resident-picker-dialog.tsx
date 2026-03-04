@@ -35,14 +35,12 @@ export function ResidentPickerDialog({
   const assignMutation = useAssignResident();
 
   const { data: ownersData, isLoading: ownersLoading } = useGetOwners(
-    type === "owner"
-      ? { search: search || undefined, limit: 20 }
-      : { limit: 0 },
+    { search: search || undefined, limit: 20 },
+    { enabled: type === "owner" },
   );
   const { data: tenantsData, isLoading: tenantsLoading } = useGetTenants(
-    type === "tenant"
-      ? { search: search || undefined, limit: 20 }
-      : { limit: 0 },
+    { search: search || undefined, limit: 20 },
+    { enabled: type === "tenant" },
   );
 
   const residents: (Owner | Tenant)[] =
