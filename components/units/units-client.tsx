@@ -60,11 +60,10 @@ export function UnitsClient() {
     offset: page * PAGE_SIZE,
   };
 
-  const { data, isLoading, isError } = useGetUnits(filters);
+  const { data, isLoading } = useGetUnits(filters);
 
   const units = data?.items ?? [];
   const total = data?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const columns: ColumnDef<Unit, unknown>[] = useMemo(
     () => [
@@ -72,9 +71,7 @@ export function UnitsClient() {
         accessorKey: "displayId",
         header: "Unit ID",
         cell: ({ row }) => (
-          <span className="font-medium text-slate-900 dark:text-white">
-            {row.original.displayId}
-          </span>
+          <span className="font-semibold">{row.original.displayId}</span>
         ),
       },
       {
@@ -94,7 +91,7 @@ export function UnitsClient() {
       },
       {
         accessorKey: "occupancyStatus",
-        header: "Occupancy Status",
+        header: "Status",
         cell: ({ row }) => (
           <StatusBadge variant={getStatusVariant(row.original.occupancyStatus)}>
             {row.original.occupancyStatus.replace("_", " ")}
@@ -102,38 +99,22 @@ export function UnitsClient() {
         ),
       },
       {
-        accessorKey: "billRecipient",
-        header: "Bill Recipient",
-        cell: ({ row }) => (
-          <span className="capitalize">
-            {row.original.billRecipient.replace("_", " ")}
-          </span>
-        ),
-      },
-      {
         accessorKey: "owner",
-        header: "Owner Name",
+        header: "Owner",
         cell: ({ row }) => {
           const owner = row.original.owner;
-          return (
-            <span>
-              {owner && typeof owner === "object" ? (
-                owner.fullName
-              ) : (
-                <span className="text-slate-400 dark:text-slate-500">N/A</span>
-              )}
-            </span>
-          );
+          if (owner && typeof owner === "object") return owner.fullName;
+          return <span className="text-slate-400">—</span>;
         },
       },
       {
         id: "actions",
-        header: () => <div className="text-right">Actions</div>,
+        header: "",
         cell: ({ row }) => (
-          <div className="flex justify-end pr-4 text-right">
+          <div className="flex justify-end">
             <Link
               href={`/admin/units/${row.original.$id}`}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 inline-flex"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 inline-flex p-1.5"
             >
               <Eye className="h-4 w-4" />
             </Link>
@@ -149,10 +130,10 @@ export function UnitsClient() {
       <Link
         key={unit.$id}
         href={`/admin/units/${unit.$id}`}
-        className="block bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+        className="block p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900/50 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-slate-900 dark:text-white">
+          <span className="font-bold text-slate-900 dark:text-white">
             {unit.displayId}
           </span>
           <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
@@ -165,119 +146,107 @@ export function UnitsClient() {
             Block {unit.block}, Floor {unit.floor}
           </span>
         </div>
+        {unit.owner && typeof unit.owner === "object" && (
+          <p className="text-xs text-slate-500 mt-1">
+            Owner: {unit.owner.fullName}
+          </p>
+        )}
       </Link>
     ),
     [],
   );
 
-  if (isLoading) {
-    return (
-      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-        Loading units...
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="p-8 text-center text-red-600 dark:text-red-400">
-        Failed to load units. Make sure collections are configured.
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-            Units
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Manage residential and commercial units across all blocks.
-          </p>
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={units}
-          isLoading={isLoading}
-          mobileCardRender={renderMobileCard}
-          searchPlaceholder="Search by unit ID..."
-          searchValue={search}
-          onSearchChange={(val) => {
-            setSearch(val);
-            resetPage();
-          }}
-          total={total}
-          pageSize={PAGE_SIZE}
-          pageIndex={page}
-          onNextPage={() => setPage((p) => p + 1)}
-          onPrevPage={() => setPage((p) => p - 1)}
-          hasNextPage={page < totalPages - 1}
-          hasPrevPage={page > 0}
-          filters={
-            <>
-              <Select
-                value={blockFilter}
-                onValueChange={(v) => {
-                  setBlockFilter(v);
-                  resetPage();
-                }}
-              >
-                <SelectTrigger className="w-[120px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
-                  <SelectValue placeholder="Block: All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Blocks</SelectItem>
-                  <SelectItem value="A">Block A</SelectItem>
-                  <SelectItem value="B">Block B</SelectItem>
-                  <SelectItem value="C">Block C</SelectItem>
-                  <SelectItem value="D">Block D</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={floorFilter}
-                onValueChange={(v) => {
-                  setFloorFilter(v);
-                  resetPage();
-                }}
-              >
-                <SelectTrigger className="w-[120px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
-                  <SelectValue placeholder="Floor: All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Floors</SelectItem>
-                  {[1, 2, 3, 4, 5].map((f) => (
-                    <SelectItem key={f} value={String(f)}>
-                      Floor {f}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => {
-                  setStatusFilter(v);
-                  resetPage();
-                }}
-              >
-                <SelectTrigger className="w-[140px] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
-                  <SelectValue placeholder="Status: All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="owner_occupied">Owner Occupied</SelectItem>
-                  <SelectItem value="rented">Rented</SelectItem>
-                  <SelectItem value="vacant">Vacant</SelectItem>
-                </SelectContent>
-              </Select>
-            </>
-          }
-        />
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Units
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Manage residential and commercial units across all blocks
+        </p>
       </div>
+
+      <DataTable
+        columns={columns}
+        data={units}
+        isLoading={isLoading}
+        mobileCardRender={renderMobileCard}
+        keyExtractor={(u) => u.$id}
+        searchPlaceholder="Search by unit ID..."
+        searchValue={search}
+        onSearchChange={(val) => {
+          setSearch(val);
+          resetPage();
+        }}
+        filters={
+          <>
+            <Select
+              value={blockFilter}
+              onValueChange={(v) => {
+                setBlockFilter(v);
+                resetPage();
+              }}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Block: All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Blocks</SelectItem>
+                <SelectItem value="A">Block A</SelectItem>
+                <SelectItem value="B">Block B</SelectItem>
+                <SelectItem value="C">Block C</SelectItem>
+                <SelectItem value="D">Block D</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={floorFilter}
+              onValueChange={(v) => {
+                setFloorFilter(v);
+                resetPage();
+              }}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Floor: All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Floors</SelectItem>
+                {[1, 2, 3, 4, 5].map((f) => (
+                  <SelectItem key={f} value={String(f)}>
+                    Floor {f}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v);
+                resetPage();
+              }}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Status: All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="owner_occupied">Owner Occupied</SelectItem>
+                <SelectItem value="rented">Rented</SelectItem>
+                <SelectItem value="vacant">Vacant</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        }
+        total={total}
+        pageSize={PAGE_SIZE}
+        pageIndex={page}
+        onNextPage={() => setPage((p) => p + 1)}
+        onPrevPage={() => setPage((p) => Math.max(0, p - 1))}
+        hasNextPage={(page + 1) * PAGE_SIZE < total}
+        hasPrevPage={page > 0}
+      />
     </div>
   );
 }
