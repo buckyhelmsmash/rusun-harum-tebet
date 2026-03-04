@@ -22,13 +22,38 @@ interface LogActivityParams {
  * Writes to Appwrite but NEVER throws — if logging fails,
  * we console.error and move on so the primary operation isn't affected.
  */
-export function logActivity(params: LogActivityParams): void {
-  console.log(
-    "[Activity Logger] Called with:",
-    params.action,
-    params.description,
-  );
+/**
+ * Compares an existing object with an update payload and returns an array of changes.
+ * Ignores undefined values in the update payload and system fields (starting with $).
+ */
+export function getChanges<T extends object, U extends object>(
+  oldObj: T,
+  newObj: U,
+): Array<{ field: string; old: unknown; new: unknown }> {
+  const changes: Array<{ field: string; old: unknown; new: unknown }> = [];
 
+  const oldRecord = oldObj as Record<string, unknown>;
+  const newRecord = newObj as Record<string, unknown>;
+
+  for (const [key, newValue] of Object.entries(newRecord)) {
+    if (newValue === undefined || key.startsWith("$")) continue;
+
+    const oldValue = oldRecord[key];
+
+    // Simple equality check (works well enough for primitives used in updates)
+    if (oldValue !== newValue) {
+      changes.push({
+        field: key,
+        old: oldValue ?? null,
+        new: newValue ?? null,
+      });
+    }
+  }
+
+  return changes;
+}
+
+export function logActivity(params: LogActivityParams): void {
   const doLog = async () => {
     const db = await getAdminDb();
     await db.createRow({
@@ -46,10 +71,9 @@ export function logActivity(params: LogActivityParams): void {
         metadata: params.metadata ? JSON.stringify(params.metadata) : null,
       },
     });
-    console.log("[Activity Logger] Success:", params.action);
   };
 
   doLog().catch((error) => {
-    console.error("[Activity Logger] Failed to log:", params.action, error);
+    console.error("[Activity Logger] Failed to log:", error);
   });
 }

@@ -11,6 +11,19 @@ import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
 const TABLE_ID = APPWRITE.COLLECTIONS.VEHICLES;
 const DB_ID = APPWRITE.DATABASE_ID;
 
+// Helper to consistently map raw Appwrite row to our Vehicle type
+function mapRowToVehicle(row: unknown): Vehicle {
+  const vehicle = row as Vehicle;
+  // Safely extract unitId whether expanded object or plain string
+  if (vehicle.unit) {
+    vehicle.unitId =
+      typeof vehicle.unit === "string"
+        ? vehicle.unit
+        : (vehicle.unit as { $id?: string }).$id;
+  }
+  return vehicle;
+}
+
 export const VehicleRepository = {
   async list(params: VehicleListParams): Promise<PaginatedResult<Vehicle>> {
     const db = await getAdminDb();
@@ -35,7 +48,7 @@ export const VehicleRepository = {
     });
 
     return {
-      items: result.rows as unknown as Vehicle[],
+      items: result.rows.map(mapRowToVehicle),
       total: result.total,
       limit,
       offset,
@@ -49,7 +62,7 @@ export const VehicleRepository = {
       tableId: TABLE_ID,
       rowId: id,
     });
-    return row as unknown as Vehicle;
+    return mapRowToVehicle(row);
   },
 
   async create(data: CreateVehicleInput): Promise<Vehicle> {
@@ -60,7 +73,7 @@ export const VehicleRepository = {
       rowId: ID.unique(),
       data,
     });
-    return row as unknown as Vehicle;
+    return mapRowToVehicle(row);
   },
 
   async update(id: string, data: UpdateVehicleInput): Promise<Vehicle> {
@@ -71,7 +84,7 @@ export const VehicleRepository = {
       rowId: id,
       data,
     });
-    return row as unknown as Vehicle;
+    return mapRowToVehicle(row);
   },
 
   async delete(id: string): Promise<void> {

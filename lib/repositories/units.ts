@@ -7,6 +7,25 @@ import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
 const TABLE_ID = APPWRITE.COLLECTIONS.UNITS;
 const DB_ID = APPWRITE.DATABASE_ID;
 
+// Helper to consistently map raw Appwrite row to our Unit type
+function mapRowToUnit(row: unknown): Unit {
+  const unit = row as Unit;
+  // Safely extract relationship IDs whether they are expanded objects or plain strings
+  if (unit.owner) {
+    unit.ownerId =
+      typeof unit.owner === "string"
+        ? unit.owner
+        : (unit.owner as { $id?: string }).$id;
+  }
+  if (unit.tenant) {
+    unit.tenantId =
+      typeof unit.tenant === "string"
+        ? unit.tenant
+        : (unit.tenant as { $id?: string }).$id;
+  }
+  return unit;
+}
+
 export const UnitRepository = {
   async list(params: UnitListParams): Promise<PaginatedResult<Unit>> {
     const db = await getAdminDb();
@@ -32,7 +51,7 @@ export const UnitRepository = {
     });
 
     return {
-      items: result.rows as unknown as Unit[],
+      items: result.rows.map(mapRowToUnit),
       total: result.total,
       limit,
       offset,
@@ -61,7 +80,7 @@ export const UnitRepository = {
         }),
     ]);
 
-    const unit = unitRow as unknown as Unit;
+    const unit = mapRowToUnit(unitRow);
 
     return {
       ...unit,
@@ -77,6 +96,6 @@ export const UnitRepository = {
       rowId: id,
       data,
     });
-    return row as unknown as Unit;
+    return mapRowToUnit(row);
   },
 };

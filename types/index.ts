@@ -10,7 +10,9 @@ export interface Unit extends Models.Document {
   occupancyStatus: "owner_occupied" | "rented" | "vacant";
   billRecipient: "owner" | "tenant";
   owner?: Owner;
+  ownerId?: string;
   tenant?: Tenant;
+  tenantId?: string;
   vehicles?: Vehicle[];
   invoice?: Invoice[];
 }
@@ -40,6 +42,7 @@ export interface Vehicle extends Models.Document {
   color?: string;
   brand?: string;
   unit?: Unit;
+  unitId?: string;
 }
 
 export interface Invoice extends Models.Document {

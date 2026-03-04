@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { logActivity } from "@/lib/activity/logger";
+import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { UnitRepository } from "@/lib/repositories/units";
@@ -37,7 +37,9 @@ export async function PATCH(
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = updateUnitSchema.parse(payload);
+    const existingUnit = await UnitRepository.getById(id);
     const unit = await UnitRepository.update(id, validated);
+    const changes = getChanges(existingUnit, validated);
 
     logActivity({
       actorId: session.$id,
@@ -47,7 +49,7 @@ export async function PATCH(
       targetType: "unit",
       targetId: unit.$id,
       unitId: unit.$id,
-      metadata: { updatedFields: Object.keys(validated) },
+      metadata: changes.length > 0 ? { changes } : undefined,
     });
 
     return NextResponse.json({ result: unit });
