@@ -12,6 +12,20 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createVehicleSchema.parse(payload);
+
+    // Check for existing vehicle with same license plate
+    const existingVehicle = await VehicleRepository.getByLicensePlate(
+      validated.licensePlate,
+    );
+    if (existingVehicle) {
+      return NextResponse.json(
+        {
+          error: `License plate ${validated.licensePlate} is already registered.`,
+        },
+        { status: 409 },
+      );
+    }
+
     const vehicle = await VehicleRepository.create(validated);
 
     logActivity({

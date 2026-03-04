@@ -80,8 +80,9 @@ export function VehicleFormDialog({
         }
         onOpenChange(false);
       } catch (error) {
-        console.error("Failed to save vehicle", error);
-        goeyToast.error("Failed to save vehicle. Please try again.");
+        goeyToast.error("Failed to save vehicle.", {
+          description: (error as Error).message,
+        });
       }
     },
   });

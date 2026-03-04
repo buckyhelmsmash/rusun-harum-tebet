@@ -65,6 +65,18 @@ export const VehicleRepository = {
     return mapRowToVehicle(row);
   },
 
+  async getByLicensePlate(licensePlate: string): Promise<Vehicle | null> {
+    const db = await getAdminDb();
+    const result = await db.listRows({
+      databaseId: DB_ID,
+      tableId: TABLE_ID,
+      queries: [Query.equal("licensePlate", licensePlate), Query.limit(1)],
+    });
+
+    if (result.total === 0) return null;
+    return mapRowToVehicle(result.rows[0]);
+  },
+
   async create(data: CreateVehicleInput): Promise<Vehicle> {
     const db = await getAdminDb();
     const row = await db.createRow({
