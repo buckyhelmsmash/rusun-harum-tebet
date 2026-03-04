@@ -53,15 +53,13 @@ export function TenantFormDialog({
     },
     onSubmit: async ({ value }) => {
       try {
-        const { ktpNumber: _ktp, ...updateFields } = value;
-        const payload = {
-          ...updateFields,
-          email: value.email || undefined,
-        };
         if (isEditing && tenant) {
+          const { ktpNumber: _ktp, ...updateFields } = value;
+          const payload = { ...updateFields, email: value.email || undefined };
           await updateMutation.mutateAsync({ id: tenant.$id, data: payload });
           goeyToast.success("Tenant updated successfully");
         } else {
+          const payload = { ...value, email: value.email || undefined };
           await createMutation.mutateAsync(payload);
           goeyToast.success("Tenant added successfully");
         }
@@ -132,6 +130,9 @@ export function TenantFormDialog({
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     aria-invalid={isInvalid}
                     placeholder="John Doe"
                   />
@@ -157,6 +158,9 @@ export function TenantFormDialog({
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     aria-invalid={isInvalid}
                     placeholder="3201234567890001"
                     maxLength={16}
@@ -190,6 +194,9 @@ export function TenantFormDialog({
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
+                      onInput={(e) =>
+                        field.handleChange((e.target as HTMLInputElement).value)
+                      }
                       aria-invalid={isInvalid}
                       placeholder="08123456789"
                     />
@@ -215,6 +222,9 @@ export function TenantFormDialog({
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
+                      onInput={(e) =>
+                        field.handleChange((e.target as HTMLInputElement).value)
+                      }
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
@@ -240,6 +250,9 @@ export function TenantFormDialog({
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     aria-invalid={isInvalid}
                     placeholder="tenant@email.com"
                   />
