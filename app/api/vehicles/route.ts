@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
+import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
 import { createVehicleSchema } from "@/lib/schemas/vehicles";
 
@@ -12,6 +13,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createVehicleSchema.parse(payload);
+
+    // Ensure the unit has an owner before allowing vehicle registration
+    const unit = await UnitRepository.getById(validated.unit);
+    if (!unit.ownerId) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot register a vehicle for a unit without an owner. Assign an owner first.",
+        },
+        { status: 400 },
+      );
+    }
 
     // Check for existing vehicle with same license plate
     const existingVehicle = await VehicleRepository.getByLicensePlate(
@@ -32,7 +45,7 @@ export async function POST(request: Request) {
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "vehicle.create",
-      description: `Added vehicle ${validated.licensePlate}`,
+      description: `Added vehicle ${validated.licensePlate} to unit ${unit.displayId}`,
       targetType: "vehicle",
       targetId: vehicle.$id,
       unitId: validated.unit,

@@ -24,6 +24,6 @@ export function useGetActivity(filters: ActivityFilters = {}) {
       const qs = buildActivityQueryString(filters);
       return await ApiClient.get<GetActivityResponse>(`/api/activity${qs}`);
     },
-    refetchInterval: 10000,
+    refetchInterval: 30000,
   });
 }

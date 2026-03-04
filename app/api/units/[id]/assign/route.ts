@@ -6,6 +6,8 @@ import { getErrorMessage } from "@/lib/repositories/base";
 import { OwnerRepository } from "@/lib/repositories/owners";
 import { TenantRepository } from "@/lib/repositories/tenants";
 import { UnitRepository } from "@/lib/repositories/units";
+import { VehicleRepository } from "@/lib/repositories/vehicles";
+import type { UpdateUnitInput } from "@/lib/schemas/units";
 
 const assignSchema = z.object({
   type: z.enum(["owner", "tenant"]),
@@ -30,10 +32,30 @@ export async function POST(
 
     const unit = await UnitRepository.getById(unitId);
 
-    // Update the unit's relationship field
-    await UnitRepository.update(unitId, { [type]: residentId });
+    if (type === "tenant" && !unit.ownerId) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot assign a tenant without an owner. Assign an owner first.",
+        },
+        { status: 400 },
+      );
+    }
 
-    // For tenants, also update lease dates on the tenant record
+    const statusUpdate: UpdateUnitInput = { [type]: residentId };
+
+    if (type === "owner" && !unit.tenantId) {
+      statusUpdate.occupancyStatus = "owner_occupied";
+      statusUpdate.billRecipient = "owner";
+      statusUpdate.isOccupied = true;
+    } else if (type === "tenant") {
+      statusUpdate.occupancyStatus = "rented";
+      statusUpdate.billRecipient = "tenant";
+      statusUpdate.isOccupied = true;
+    }
+
+    await UnitRepository.update(unitId, statusUpdate);
+
     if (
       type === "tenant" &&
       (startDate !== undefined || endDate !== undefined)
@@ -44,7 +66,6 @@ export async function POST(
       });
     }
 
-    // Fetch the resident name for the activity log
     const resident =
       type === "owner"
         ? await OwnerRepository.getById(residentId)
@@ -101,18 +122,66 @@ export async function DELETE(
       );
     }
 
-    // Clear lease dates when removing a tenant
-    if (type === "tenant") {
+    const removedName =
+      type === "owner" ? unit.owner?.fullName : unit.tenant?.fullName;
+
+    if (type === "owner") {
+      // Cascade: also remove tenant if present
+      if (unit.tenantId && unit.tenant?.$id) {
+        await TenantRepository.update(unit.tenant.$id, {
+          startDate: null,
+          endDate: null,
+        });
+        await UnitRepository.update(unitId, { tenant: null });
+
+        logActivity({
+          actorId: session.$id,
+          actorName: session.name || session.email,
+          action: "tenant.remove",
+          description: `Removed tenant ${unit.tenant.fullName ?? "Unknown"} from unit ${unit.displayId} (cascade from owner removal)`,
+          targetType: "tenant",
+          targetId: unit.tenant.$id,
+          unitId,
+        });
+      }
+
+      // Cascade: also remove all vehicles
+      if (unit.vehicles && unit.vehicles.length > 0) {
+        for (const vehicle of unit.vehicles) {
+          await VehicleRepository.delete(vehicle.$id);
+
+          logActivity({
+            actorId: session.$id,
+            actorName: session.name || session.email,
+            action: "vehicle.delete",
+            description: `Removed vehicle ${vehicle.licensePlate} from unit ${unit.displayId} (cascade from owner removal)`,
+            targetType: "vehicle",
+            targetId: vehicle.$id,
+            unitId,
+          });
+        }
+      }
+
+      await UnitRepository.update(unitId, {
+        owner: null,
+        occupancyStatus: "vacant",
+        billRecipient: "owner",
+        isOccupied: false,
+      });
+    } else {
+      // Removing tenant only
       await TenantRepository.update(removedId, {
         startDate: null,
         endDate: null,
       });
+
+      await UnitRepository.update(unitId, {
+        tenant: null,
+        occupancyStatus: "owner_occupied",
+        billRecipient: "owner",
+        isOccupied: true,
+      });
     }
-
-    await UnitRepository.update(unitId, { [type]: null });
-
-    const removedName =
-      type === "owner" ? unit.owner?.fullName : unit.tenant?.fullName;
 
     logActivity({
       actorId: session.$id,

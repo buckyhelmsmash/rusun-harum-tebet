@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
+import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
 import { updateVehicleSchema } from "@/lib/schemas/vehicles";
 
@@ -24,11 +25,15 @@ export async function PATCH(
     const vehicle = await VehicleRepository.update(id, validated);
     const changes = getChanges(existingVehicle, validated);
 
+    const unitDoc = unitId
+      ? await UnitRepository.getById(unitId).catch(() => null)
+      : null;
+
     logActivity({
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "vehicle.update",
-      description: `Updated vehicle ${vehicle.licensePlate}`,
+      description: `Updated vehicle ${vehicle.licensePlate}${unitDoc ? ` on unit ${unitDoc.displayId}` : ""}`,
       targetType: "vehicle",
       targetId: vehicle.$id,
       unitId,
@@ -67,11 +72,15 @@ export async function DELETE(
 
     await VehicleRepository.delete(id);
 
+    const unitDoc = unitId
+      ? await UnitRepository.getById(unitId).catch(() => null)
+      : null;
+
     logActivity({
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "vehicle.delete",
-      description: `Removed vehicle ${vehicle.licensePlate}`,
+      description: `Removed vehicle ${vehicle.licensePlate}${unitDoc ? ` from unit ${unitDoc.displayId}` : ""}`,
       targetType: "vehicle",
       targetId: id,
       unitId,

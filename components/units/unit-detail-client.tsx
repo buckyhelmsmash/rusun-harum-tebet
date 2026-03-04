@@ -276,26 +276,28 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               icon={<Users className="h-4 w-4" />}
               title="Current Tenant"
               action={
-                <div className="flex gap-1">
-                  {unit.tenant && (
+                unit.ownerId ? (
+                  <div className="flex gap-1">
+                    {unit.tenant && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-600"
+                        onClick={() => setRemoveResidentType("tenant")}
+                      >
+                        <UserX className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-600"
-                      onClick={() => setRemoveResidentType("tenant")}
+                      className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                      onClick={() => handleOpenResidentPicker("tenant")}
                     >
-                      <UserX className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-500 hover:text-slate-700"
-                    onClick={() => handleOpenResidentPicker("tenant")}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </div>
+                ) : null
               }
             />
             {unit.tenant ? (
@@ -349,15 +351,19 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   <Users className="h-6 w-6 text-slate-300" />
                 </div>
                 <p className="italic text-slate-500 dark:text-slate-400">
-                  No active tenant registered for this unit
+                  {unit.ownerId
+                    ? "No active tenant registered for this unit"
+                    : "Assign an owner to this unit first"}
                 </p>
-                <Button
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                  onClick={() => handleOpenResidentPicker("tenant")}
-                >
-                  Assign Tenant
-                </Button>
+                {unit.ownerId && (
+                  <Button
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    onClick={() => handleOpenResidentPicker("tenant")}
+                  >
+                    Assign Tenant
+                  </Button>
+                )}
               </div>
             )}
           </DetailCard>
@@ -368,14 +374,16 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               icon={<Car className="h-4 w-4" />}
               title="Registered Vehicles"
               action={
-                <button
-                  type="button"
-                  className="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline flex items-center gap-1"
-                  onClick={handleAddVehicle}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add Vehicle
-                </button>
+                unit.ownerId ? (
+                  <button
+                    type="button"
+                    className="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline flex items-center gap-1"
+                    onClick={handleAddVehicle}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add Vehicle
+                  </button>
+                ) : null
               }
             />
             {unit.vehicles && unit.vehicles.length > 0 ? (
