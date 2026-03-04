@@ -1,6 +1,6 @@
 "use client";
 
-import { ResponsiveFormContainer } from "@/components/responsive-form-container";
+import { ResponsiveFormContainer } from "@/components/shared/responsive-form-container";
 import { Button } from "@/components/ui/button";
 
 interface ResidentPickerDialogProps {
@@ -14,9 +14,9 @@ interface ResidentPickerDialogProps {
 export function ResidentPickerDialog({
   open,
   onOpenChange,
-  unitId,
+  unitId: _unitId,
   type,
-  currentResidentId,
+  currentResidentId: _currentResidentId,
 }: ResidentPickerDialogProps) {
   // TODO: Implement owner/tenant search and selection using TanStack query
   // after Phase 3 (Residents API) is complete.

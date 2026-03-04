@@ -3,7 +3,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useEffect } from "react";
 import * as z from "zod";
-import { ResponsiveFormContainer } from "@/components/responsive-form-container";
+import { ResponsiveFormContainer } from "@/components/shared/responsive-form-container";
 import { Button } from "@/components/ui/button";
 import {
   Field,

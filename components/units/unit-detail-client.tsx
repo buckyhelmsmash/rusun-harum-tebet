@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { DetailCard, DetailCardHeader } from "@/components/ui/detail-card";
 import { goeyToast } from "@/components/ui/goey-toaster";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useGetUnit } from "@/hooks/api/use-units";
