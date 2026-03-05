@@ -137,7 +137,10 @@ export function InvoiceFormDialog({
             >
               Batal
             </Button>
-            <Button type="submit" disabled={updateMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending || status === invoice?.status}
+            >
               {updateMutation.isPending ? "Menyimpan…" : "Simpan Perubahan"}
             </Button>
           </DialogFooter>

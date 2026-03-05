@@ -275,12 +275,21 @@ export function TenantFormDialog({
             Batal
           </Button>
           <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            selector={(state) => [
+              state.canSubmit,
+              state.isSubmitting,
+              state.isPristine,
+            ]}
           >
-            {([canSubmit, isSubmitting]) => (
+            {([canSubmit, isSubmitting, isPristine]) => (
               <Button
                 type="submit"
-                disabled={!canSubmit || isLoading || isSubmitting}
+                disabled={
+                  !canSubmit ||
+                  isLoading ||
+                  isSubmitting ||
+                  (isEditing && isPristine)
+                }
               >
                 {isLoading || isSubmitting ? "Menyimpan..." : "Simpan Penyewa"}
               </Button>

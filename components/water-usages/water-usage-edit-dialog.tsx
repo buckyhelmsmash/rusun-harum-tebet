@@ -153,7 +153,14 @@ export function WaterUsageEditDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || !isValid}
+            disabled={
+              isSaving ||
+              !isValid ||
+              (usage
+                ? previousMeter === usage.previousMeter &&
+                  currentMeter === usage.currentMeter
+                : false)
+            }
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             {isSaving ? (
