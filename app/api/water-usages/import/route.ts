@@ -4,11 +4,11 @@ import { z } from "zod";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
+import { SettingsRepository } from "@/lib/repositories/settings";
 import { excelImportRowSchema } from "@/lib/schemas/water-usages";
 import type { Unit } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
-const WATER_RATE_PER_M3 = 12500; // Harcoded for now, will be moved to settings
 
 const importPayloadSchema = z.object({
   period: z.string().min(1),
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
 
     const { period, rows } = parsed.data;
     const db = await getAdminDb();
+    const settings = await SettingsRepository.get();
 
     // 1. Fetch all units to map Unit ID to internal $id
     const unitsResult = await db.listRows({
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
       }
 
       const usage = row["Current Meter"] - row["Previous Meter"];
-      const amount = usage * WATER_RATE_PER_M3;
+      const amount = usage * settings.waterRate;
 
       const data = {
         unit: unitId,

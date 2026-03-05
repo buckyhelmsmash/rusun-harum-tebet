@@ -3,9 +3,9 @@ import { z } from "zod";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { SettingsRepository } from "@/lib/repositories/settings";
 
 const DB_ID = APPWRITE.DATABASE_ID;
-const WATER_RATE_PER_M3 = 12500;
 
 const updateMeterSchema = z.object({
   previousMeter: z.number().min(0),
@@ -40,7 +40,8 @@ export async function PATCH(
     }
 
     const usage = currentMeter - previousMeter;
-    const amount = usage * WATER_RATE_PER_M3;
+    const settings = await SettingsRepository.get();
+    const amount = usage * settings.waterRate;
 
     const db = await getAdminDb();
     const updated = await db.updateRow({

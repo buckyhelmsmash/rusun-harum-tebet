@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
+import { SettingsClient } from "@/components/settings/settings-client";
+
+export const metadata: Metadata = {
+  title: "Settings | Rusun Harum Tebet",
+  description: "Manage billing fee parameters",
+};
+
 export default function SettingsPage() {
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-      <p className="text-muted-foreground">Configure application settings.</p>
-    </div>
-  );
+  return <SettingsClient />;
 }

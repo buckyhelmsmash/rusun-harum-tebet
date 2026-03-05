@@ -5,15 +5,12 @@ import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
+import { SettingsRepository } from "@/lib/repositories/settings";
 import type { CreateInvoiceInput } from "@/lib/schemas/invoices";
 import type { WaterUsage } from "@/lib/schemas/water-usages";
 import type { Vehicle } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
-
-const DEFAULT_IPL_FEE = 250_000;
-const DEFAULT_PUBLIC_FACILITY_FEE = 15_000;
-const DEFAULT_GUARD_FEE = 35_000;
 
 function generateUniqueCode(): number {
   return randomInt(100, 1000);
@@ -32,6 +29,7 @@ interface UnitRow {
 export async function POST() {
   try {
     const db = await getAdminDb();
+    const settings = await SettingsRepository.get();
     const now = new Date();
     const billingPeriod = format(subMonths(now, 1), "yyyy-MM");
     const arrearsPeriod = format(subMonths(now, 2), "yyyy-MM");
@@ -181,9 +179,9 @@ export async function POST() {
       usedCodes.add(uniqueCode);
 
       const totalDue =
-        DEFAULT_IPL_FEE +
-        DEFAULT_PUBLIC_FACILITY_FEE +
-        DEFAULT_GUARD_FEE +
+        settings.iplFee +
+        settings.publicFacilityFee +
+        settings.guardFee +
         waterFee +
         vehicleFee +
         arrears +
@@ -198,9 +196,9 @@ export async function POST() {
         period: billingPeriod,
         status: "unpaid",
         dueDate,
-        iplFee: DEFAULT_IPL_FEE,
-        publicFacilityFee: DEFAULT_PUBLIC_FACILITY_FEE,
-        guardFee: DEFAULT_GUARD_FEE,
+        iplFee: settings.iplFee,
+        publicFacilityFee: settings.publicFacilityFee,
+        guardFee: settings.guardFee,
         waterFee,
         vehicleFee,
         arrears,
