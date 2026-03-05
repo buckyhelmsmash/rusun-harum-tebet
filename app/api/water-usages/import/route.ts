@@ -1,5 +1,4 @@
 import { ID, Query } from "appwrite";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
@@ -65,9 +64,25 @@ export async function POST(req: Request) {
     for (const doc of existingResult.rows) {
       const uId =
         typeof doc.unit === "object" && doc.unit
-          ? (doc.unit as any).$id
+          ? (doc.unit as { $id: string }).$id
           : doc.unit;
-      if (uId) existingMap.set(uId, doc.$id);
+      if (uId) existingMap.set(uId as string, doc.$id);
+    }
+
+    // 2.5 Fetch all invoices for this period
+    const invoicesResult = await db.listRows({
+      databaseId: DB_ID,
+      tableId: APPWRITE.COLLECTIONS.INVOICES,
+      queries: [Query.equal("period", period), Query.limit(500)],
+    });
+
+    const invoiceMap = new Map<string, Record<string, unknown>>();
+    for (const doc of invoicesResult.rows) {
+      const uId =
+        typeof doc.unit === "object" && doc.unit
+          ? (doc.unit as { $id: string }).$id
+          : doc.unit;
+      if (uId) invoiceMap.set(uId as string, doc as Record<string, unknown>);
     }
 
     let processed = 0;
@@ -126,8 +141,41 @@ export async function POST(req: Request) {
             permissions: [],
           });
         }
+
+        // 4. Update the related invoice if it exists and is unpaid
+        const relatedInvoice = invoiceMap.get(unitId);
+        if (relatedInvoice && relatedInvoice.status === "unpaid") {
+          const iplFee = (relatedInvoice.iplFee as number) || 0;
+          const publicFacilityFee =
+            (relatedInvoice.publicFacilityFee as number) || 0;
+          const guardFee = (relatedInvoice.guardFee as number) || 0;
+          const vehicleFee = (relatedInvoice.vehicleFee as number) || 0;
+          const arrears = (relatedInvoice.arrears as number) || 0;
+          const uniqueCode = (relatedInvoice.uniqueCode as number) || 0;
+
+          const newTotalDue =
+            iplFee +
+            amount + // new water fee
+            publicFacilityFee +
+            guardFee +
+            vehicleFee +
+            arrears +
+            uniqueCode;
+
+          await db.updateRow({
+            databaseId: DB_ID,
+            tableId: APPWRITE.COLLECTIONS.INVOICES,
+            rowId: relatedInvoice.$id as string,
+            data: {
+              waterFee: amount,
+              totalDue: newTotalDue,
+            },
+            permissions: [],
+          });
+        }
+
         processed++;
-      } catch (e) {
+      } catch {
         skipped++;
         errors.push(
           `Row ${index + 1}: Failed to save data for ${row["Unit ID"]}`,
