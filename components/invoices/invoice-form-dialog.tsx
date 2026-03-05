@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import {
   Dialog,
   DialogContent,
@@ -114,63 +115,51 @@ export function InvoiceFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="iplFee">IPL Fee (Rp)</Label>
-              <Input
+              <Label htmlFor="iplFee">IPL Fee</Label>
+              <CurrencyInput
                 id="iplFee"
-                type="number"
                 value={iplFee}
                 onChange={(e) => setIplFee(Number(e.target.value))}
-                min={0}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="waterFee">Water Fee (Rp)</Label>
-              <Input
+              <Label htmlFor="waterFee">Water Fee</Label>
+              <CurrencyInput
                 id="waterFee"
-                type="number"
                 value={waterFee}
                 onChange={(e) => setWaterFee(Number(e.target.value))}
-                min={0}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="publicFacilityFee">Sarana Umum Fee (Rp)</Label>
-              <Input
+              <Label htmlFor="publicFacilityFee">Sarana Umum Fee</Label>
+              <CurrencyInput
                 id="publicFacilityFee"
-                type="number"
                 value={publicFacilityFee}
                 onChange={(e) => setPublicFacilityFee(Number(e.target.value))}
-                min={0}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="guardFee">Penjagaan Fasilitas Fee (Rp)</Label>
-              <Input
+              <Label htmlFor="guardFee">Penjagaan Fee</Label>
+              <CurrencyInput
                 id="guardFee"
-                type="number"
                 value={guardFee}
                 onChange={(e) => setGuardFee(Number(e.target.value))}
-                min={0}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="vehicleFee">Vehicle Fee (Rp)</Label>
-              <Input
+              <Label htmlFor="vehicleFee">Vehicle Fee</Label>
+              <CurrencyInput
                 id="vehicleFee"
-                type="number"
                 value={vehicleFee}
                 onChange={(e) => setVehicleFee(Number(e.target.value))}
-                min={0}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="arrears">Arrears (Rp)</Label>
-              <Input
+              <Label htmlFor="arrears">Arrears</Label>
+              <CurrencyInput
                 id="arrears"
-                type="number"
                 value={arrears}
                 onChange={(e) => setArrears(Number(e.target.value))}
-                min={0}
               />
             </div>
           </div>

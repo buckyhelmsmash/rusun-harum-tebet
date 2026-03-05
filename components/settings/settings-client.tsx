@@ -10,9 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { goeyToast } from "@/components/ui/goey-toaster";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { account } from "@/lib/appwrite/client";
 
 interface SettingsData {
@@ -152,23 +151,18 @@ export function SettingsClient() {
         <CardContent className="grid gap-6 sm:grid-cols-2">
           {FIELD_CONFIG.map((field) => (
             <div key={field.key} className="space-y-2">
-              <Label htmlFor={field.key}>{field.label}</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
-                  Rp
-                </span>
-                <Input
-                  id={field.key}
-                  type="number"
-                  min={0}
-                  className="pl-10 pr-20"
-                  value={settings[field.key]}
-                  onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                  {field.suffix}
-                </span>
-              </div>
+              <label
+                htmlFor={field.key}
+                className="text-sm font-medium leading-none"
+              >
+                {field.label}
+              </label>
+              <CurrencyInput
+                id={field.key}
+                suffix={field.suffix}
+                value={settings[field.key]}
+                onChange={(e) => handleFieldChange(field.key, e.target.value)}
+              />
               <p className="text-xs text-muted-foreground">
                 {field.description}
               </p>

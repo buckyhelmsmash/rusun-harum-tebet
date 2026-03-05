@@ -71,26 +71,39 @@ export async function POST() {
       queries: [Query.equal("period", billingPeriod), Query.limit(500)],
     });
 
-    const invoicedUnitIds = new Set(
-      existingInvoices.rows.map((row) => {
-        const unitField = (row as Record<string, unknown>).unit;
-        if (typeof unitField === "string") return unitField;
-        if (unitField && typeof unitField === "object" && "$id" in unitField) {
-          return (unitField as { $id: string }).$id;
-        }
-        return "";
-      }),
-    );
+    interface ExistingInvoice {
+      $id: string;
+      status: string;
+      uniqueCode: number;
+    }
 
-    const unitsToGenerate = allUnits.filter(
-      (unit) => !invoicedUnitIds.has(unit.$id),
-    );
+    const existingByUnit = new Map<string, ExistingInvoice>();
+    for (const row of existingInvoices.rows) {
+      const inv = row as Record<string, unknown>;
+      const unitField = inv.unit;
+      let unitId = "";
+      if (typeof unitField === "string") unitId = unitField;
+      else if (unitField && typeof unitField === "object" && "$id" in unitField)
+        unitId = (unitField as { $id: string }).$id;
+      if (unitId) {
+        existingByUnit.set(unitId, {
+          $id: inv.$id as string,
+          status: inv.status as string,
+          uniqueCode: inv.uniqueCode as number,
+        });
+      }
+    }
 
-    if (unitsToGenerate.length === 0) {
-      return NextResponse.json({
-        count: 0,
-        message: `All ${allUnits.length} occupied units already have invoices for ${billingPeriod}`,
-      });
+    const unitsToCreate: UnitRow[] = [];
+    const unitsToUpdate: { unit: UnitRow; invoice: ExistingInvoice }[] = [];
+
+    for (const unit of allUnits) {
+      const existing = existingByUnit.get(unit.$id);
+      if (!existing) {
+        unitsToCreate.push(unit);
+      } else if (existing.status === "unpaid") {
+        unitsToUpdate.push({ unit, invoice: existing });
+      }
     }
 
     const previousInvoices = await db.listRows({
@@ -121,7 +134,6 @@ export async function POST() {
       }
     }
 
-    // Fetch existing unique codes for this billing period to ensure no duplicates
     const existingCodesResult = await db.listRows({
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.INVOICES,
@@ -137,7 +149,6 @@ export async function POST() {
       ),
     );
 
-    // Fetch water usages for this billing period
     const waterUsagesResult = await db.listRows({
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
@@ -155,22 +166,25 @@ export async function POST() {
       }
     }
 
-    let created = 0;
-
-    for (const unit of unitsToGenerate) {
+    async function getVehicleFee(unitId: string): Promise<number> {
       const vehiclesResult = await db.listRows({
         databaseId: DB_ID,
         tableId: APPWRITE.COLLECTIONS.VEHICLES,
-        queries: [Query.equal("unit", unit.$id), Query.limit(25)],
+        queries: [Query.equal("unit", unitId), Query.limit(25)],
       });
-
-      const vehicleFee = (vehiclesResult.rows as unknown as Vehicle[]).reduce(
+      return (vehiclesResult.rows as unknown as Vehicle[]).reduce(
         (sum, v) => sum + (v.monthlyRate ?? 0),
         0,
       );
+    }
 
+    let created = 0;
+    let updated = 0;
+
+    for (const unit of unitsToCreate) {
+      const vehicleFee = await getVehicleFee(unit.$id);
       const arrears = arrearsMap.get(unit.$id) ?? 0;
-      const waterFee = waterUsageMap.get(unit.$id) ?? 0; // Dynamic from water_usages
+      const waterFee = waterUsageMap.get(unit.$id) ?? 0;
 
       let uniqueCode = generateUniqueCode();
       while (usedCodes.has(uniqueCode)) {
@@ -187,7 +201,6 @@ export async function POST() {
         arrears +
         uniqueCode;
 
-      // Invoice period: e.g., 2026-03. Parse to 202603.
       const condensedPeriod = billingPeriod.replace("-", "");
       const invoiceNumber = `INV-${condensedPeriod}-${unit.displayId}`;
 
@@ -212,10 +225,37 @@ export async function POST() {
       created++;
     }
 
+    for (const { unit, invoice } of unitsToUpdate) {
+      const vehicleFee = await getVehicleFee(unit.$id);
+      const arrears = arrearsMap.get(unit.$id) ?? 0;
+      const waterFee = waterUsageMap.get(unit.$id) ?? 0;
+
+      const totalDue =
+        settings.iplFee +
+        settings.publicFacilityFee +
+        settings.guardFee +
+        waterFee +
+        vehicleFee +
+        arrears +
+        invoice.uniqueCode;
+
+      await InvoiceRepository.update(invoice.$id, {
+        iplFee: settings.iplFee,
+        publicFacilityFee: settings.publicFacilityFee,
+        guardFee: settings.guardFee,
+        waterFee,
+        vehicleFee,
+        arrears,
+        totalDue,
+      });
+      updated++;
+    }
+
     return NextResponse.json({
       count: created,
+      updated,
       period: billingPeriod,
-      message: `Generated ${created} invoices for ${billingPeriod}`,
+      message: `Generated ${created} new, updated ${updated} existing invoices for ${billingPeriod}`,
     });
   } catch (error) {
     console.error("[generate-invoices] Error:", error);

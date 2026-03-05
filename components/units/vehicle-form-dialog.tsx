@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import * as z from "zod";
 import { ResponsiveFormContainer } from "@/components/shared/responsive-form-container";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import {
   Field,
   FieldError,
@@ -262,14 +263,11 @@ export function VehicleFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>
-                    Monthly Rate (Rp)
-                  </FieldLabel>
-                  <Input
+                  <FieldLabel htmlFor={field.name}>Monthly Rate</FieldLabel>
+                  <CurrencyInput
                     id={field.name}
                     name={field.name}
-                    type="number"
-                    min={0}
+                    suffix="/ mo"
                     value={field.state.value ?? ""}
                     onBlur={field.handleBlur}
                     onChange={(e) =>

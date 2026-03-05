@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Zap,
 } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
@@ -124,7 +125,14 @@ export function InvoicesClient() {
         throw new Error(err.error || "Generation failed");
       }
       const result = await res.json();
-      goeyToast.success(`Successfully synced ${result.count ?? 0} invoices`);
+      const parts: string[] = [];
+      if (result.count > 0) parts.push(`${result.count} created`);
+      if (result.updated > 0) parts.push(`${result.updated} updated`);
+      goeyToast.success(
+        parts.length > 0
+          ? `Invoices synced: ${parts.join(", ")}`
+          : (result.message ?? "All invoices are up to date"),
+      );
       await queryClient.invalidateQueries({ queryKey: ["invoices"] });
     } catch (error) {
       goeyToast.error("Failed to sync invoices", {
@@ -162,10 +170,15 @@ export function InvoicesClient() {
           const unit = row.original.unit;
           const displayId =
             unit && typeof unit !== "string" ? unit.displayId : "—";
+          const unitId =
+            unit && typeof unit !== "string" ? unit.$id : row.original.unitId;
           return (
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+            <Link
+              href={`/admin/units/${unitId}`}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            >
               {displayId}
-            </span>
+            </Link>
           );
         },
       },

@@ -25,6 +25,8 @@ export const updateInvoiceSchema = z.object({
   status: z.enum(["unpaid", "paid"]).optional(),
   iplFee: z.number().int().min(0).optional(),
   waterFee: z.number().int().min(0).optional(),
+  publicFacilityFee: z.number().int().min(0).optional(),
+  guardFee: z.number().int().min(0).optional(),
   vehicleFee: z.number().int().min(0).optional(),
   arrears: z.number().int().min(0).optional(),
   uniqueCode: z.number().int().min(100).max(999).optional(),
