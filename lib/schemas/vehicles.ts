@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createVehicleSchema = z.object({
-  vehicleType: z.enum(["car", "motorcycle", "box_car"]),
+  vehicleType: z.enum(["car", "motorcycle"]),
   licensePlate: z
     .string()
     .transform((val) => val.toUpperCase().replace(/\s+/g, " ").trim())
@@ -13,7 +13,6 @@ export const createVehicleSchema = z.object({
           "Invalid plate format (e.g. B 1234 ABC)",
         ),
     ),
-  monthlyRate: z.number().min(0).nullable().optional(),
   color: z.string().max(30).nullable().optional(),
   brand: z.string().max(50).nullable().optional(),
   unit: z.string().min(1),
@@ -30,7 +29,7 @@ export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
 
 export const vehicleListParamsSchema = z.object({
   search: z.string().optional(),
-  vehicleType: z.enum(["car", "motorcycle", "box_car"]).optional(),
+  vehicleType: z.enum(["car", "motorcycle"]).optional(),
   limit: z.coerce.number().min(1).max(100).optional(),
   offset: z.coerce.number().min(0).optional(),
 });

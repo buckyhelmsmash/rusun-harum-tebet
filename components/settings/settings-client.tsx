@@ -12,23 +12,21 @@ import {
 } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { account } from "@/lib/appwrite/client";
 
 interface SettingsData {
-  iplFee: number;
   publicFacilityFee: number;
   guardFee: number;
   waterRate: number;
+  car1Fee: number;
+  car2Fee: number;
+  car3Fee: number;
+  meetingNumber?: string;
 }
 
-const FIELD_CONFIG = [
-  {
-    key: "iplFee" as const,
-    label: "IPL Fee",
-    description:
-      "Iuran Pengelolaan Lingkungan — monthly management fee per unit",
-    suffix: "/ month",
-  },
+const FEE_FIELDS = [
   {
     key: "publicFacilityFee" as const,
     label: "Public Facility Fee",
@@ -49,16 +47,38 @@ const FIELD_CONFIG = [
   },
 ];
 
+const CAR_FEE_FIELDS = [
+  {
+    key: "car1Fee" as const,
+    label: "1 Car Fee",
+    description: "Monthly parking fee when a unit has 1 car",
+  },
+  {
+    key: "car2Fee" as const,
+    label: "2 Cars Fee",
+    description: "Monthly parking fee when a unit has 2 cars",
+  },
+  {
+    key: "car3Fee" as const,
+    label: "3 Cars Fee (max)",
+    description: "Monthly parking fee when a unit has 3 cars",
+  },
+];
+
 export function SettingsClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SettingsData>({
-    iplFee: 0,
     publicFacilityFee: 0,
     guardFee: 0,
     waterRate: 0,
+    car1Fee: 0,
+    car2Fee: 0,
+    car3Fee: 0,
+    meetingNumber: "",
   });
   const [original, setOriginal] = useState<SettingsData | null>(null);
+  const [meetingNumber, setMeetingNumber] = useState("");
 
   useEffect(() => {
     fetch("/api/settings")
@@ -73,12 +93,19 @@ export function SettingsClient() {
 
   const hasChanges =
     original !== null &&
-    (settings.iplFee !== original.iplFee ||
-      settings.publicFacilityFee !== original.publicFacilityFee ||
+    (settings.publicFacilityFee !== original.publicFacilityFee ||
       settings.guardFee !== original.guardFee ||
-      settings.waterRate !== original.waterRate);
+      settings.waterRate !== original.waterRate ||
+      settings.car1Fee !== original.car1Fee ||
+      settings.car2Fee !== original.car2Fee ||
+      settings.car3Fee !== original.car3Fee);
 
   const handleSave = async () => {
+    if (!meetingNumber.trim()) {
+      goeyToast.error("Meeting number is required to save changes");
+      return;
+    }
+
     setSaving(true);
     try {
       const session = await account.createJWT();
@@ -89,7 +116,10 @@ export function SettingsClient() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.jwt}`,
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          ...settings,
+          meetingNumber: meetingNumber.trim(),
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to save settings");
@@ -105,7 +135,10 @@ export function SettingsClient() {
     }
   };
 
-  const handleFieldChange = (key: keyof SettingsData, value: string) => {
+  const handleFieldChange = (
+    key: keyof Omit<SettingsData, "meetingNumber">,
+    value: string,
+  ) => {
     const num = Number.parseInt(value, 10);
     setSettings((prev) => ({ ...prev, [key]: Number.isNaN(num) ? 0 : num }));
   };
@@ -149,7 +182,7 @@ export function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 sm:grid-cols-2">
-          {FIELD_CONFIG.map((field) => (
+          {FEE_FIELDS.map((field) => (
             <div key={field.key} className="space-y-2">
               <label
                 htmlFor={field.key}
@@ -170,6 +203,62 @@ export function SettingsClient() {
           ))}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Vehicle Parking Fees</CardTitle>
+          <CardDescription>
+            Tiered monthly fee based on the number of cars per unit. Max 3 cars
+            per unit. Motorcycles are free.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 sm:grid-cols-3">
+          {CAR_FEE_FIELDS.map((field) => (
+            <div key={field.key} className="space-y-2">
+              <label
+                htmlFor={field.key}
+                className="text-sm font-medium leading-none"
+              >
+                {field.label}
+              </label>
+              <CurrencyInput
+                id={field.key}
+                suffix="/ month"
+                value={settings[field.key]}
+                onChange={(e) => handleFieldChange(field.key, e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                {field.description}
+              </p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {hasChanges && (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+          <CardHeader>
+            <CardTitle className="text-amber-800 dark:text-amber-200">
+              General Meeting Approval
+            </CardTitle>
+            <CardDescription className="text-amber-700 dark:text-amber-300">
+              Changing fee settings requires approval from the General Meeting
+              of Members. Enter the meeting reference number below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="meetingNumber">Meeting Reference Number</Label>
+              <Input
+                id="meetingNumber"
+                placeholder="e.g. RAPAT/2026/III/001"
+                value={meetingNumber}
+                onChange={(e) => setMeetingNumber(e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

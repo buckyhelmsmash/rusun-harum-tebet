@@ -94,14 +94,7 @@ export function VehiclesClient() {
         header: "Color",
         cell: ({ row }) => row.original.color || "—",
       },
-      {
-        accessorKey: "monthlyRate",
-        header: "Monthly Rate",
-        cell: ({ row }) =>
-          row.original.monthlyRate
-            ? `Rp ${row.original.monthlyRate.toLocaleString("id-ID")}`
-            : "—",
-      },
+
       {
         accessorKey: "unit",
         header: "Unit",
@@ -179,12 +172,10 @@ export function VehiclesClient() {
           </StatusBadge>
         </div>
         <div className="flex items-center justify-between text-sm mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-          {vehicle.monthlyRate ? (
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-              Rp {vehicle.monthlyRate.toLocaleString("id-ID")}/mo
+          {vehicle.brand && (
+            <span className="text-slate-500">
+              {vehicle.brand} {vehicle.color ? `· ${vehicle.color}` : ""}
             </span>
-          ) : (
-            <span className="text-slate-400">No rate set</span>
           )}
           <div className="flex items-center gap-1">
             <TimelineSheet

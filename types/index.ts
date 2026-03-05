@@ -38,9 +38,8 @@ export interface Tenant extends Models.Document {
 }
 
 export interface Vehicle extends Models.Document {
-  vehicleType: "car" | "motorcycle" | "box_car";
+  vehicleType: "car" | "motorcycle";
   licensePlate: string;
-  monthlyRate?: number;
   color?: string;
   brand?: string;
   unit?: Unit;
@@ -50,13 +49,12 @@ export interface Vehicle extends Models.Document {
 export interface Invoice extends Models.Document {
   accessToken: string;
   invoiceNumber: string;
-  period: string; // e.g., '2023-10'
+  period: string;
   status: "paid" | "unpaid";
   dueDate: string;
   arrears: number;
   arrearsBreakdown?: string;
   totalDue: number;
-  iplFee: number;
   waterFee: number;
   publicFacilityFee?: number;
   guardFee?: number;

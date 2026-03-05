@@ -39,6 +39,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (validated.vehicleType === "car") {
+      const carCount = await VehicleRepository.countCarsByUnit(validated.unit);
+      if (carCount >= 3) {
+        return NextResponse.json(
+          { error: "Maximum 3 cars allowed per unit." },
+          { status: 400 },
+        );
+      }
+    }
+
     const vehicle = await VehicleRepository.create(validated);
 
     logActivity({

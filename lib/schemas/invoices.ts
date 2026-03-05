@@ -5,7 +5,6 @@ export const createInvoiceSchema = z.object({
   period: z.string().min(1),
   status: z.enum(["unpaid", "paid"]).default("unpaid"),
   dueDate: z.string().min(1),
-  iplFee: z.number().min(0),
   waterFee: z.number().min(0),
   publicFacilityFee: z.number().min(0),
   guardFee: z.number().min(0),
@@ -23,7 +22,7 @@ export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 
 export const updateInvoiceSchema = z.object({
   status: z.enum(["unpaid", "paid"]).optional(),
-  iplFee: z.number().int().min(0).optional(),
+  payDate: z.string().nullable().optional(),
   waterFee: z.number().int().min(0).optional(),
   publicFacilityFee: z.number().int().min(0).optional(),
   guardFee: z.number().int().min(0).optional(),
@@ -32,7 +31,6 @@ export const updateInvoiceSchema = z.object({
   uniqueCode: z.number().int().min(100).max(999).optional(),
   totalDue: z.number().int().min(0).optional(),
   dueDate: z.string().optional(),
-  payDate: z.string().nullable().optional(),
 });
 
 export type UpdateInvoiceInput = z.infer<typeof updateInvoiceSchema>;

@@ -5,10 +5,10 @@ import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
+import type { GlobalSettings } from "@/lib/repositories/settings";
 import { SettingsRepository } from "@/lib/repositories/settings";
 import type { CreateInvoiceInput } from "@/lib/schemas/invoices";
 import type { WaterUsage } from "@/lib/schemas/water-usages";
-import type { Vehicle } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
 
@@ -24,6 +24,17 @@ interface UnitRow {
   $id: string;
   occupancyStatus: string;
   displayId: string;
+}
+
+interface VehicleRow {
+  vehicleType: string;
+}
+
+function calculateCarFee(carCount: number, settings: GlobalSettings): number {
+  if (carCount <= 0) return 0;
+  if (carCount === 1) return settings.car1Fee;
+  if (carCount === 2) return settings.car2Fee;
+  return settings.car3Fee;
 }
 
 export async function POST() {
@@ -172,10 +183,10 @@ export async function POST() {
         tableId: APPWRITE.COLLECTIONS.VEHICLES,
         queries: [Query.equal("unit", unitId), Query.limit(25)],
       });
-      return (vehiclesResult.rows as unknown as Vehicle[]).reduce(
-        (sum, v) => sum + (v.monthlyRate ?? 0),
-        0,
-      );
+      const carCount = (vehiclesResult.rows as unknown as VehicleRow[]).filter(
+        (v) => v.vehicleType === "car",
+      ).length;
+      return calculateCarFee(carCount, settings);
     }
 
     let created = 0;
@@ -193,7 +204,6 @@ export async function POST() {
       usedCodes.add(uniqueCode);
 
       const totalDue =
-        settings.iplFee +
         settings.publicFacilityFee +
         settings.guardFee +
         waterFee +
@@ -209,7 +219,6 @@ export async function POST() {
         period: billingPeriod,
         status: "unpaid",
         dueDate,
-        iplFee: settings.iplFee,
         publicFacilityFee: settings.publicFacilityFee,
         guardFee: settings.guardFee,
         waterFee,
@@ -231,7 +240,6 @@ export async function POST() {
       const waterFee = waterUsageMap.get(unit.$id) ?? 0;
 
       const totalDue =
-        settings.iplFee +
         settings.publicFacilityFee +
         settings.guardFee +
         waterFee +
@@ -240,7 +248,6 @@ export async function POST() {
         invoice.uniqueCode;
 
       await InvoiceRepository.update(invoice.$id, {
-        iplFee: settings.iplFee,
         publicFacilityFee: settings.publicFacilityFee,
         guardFee: settings.guardFee,
         waterFee,

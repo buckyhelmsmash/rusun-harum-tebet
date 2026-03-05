@@ -402,11 +402,6 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                         <p className="text-xs text-slate-500">
                           {v.brand || "Unknown"} {v.color ? `(${v.color})` : ""}
                         </p>
-                        {v.monthlyRate != null && v.monthlyRate > 0 && (
-                          <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                            Rp {v.monthlyRate.toLocaleString("id-ID")}/mo
-                          </p>
-                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">

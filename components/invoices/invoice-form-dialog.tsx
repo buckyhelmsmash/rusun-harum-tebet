@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { goeyToast } from "@/components/ui/goey-toaster";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateInvoice } from "@/hooks/api/use-invoices";
+import { formatCurrency } from "@/lib/format";
 import type { Invoice } from "@/types";
 
 interface InvoiceFormDialogProps {
@@ -36,37 +35,13 @@ export function InvoiceFormDialog({
   onOpenChange,
 }: InvoiceFormDialogProps) {
   const updateMutation = useUpdateInvoice();
-
-  const [iplFee, setIplFee] = useState(0);
-  const [waterFee, setWaterFee] = useState(0);
-  const [publicFacilityFee, setPublicFacilityFee] = useState(0);
-  const [guardFee, setGuardFee] = useState(0);
-  const [vehicleFee, setVehicleFee] = useState(0);
-  const [arrears, setArrears] = useState(0);
-  const [uniqueCode, setUniqueCode] = useState(0);
   const [status, setStatus] = useState<"paid" | "unpaid">("unpaid");
 
   useEffect(() => {
     if (invoice) {
-      setIplFee(invoice.iplFee);
-      setWaterFee(invoice.waterFee);
-      setPublicFacilityFee(invoice.publicFacilityFee || 0);
-      setGuardFee(invoice.guardFee || 0);
-      setVehicleFee(invoice.vehicleFee);
-      setArrears(invoice.arrears);
-      setUniqueCode(invoice.uniqueCode);
       setStatus(invoice.status);
     }
   }, [invoice]);
-
-  const totalDue =
-    iplFee +
-    waterFee +
-    publicFacilityFee +
-    guardFee +
-    vehicleFee +
-    arrears +
-    uniqueCode;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,13 +51,6 @@ export function InvoiceFormDialog({
       await updateMutation.mutateAsync({
         id: invoice.$id,
         data: {
-          iplFee,
-          waterFee,
-          publicFacilityFee,
-          guardFee,
-          vehicleFee,
-          arrears,
-          totalDue,
           status,
           payDate: status === "paid" ? new Date().toISOString() : undefined,
         },
@@ -103,6 +71,15 @@ export function InvoiceFormDialog({
       ? ((invoice.unit as { displayId?: string }).displayId ?? invoice.unitId)
       : invoice.unitId;
 
+  const feeBreakdown = [
+    { label: "Public Facility Fee", value: invoice.publicFacilityFee || 0 },
+    { label: "Security Guard Fee", value: invoice.guardFee || 0 },
+    { label: "Water Fee", value: invoice.waterFee },
+    { label: "Vehicle Fee", value: invoice.vehicleFee },
+    { label: "Arrears", value: invoice.arrears },
+    { label: "Unique Code", value: invoice.uniqueCode },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -113,92 +90,43 @@ export function InvoiceFormDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="iplFee">IPL Fee</Label>
-              <CurrencyInput
-                id="iplFee"
-                value={iplFee}
-                onChange={(e) => setIplFee(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="waterFee">Water Fee</Label>
-              <CurrencyInput
-                id="waterFee"
-                value={waterFee}
-                onChange={(e) => setWaterFee(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="publicFacilityFee">Sarana Umum Fee</Label>
-              <CurrencyInput
-                id="publicFacilityFee"
-                value={publicFacilityFee}
-                onChange={(e) => setPublicFacilityFee(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guardFee">Penjagaan Fee</Label>
-              <CurrencyInput
-                id="guardFee"
-                value={guardFee}
-                onChange={(e) => setGuardFee(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vehicleFee">Vehicle Fee</Label>
-              <CurrencyInput
-                id="vehicleFee"
-                value={vehicleFee}
-                onChange={(e) => setVehicleFee(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="arrears">Arrears</Label>
-              <CurrencyInput
-                id="arrears"
-                value={arrears}
-                onChange={(e) => setArrears(Number(e.target.value))}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="uniqueCode">Unique Code</Label>
-              <Input
-                id="uniqueCode"
-                type="number"
-                value={uniqueCode}
-                disabled
-                className="bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={status}
-                onValueChange={(val) => setStatus(val as "paid" | "unpaid")}
+          <div className="rounded-lg border p-4 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Fee Breakdown
+            </p>
+            {feeBreakdown.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between text-sm"
               >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unpaid">Unpaid</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                </SelectContent>
-              </Select>
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-medium tabular-nums">
+                  {formatCurrency(item.value)}
+                </span>
+              </div>
+            ))}
+            <div className="border-t pt-2 mt-2 flex items-center justify-between">
+              <span className="font-semibold">Total Due</span>
+              <span className="text-lg font-bold tabular-nums">
+                {formatCurrency(invoice.totalDue)}
+              </span>
             </div>
           </div>
 
-          <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-              Total Due
-            </p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              Rp {totalDue.toLocaleString("id-ID")}
-            </p>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(val) => setStatus(val as "paid" | "unpaid")}
+            >
+              <SelectTrigger id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

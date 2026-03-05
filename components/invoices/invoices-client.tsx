@@ -197,15 +197,7 @@ export function InvoicesClient() {
           );
         },
       },
-      {
-        accessorKey: "iplFee",
-        header: () => <span className="text-right block">IPL Fee</span>,
-        cell: ({ row }) => (
-          <span className="text-sm text-right block">
-            {formatCurrency(row.original.iplFee)}
-          </span>
-        ),
-      },
+
       {
         accessorKey: "waterFee",
         header: () => <span className="text-right block">Water</span>,
@@ -361,8 +353,8 @@ export function InvoicesClient() {
             <span className="text-slate-400">Period:</span> {invoice.period}
           </div>
           <div className="text-right">
-            <span className="text-slate-400">IPL:</span>{" "}
-            {formatCurrency(invoice.iplFee)}
+            <span className="text-slate-400">Facility:</span>{" "}
+            {formatCurrency(invoice.publicFacilityFee || 0)}
           </div>
           <div>
             <span className="text-slate-400">Water:</span>{" "}

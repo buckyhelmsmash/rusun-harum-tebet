@@ -107,4 +107,19 @@ export const VehicleRepository = {
       rowId: id,
     });
   },
+
+  async countCarsByUnit(unitId: string): Promise<number> {
+    const db = await getAdminDb();
+    const result = await db.listRows({
+      databaseId: DB_ID,
+      tableId: TABLE_ID,
+      queries: [
+        Query.equal("unit", unitId),
+        Query.equal("vehicleType", "car"),
+        Query.limit(10),
+        Query.select(["$id"]),
+      ],
+    });
+    return result.total;
+  },
 };

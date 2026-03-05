@@ -6,17 +6,22 @@ const TABLE_ID = APPWRITE.COLLECTIONS.SETTINGS;
 const GLOBAL_DOC_ID = "global";
 
 export interface GlobalSettings {
-  iplFee: number;
   publicFacilityFee: number;
   guardFee: number;
   waterRate: number;
+  car1Fee: number;
+  car2Fee: number;
+  car3Fee: number;
+  meetingNumber?: string;
 }
 
 const DEFAULTS: GlobalSettings = {
-  iplFee: 250_000,
   publicFacilityFee: 15_000,
   guardFee: 35_000,
   waterRate: 12_500,
+  car1Fee: 200_000,
+  car2Fee: 500_000,
+  car3Fee: 850_000,
 };
 
 export const SettingsRepository = {
@@ -28,12 +33,16 @@ export const SettingsRepository = {
         tableId: TABLE_ID,
         rowId: GLOBAL_DOC_ID,
       });
+      const r = row as Record<string, unknown>;
       return {
-        iplFee: (row as Record<string, unknown>).iplFee as number,
-        publicFacilityFee: (row as Record<string, unknown>)
-          .publicFacilityFee as number,
-        guardFee: (row as Record<string, unknown>).guardFee as number,
-        waterRate: (row as Record<string, unknown>).waterRate as number,
+        publicFacilityFee:
+          (r.publicFacilityFee as number) ?? DEFAULTS.publicFacilityFee,
+        guardFee: (r.guardFee as number) ?? DEFAULTS.guardFee,
+        waterRate: (r.waterRate as number) ?? DEFAULTS.waterRate,
+        car1Fee: (r.car1Fee as number) ?? DEFAULTS.car1Fee,
+        car2Fee: (r.car2Fee as number) ?? DEFAULTS.car2Fee,
+        car3Fee: (r.car3Fee as number) ?? DEFAULTS.car3Fee,
+        meetingNumber: (r.meetingNumber as string) ?? undefined,
       };
     } catch {
       return DEFAULTS;
@@ -48,12 +57,16 @@ export const SettingsRepository = {
       rowId: GLOBAL_DOC_ID,
       data,
     });
+    const r = row as Record<string, unknown>;
     return {
-      iplFee: (row as Record<string, unknown>).iplFee as number,
-      publicFacilityFee: (row as Record<string, unknown>)
-        .publicFacilityFee as number,
-      guardFee: (row as Record<string, unknown>).guardFee as number,
-      waterRate: (row as Record<string, unknown>).waterRate as number,
+      publicFacilityFee:
+        (r.publicFacilityFee as number) ?? DEFAULTS.publicFacilityFee,
+      guardFee: (r.guardFee as number) ?? DEFAULTS.guardFee,
+      waterRate: (r.waterRate as number) ?? DEFAULTS.waterRate,
+      car1Fee: (r.car1Fee as number) ?? DEFAULTS.car1Fee,
+      car2Fee: (r.car2Fee as number) ?? DEFAULTS.car2Fee,
+      car3Fee: (r.car3Fee as number) ?? DEFAULTS.car3Fee,
+      meetingNumber: (r.meetingNumber as string) ?? undefined,
     };
   },
 };

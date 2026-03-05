@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import * as z from "zod";
 import { ResponsiveFormContainer } from "@/components/shared/responsive-form-container";
 import { Button } from "@/components/ui/button";
-import { CurrencyInput } from "@/components/ui/currency-input";
+
 import {
   Field,
   FieldError,
@@ -37,10 +37,9 @@ const vehicleSchema = z.object({
           "Invalid plate format (e.g. B 1234 ABC)",
         ),
     ),
-  vehicleType: z.enum(["car", "motorcycle", "box_car"]),
+  vehicleType: z.enum(["car", "motorcycle"]),
   brand: z.string().optional(),
   color: z.string().optional(),
-  monthlyRate: z.coerce.number().min(0, "Must be 0 or more").optional(),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -68,7 +67,6 @@ export function VehicleFormDialog({
       vehicleType: "car" as VehicleFormValues["vehicleType"],
       brand: "",
       color: "",
-      monthlyRate: undefined as number | undefined,
     },
     validators: {
       // biome-ignore lint/suspicious/noExplicitAny: required for ts type inference inside tanstack form
@@ -106,7 +104,6 @@ export function VehicleFormDialog({
         vehicleType: vehicle.vehicleType,
         brand: vehicle.brand || "",
         color: vehicle.color || "",
-        monthlyRate: vehicle.monthlyRate ?? undefined,
       });
     } else if (!open) {
       form.reset({
@@ -114,7 +111,6 @@ export function VehicleFormDialog({
         vehicleType: "car",
         brand: "",
         color: "",
-        monthlyRate: undefined,
       });
     }
   }, [vehicle, open, form.reset]);
@@ -198,7 +194,6 @@ export function VehicleFormDialog({
                     <SelectContent>
                       <SelectItem value="car">Car</SelectItem>
                       <SelectItem value="motorcycle">Motorcycle</SelectItem>
-                      <SelectItem value="box_car">Box Car</SelectItem>
                     </SelectContent>
                   </Select>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -256,33 +251,6 @@ export function VehicleFormDialog({
               }}
             </form.Field>
           </div>
-
-          <form.Field name="monthlyRate">
-            {(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Monthly Rate</FieldLabel>
-                  <CurrencyInput
-                    id={field.name}
-                    name={field.name}
-                    suffix="/ mo"
-                    value={field.state.value ?? ""}
-                    onBlur={field.handleBlur}
-                    onChange={(e) =>
-                      field.handleChange(
-                        e.target.value ? Number(e.target.value) : undefined,
-                      )
-                    }
-                    aria-invalid={isInvalid}
-                    placeholder="e.g. 50000"
-                  />
-                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                </Field>
-              );
-            }}
-          </form.Field>
         </FieldGroup>
 
         <div className="pt-4 flex w-full justify-end gap-2">

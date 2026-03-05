@@ -5,10 +5,13 @@ import { getErrorMessage } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
 
 const updateSchema = z.object({
-  iplFee: z.number().int().min(0).optional(),
   publicFacilityFee: z.number().int().min(0).optional(),
   guardFee: z.number().int().min(0).optional(),
   waterRate: z.number().int().min(0).optional(),
+  car1Fee: z.number().int().min(0).optional(),
+  car2Fee: z.number().int().min(0).optional(),
+  car3Fee: z.number().int().min(0).optional(),
+  meetingNumber: z.string().min(1, "Meeting number is required"),
 });
 
 export async function GET() {
