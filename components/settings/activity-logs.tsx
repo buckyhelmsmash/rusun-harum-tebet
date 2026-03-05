@@ -13,13 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetActivityLogs } from "@/hooks/api/use-activity-logs";
+import { useGetActivity } from "@/hooks/api/use-activity";
 
 export function ActivityLogs() {
   const [page, setPage] = useState(0);
   const limit = 20;
 
-  const { data, isLoading, isError } = useGetActivityLogs({
+  const { data, isLoading, isError } = useGetActivity({
+    targetType: "settings",
     limit,
     offset: page * limit,
   });

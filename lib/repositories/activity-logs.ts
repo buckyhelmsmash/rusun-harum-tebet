@@ -23,8 +23,11 @@ export const ActivityLogRepository = {
 
     if (params.unitId) queries.push(Query.equal("unitId", params.unitId));
     if (params.targetId) queries.push(Query.equal("targetId", params.targetId));
+    if (params.targetType)
+      queries.push(Query.equal("targetType", params.targetType));
     if (params.action) queries.push(Query.equal("action", params.action));
     if (params.actorId) queries.push(Query.equal("actorId", params.actorId));
+    if (params.search) queries.push(Query.search("description", params.search));
 
     const result = await db.listRows({
       databaseId: DB_ID,

@@ -2,6 +2,7 @@
 
 import {
   Clock,
+  Download,
   FileText,
   Loader2,
   Plus,
@@ -9,6 +10,7 @@ import {
   Trash2,
   UserCheck,
   UserMinus,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +26,7 @@ import { useGetActivity } from "@/hooks/api/use-activity";
 import type { ActivityLog, TargetType } from "@/types";
 
 interface TimelineSheetProps {
-  targetId: string;
+  targetId?: string;
   targetType: TargetType;
   title: string;
 }
@@ -35,6 +37,9 @@ function getActionIcon(action: string) {
   if (action.endsWith(".delete")) return Trash2;
   if (action.endsWith(".assign")) return UserCheck;
   if (action.endsWith(".remove")) return UserMinus;
+  if (action.endsWith(".generate")) return Zap;
+  if (action.endsWith(".sync")) return RefreshCw;
+  if (action.endsWith(".import")) return Download;
   return FileText;
 }
 
@@ -49,6 +54,12 @@ function getActionColor(action: string) {
     return "text-violet-500 bg-violet-50 dark:bg-violet-900/20";
   if (action.endsWith(".remove"))
     return "text-orange-500 bg-orange-50 dark:bg-orange-900/20";
+  if (action.endsWith(".generate"))
+    return "text-amber-500 bg-amber-50 dark:bg-amber-900/20";
+  if (action.endsWith(".sync"))
+    return "text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20";
+  if (action.endsWith(".import"))
+    return "text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20";
   return "text-slate-500 bg-slate-50 dark:bg-slate-800";
 }
 
@@ -71,6 +82,8 @@ function formatActionLabel(action: string) {
     assign: "Ditugaskan",
     remove: "Dihapus dari",
     generate: "Dihasilkan",
+    sync: "Disinkronkan",
+    import: "Diimpor",
   };
 
   const entityLabel =
@@ -132,14 +145,16 @@ function TimelineItem({ log }: { log: ActivityLog }) {
 
 export function TimelineSheet({
   targetId,
-  targetType: _targetType,
+  targetType,
   title,
 }: TimelineSheetProps) {
   const [open, setOpen] = useState(false);
 
-  const { data, isLoading } = useGetActivity(
-    open ? { targetId, limit: 50 } : {},
-  );
+  const filters = targetId
+    ? { targetId, limit: 50 }
+    : { targetType, limit: 50 };
+
+  const { data, isLoading } = useGetActivity(open ? filters : {});
 
   const logs = data?.items ?? [];
 

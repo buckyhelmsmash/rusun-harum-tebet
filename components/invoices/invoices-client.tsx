@@ -403,20 +403,23 @@ export function InvoicesClient() {
             Kelola tagihan bulanan dan status pembayaran untuk semua penghuni.
           </p>
         </div>
-        <Button
-          onClick={handleGenerateInvoices}
-          disabled={generateInvoices.isPending}
-          className="bg-primary hover:bg-primary/90 text-white shadow-sm"
-        >
-          {generateInvoices.isPending ? (
-            <Zap className="h-4 w-4 mr-2 animate-pulse" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          {generateInvoices.isPending
-            ? "Menyinkronkan…"
-            : `Sinkronisasi & Buat Tagihan — ${targetPeriodLabel}`}
-        </Button>
+        <div className="flex items-center gap-2">
+          <TimelineSheet targetType="invoice" title="Riwayat Tagihan" />
+          <Button
+            onClick={handleGenerateInvoices}
+            disabled={generateInvoices.isPending}
+            className="bg-primary hover:bg-primary/90 text-white shadow-sm"
+          >
+            {generateInvoices.isPending ? (
+              <Zap className="h-4 w-4 mr-2 animate-pulse" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            {generateInvoices.isPending
+              ? "Menyinkronkan…"
+              : `Sinkronisasi & Buat Tagihan — ${targetPeriodLabel}`}
+          </Button>
+        </div>
       </div>
 
       {/* DataTable with filters inside */}

@@ -12,6 +12,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
+import { TimelineSheet } from "@/components/shared/timeline-sheet";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/monthpicker";
 import {
@@ -148,17 +149,24 @@ export function WaterUsagesClient() {
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              setEditingUsage(row.original);
-              setEditOpen(true);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => {
+                setEditingUsage(row.original);
+                setEditOpen(true);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <TimelineSheet
+              targetId={row.original.$id}
+              targetType="water_usage"
+              title={`Air ${getUnitDisplayId(row.original.unit)} — ${row.original.period}`}
+            />
+          </div>
         ),
       },
     ],
@@ -181,17 +189,24 @@ export function WaterUsagesClient() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => {
-            setEditingUsage(usage);
-            setEditOpen(true);
-          }}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              setEditingUsage(usage);
+              setEditOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <TimelineSheet
+            targetId={usage.$id}
+            targetType="water_usage"
+            title={`Air ${getUnitDisplayId(usage.unit)} — ${usage.period}`}
+          />
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-slate-500">
         <div>
@@ -245,13 +260,19 @@ export function WaterUsagesClient() {
             Kelola dan impor pembacaan meteran air bulanan.
           </p>
         </div>
-        <Button
-          onClick={() => setImportOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-        >
-          <UploadCloud className="h-4 w-4 mr-2" />
-          Impor Excel
-        </Button>
+        <div className="flex items-center gap-2">
+          <TimelineSheet
+            targetType="water_usage"
+            title="Riwayat Penggunaan Air"
+          />
+          <Button
+            onClick={() => setImportOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+          >
+            <UploadCloud className="h-4 w-4 mr-2" />
+            Impor Excel
+          </Button>
+        </div>
       </div>
 
       {/* DataTable with filters */}

@@ -1,6 +1,13 @@
 "use client";
 
-import { Car, Droplet, LogOut, Newspaper, Settings } from "lucide-react";
+import {
+  Car,
+  ClipboardList,
+  Droplet,
+  LogOut,
+  Newspaper,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Drawer,
@@ -59,6 +66,16 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
               >
                 <Newspaper className="h-5 w-5 text-muted-foreground" />
                 Berita & Pengumuman
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/aktivitas"
+                onClick={() => onOpenChange(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+              >
+                <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                Aktivitas
               </Link>
             </li>
             <li>
