@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format, subMonths } from "date-fns";
 import {
@@ -31,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetInvoices } from "@/hooks/api/use-invoices";
+import { useGenerateInvoices, useGetInvoices } from "@/hooks/api/use-invoices";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { formatPeriodRange, getTargetBillingPeriod } from "@/lib/utils/period";
@@ -87,9 +86,8 @@ export function InvoicesClient() {
   const [pageIndex, setPageIndex] = useState(0);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [formOpen, setFormOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
 
-  const queryClient = useQueryClient();
+  const generateInvoices = useGenerateInvoices();
   const targetPeriod = getTargetBillingPeriod();
   const targetPeriodLabel = formatPeriodRange(targetPeriod);
 
@@ -114,33 +112,24 @@ export function InvoicesClient() {
   const invoices = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  const handleGenerateInvoices = async () => {
-    setIsGenerating(true);
-    try {
-      const res = await fetch("/api/cron/generate-invoices", {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Generation failed");
-      }
-      const result = await res.json();
-      const parts: string[] = [];
-      if (result.count > 0) parts.push(`${result.count} created`);
-      if (result.updated > 0) parts.push(`${result.updated} updated`);
-      goeyToast.success(
-        parts.length > 0
-          ? `Invoices synced: ${parts.join(", ")}`
-          : (result.message ?? "All invoices are up to date"),
-      );
-      await queryClient.invalidateQueries({ queryKey: ["invoices"] });
-    } catch (error) {
-      goeyToast.error("Failed to sync invoices", {
-        description: (error as Error).message,
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleGenerateInvoices = () => {
+    generateInvoices.mutate(undefined, {
+      onSuccess: (result) => {
+        const parts: string[] = [];
+        if (result.count > 0) parts.push(`${result.count} created`);
+        if (result.updated > 0) parts.push(`${result.updated} updated`);
+        goeyToast.success(
+          parts.length > 0
+            ? `Invoices synced: ${parts.join(", ")}`
+            : (result.message ?? "All invoices are up to date"),
+        );
+      },
+      onError: (error) => {
+        goeyToast.error("Failed to sync invoices", {
+          description: error.message,
+        });
+      },
+    });
   };
 
   const columns: ColumnDef<Invoice>[] = useMemo(
@@ -414,15 +403,17 @@ export function InvoicesClient() {
         </div>
         <Button
           onClick={handleGenerateInvoices}
-          disabled={isGenerating}
+          disabled={generateInvoices.isPending}
           className="bg-primary hover:bg-primary/90 text-white shadow-sm"
         >
-          {isGenerating ? (
+          {generateInvoices.isPending ? (
             <Zap className="h-4 w-4 mr-2 animate-pulse" />
           ) : (
             <RefreshCw className="h-4 w-4 mr-2" />
           )}
-          {isGenerating ? "Syncing…" : `Sync & Generate — ${targetPeriodLabel}`}
+          {generateInvoices.isPending
+            ? "Syncing…"
+            : `Sync & Generate — ${targetPeriodLabel}`}
         </Button>
       </div>
 

@@ -38,8 +38,8 @@ const vehicleSchema = z.object({
         ),
     ),
   vehicleType: z.enum(["car", "motorcycle"]),
-  brand: z.string().optional(),
-  color: z.string().optional(),
+  brand: z.string().min(1, "Brand is required"),
+  color: z.string().min(1, "Color is required"),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -203,7 +203,12 @@ export function VehicleFormDialog({
           </form.Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <form.Field name="brand">
+            <form.Field
+              name="brand"
+              validators={{
+                onChange: vehicleSchema.shape.brand,
+              }}
+            >
               {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -227,7 +232,12 @@ export function VehicleFormDialog({
               }}
             </form.Field>
 
-            <form.Field name="color">
+            <form.Field
+              name="color"
+              validators={{
+                onChange: vehicleSchema.shape.color,
+              }}
+            >
               {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,17 +42,16 @@ export function WaterUsageEditDialog({
   const [currentMeter, setCurrentMeter] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const liveUsage = Math.max(0, currentMeter - previousMeter);
-  const liveAmount = liveUsage * WATER_RATE_PER_M3;
-  const isValid = currentMeter >= previousMeter;
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen && usage) {
+  useEffect(() => {
+    if (open && usage) {
       setPreviousMeter(usage.previousMeter);
       setCurrentMeter(usage.currentMeter);
     }
-    onOpenChange(nextOpen);
-  };
+  }, [open, usage]);
+
+  const liveUsage = Math.max(0, currentMeter - previousMeter);
+  const liveAmount = liveUsage * WATER_RATE_PER_M3;
+  const isValid = currentMeter >= previousMeter;
 
   const handleSave = async () => {
     if (!usage || !isValid) return;
@@ -89,7 +88,7 @@ export function WaterUsageEditDialog({
   if (!usage) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Water Usage</DialogTitle>

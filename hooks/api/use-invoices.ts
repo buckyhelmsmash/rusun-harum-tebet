@@ -89,3 +89,29 @@ export function useUpdateInvoice() {
     },
   });
 }
+
+interface GenerateInvoicesResponse {
+  count: number;
+  updated: number;
+  message?: string;
+}
+
+export function useGenerateInvoices() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return ApiClient.post<undefined, GenerateInvoicesResponse>(
+        "/api/invoices/generate",
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: invoiceKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.lists(),
+      });
+    },
+  });
+}

@@ -13,8 +13,8 @@ export const createVehicleSchema = z.object({
           "Invalid plate format (e.g. B 1234 ABC)",
         ),
     ),
-  color: z.string().max(30).nullable().optional(),
-  brand: z.string().max(50).nullable().optional(),
+  color: z.string().min(1, "Color is required").max(30),
+  brand: z.string().min(1, "Brand is required").max(50),
   unit: z.string().min(1),
 });
 
