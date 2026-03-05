@@ -50,8 +50,43 @@ export const UnitRepository = {
       queries,
     });
 
+    const units = result.rows.map(mapRowToUnit);
+
+    // Batch-resolve owner IDs so the list page can display owner names
+    const ownerIds = [
+      ...new Set(
+        units
+          .map((u) => (typeof u.owner === "string" ? u.owner : u.owner?.$id))
+          .filter((id): id is string => !!id),
+      ),
+    ];
+
+    if (ownerIds.length > 0) {
+      const ownersResult = await db.listRows({
+        databaseId: DB_ID,
+        tableId: APPWRITE.COLLECTIONS.OWNERS,
+        queries: [
+          Query.equal("$id", ownerIds),
+          Query.select(["$id", "fullName"]),
+          Query.limit(ownerIds.length),
+        ],
+      });
+
+      const ownerMap = new Map(
+        (ownersResult.rows as unknown as Owner[]).map((o) => [o.$id, o]),
+      );
+
+      for (const unit of units) {
+        const oid =
+          typeof unit.owner === "string" ? unit.owner : unit.owner?.$id;
+        if (oid && ownerMap.has(oid)) {
+          unit.owner = ownerMap.get(oid) as Owner;
+        }
+      }
+    }
+
     return {
-      items: result.rows.map(mapRowToUnit),
+      items: units,
       total: result.total,
       limit,
       offset,

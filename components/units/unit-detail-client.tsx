@@ -190,7 +190,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   Billing Recipient
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                  {unit.billRecipient}
+                  {unit.ownerId ? unit.billRecipient : "—"}
                 </p>
               </div>
             </div>
@@ -436,14 +436,20 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                 <p className="italic text-slate-500 dark:text-slate-400">
                   No vehicles registered for this unit
                 </p>
-                <Button
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                  onClick={handleAddVehicle}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Vehicle
-                </Button>
+                {unit.ownerId ? (
+                  <Button
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    onClick={handleAddVehicle}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Vehicle
+                  </Button>
+                ) : (
+                  <p className="text-xs text-slate-400">
+                    Assign an owner to add vehicles
+                  </p>
+                )}
               </div>
             )}
           </DetailCard>
