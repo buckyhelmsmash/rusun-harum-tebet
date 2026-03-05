@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -29,7 +30,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    await verifyAuth(request);
+    const session = await verifyAuth(request);
 
     const body = await request.json();
     const parsed = updateSchema.safeParse(body);
@@ -41,7 +42,25 @@ export async function PATCH(request: Request) {
       );
     }
 
+    const oldSettings = await SettingsRepository.get();
     const updated = await SettingsRepository.update(parsed.data);
+
+    const changes = getChanges(oldSettings, parsed.data);
+
+    if (changes.length > 0) {
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "settings.update",
+        description: `Updated system settings (Meeting No: ${parsed.data.meetingNumber})`,
+        targetType: "settings",
+        metadata: {
+          changes,
+          meetingNumber: parsed.data.meetingNumber,
+        },
+      });
+    }
+
     return NextResponse.json(updated);
   } catch (error: unknown) {
     if (error instanceof AuthError) {

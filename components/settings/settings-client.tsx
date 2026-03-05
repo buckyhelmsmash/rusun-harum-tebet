@@ -14,7 +14,9 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { goeyToast } from "@/components/ui/goey-toaster";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { account } from "@/lib/appwrite/client";
+import { ActivityLogs } from "./activity-logs";
 
 interface SettingsData {
   publicFacilityFee: number;
@@ -173,97 +175,126 @@ export function SettingsClient() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Biaya Tagihan</CardTitle>
-          </div>
-          <CardDescription>
-            Nilai-nilai ini diterapkan saat membuat tagihan bulanan dan
-            menghitung jumlah pemakaian air.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-2">
-          {FEE_FIELDS.map((field) => (
-            <div key={field.key} className="space-y-2">
-              <label
-                htmlFor={field.key}
-                className="text-sm font-medium leading-none"
-              >
-                {field.label}
-              </label>
-              <CurrencyInput
-                id={field.key}
-                suffix={field.suffix}
-                value={settings[field.key]}
-                onChange={(e) => handleFieldChange(field.key, e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                {field.description}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="pengaturan" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="pengaturan">Biaya & Pengaturan</TabsTrigger>
+          <TabsTrigger value="aktivitas">Riwayat Aktivitas</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Biaya Parkir Kendaraan</CardTitle>
-          <CardDescription>
-            Biaya bulanan bertingkat berdasarkan jumlah mobil per unit. Maksimal
-            3 mobil per unit. Motor gratis.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-3">
-          {CAR_FEE_FIELDS.map((field) => (
-            <div key={field.key} className="space-y-2">
-              <label
-                htmlFor={field.key}
-                className="text-sm font-medium leading-none"
-              >
-                {field.label}
-              </label>
-              <CurrencyInput
-                id={field.key}
-                suffix="/ bulan"
-                value={settings[field.key]}
-                onChange={(e) => handleFieldChange(field.key, e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                {field.description}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+        <TabsContent value="pengaturan" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+                <CardTitle>Biaya Tagihan</CardTitle>
+              </div>
+              <CardDescription>
+                Nilai-nilai ini diterapkan saat membuat tagihan bulanan dan
+                menghitung jumlah pemakaian air.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 sm:grid-cols-2">
+              {FEE_FIELDS.map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <label
+                    htmlFor={field.key}
+                    className="text-sm font-medium leading-none"
+                  >
+                    {field.label}
+                  </label>
+                  <CurrencyInput
+                    id={field.key}
+                    suffix={field.suffix}
+                    value={settings[field.key]}
+                    onChange={(e) =>
+                      handleFieldChange(field.key, e.target.value)
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {field.description}
+                  </p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-      {hasChanges && (
-        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-          <CardHeader>
-            <CardTitle className="text-amber-800 dark:text-amber-200">
-              Persetujuan Rapat Umum
-            </CardTitle>
-            <CardDescription className="text-amber-700 dark:text-amber-300">
-              Mengubah pengaturan biaya memerlukan persetujuan dari Rapat Umum
-              Anggota. Masukkan nomor referensi berita acara rapat di bawah ini.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="meetingNumber">
-                Nomor Referensi Berita Acara Rapat
-              </Label>
-              <Input
-                id="meetingNumber"
-                placeholder="mis. RAPAT/2026/III/001"
-                value={meetingNumber}
-                onChange={(e) => setMeetingNumber(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Biaya Parkir Kendaraan</CardTitle>
+              <CardDescription>
+                Biaya bulanan bertingkat berdasarkan jumlah mobil per unit.
+                Maksimal 3 mobil per unit. Motor gratis.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 sm:grid-cols-3">
+              {CAR_FEE_FIELDS.map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <label
+                    htmlFor={field.key}
+                    className="text-sm font-medium leading-none"
+                  >
+                    {field.label}
+                  </label>
+                  <CurrencyInput
+                    id={field.key}
+                    suffix="/ bulan"
+                    value={settings[field.key]}
+                    onChange={(e) =>
+                      handleFieldChange(field.key, e.target.value)
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {field.description}
+                  </p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {hasChanges && (
+            <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+              <CardHeader>
+                <CardTitle className="text-amber-800 dark:text-amber-200">
+                  Persetujuan Rapat Umum
+                </CardTitle>
+                <CardDescription className="text-amber-700 dark:text-amber-300">
+                  Mengubah pengaturan biaya memerlukan persetujuan dari Rapat
+                  Umum Anggota. Masukkan nomor referensi berita acara rapat di
+                  bawah ini.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="meetingNumber">
+                    Nomor Referensi Berita Acara Rapat
+                  </Label>
+                  <Input
+                    id="meetingNumber"
+                    placeholder="mis. RAPAT/2026/III/001"
+                    value={meetingNumber}
+                    onChange={(e) => setMeetingNumber(e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="aktivitas">
+          <Card>
+            <CardHeader>
+              <CardTitle>Riwayat Aktivitas</CardTitle>
+              <CardDescription>
+                Daftar aktivitas dan perubahan data yang dilakukan oleh admin
+                atau pengurus di dalam sistem.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActivityLogs />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

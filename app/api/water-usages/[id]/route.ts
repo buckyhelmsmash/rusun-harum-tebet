@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
@@ -17,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await verifyAuth(request);
+    const session = await verifyAuth(request);
     const { id } = await params;
 
     const body = await request.json();
@@ -44,17 +45,42 @@ export async function PATCH(
     const amount = usage * settings.waterRate;
 
     const db = await getAdminDb();
+
+    const oldRow = await db.getRow({
+      databaseId: DB_ID,
+      tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
+      rowId: id,
+    });
+
+    const newData = {
+      previousMeter,
+      currentMeter,
+      usage,
+      amount,
+    };
+
     const updated = await db.updateRow({
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
       rowId: id,
-      data: {
-        previousMeter,
-        currentMeter,
-        usage,
-        amount,
-      },
+      data: newData,
     });
+
+    const changes = getChanges(oldRow, newData);
+
+    if (changes.length > 0) {
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "water_usage.update",
+        description: `Updated water usage for period ${updated.period}`,
+        targetType: "water_usage",
+        targetId: updated.$id,
+        unitId:
+          typeof updated.unit === "object" ? updated.unit.$id : updated.unit,
+        metadata: { changes },
+      });
+    }
 
     return NextResponse.json({ result: updated });
   } catch (error: unknown) {

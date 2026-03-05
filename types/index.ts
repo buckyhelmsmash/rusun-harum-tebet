@@ -92,11 +92,23 @@ export type ActivityAction =
   | "tenant.remove"
   | "invoice.create"
   | "invoice.update"
+  | "invoice.sync"
+  | "invoice.generate"
+  | "water_usage.import"
+  | "water_usage.update"
+  | "settings.update"
   | "news.create"
   | "news.update"
   | "news.delete";
 
-export type TargetType = "unit" | "vehicle" | "owner" | "tenant" | "invoice";
+export type TargetType =
+  | "unit"
+  | "vehicle"
+  | "owner"
+  | "tenant"
+  | "invoice"
+  | "water_usage"
+  | "settings";
 
 export interface ActivityLog extends Models.Document {
   actorId: string;

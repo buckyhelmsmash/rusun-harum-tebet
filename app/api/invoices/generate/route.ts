@@ -2,8 +2,10 @@ import { randomInt, randomUUID } from "node:crypto";
 import { format, subMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
+import { logActivity } from "@/lib/activity/logger";
+import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb } from "@/lib/repositories/base";
+import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { GlobalSettings } from "@/lib/repositories/settings";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -37,8 +39,9 @@ function calculateCarFee(carCount: number, settings: GlobalSettings): number {
   return settings.car3Fee;
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const session = await verifyAuth(request);
     const db = await getAdminDb();
     const settings = await SettingsRepository.get();
     const now = new Date();
@@ -258,16 +261,34 @@ export async function POST() {
       updated++;
     }
 
+    if (created > 0 || updated > 0) {
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "invoice.generate",
+        description: `Generated ${created} new, updated ${updated} existing invoices for ${billingPeriod}`,
+        targetType: "invoice",
+        metadata: {
+          created,
+          updated,
+          period: billingPeriod,
+        },
+      });
+    }
+
     return NextResponse.json({
       count: created,
       updated,
       period: billingPeriod,
       message: `Generated ${created} new, updated ${updated} existing invoices for ${billingPeriod}`,
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
     console.error("[generate-invoices] Error:", error);
     return NextResponse.json(
-      { error: (error as Error).message },
+      { error: getErrorMessage(error) },
       { status: 500 },
     );
   }

@@ -1,6 +1,7 @@
 import { ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
@@ -17,14 +18,7 @@ const importPayloadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    try {
-      await verifyAuth(req);
-    } catch (error) {
-      if (error instanceof AuthError) {
-        return NextResponse.json({ error: error.message }, { status: 401 });
-      }
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await verifyAuth(req);
 
     const body = await req.json();
     const parsed = importPayloadSchema.safeParse(body);
@@ -187,13 +181,32 @@ export async function POST(req: Request) {
       }
     }
 
+    if (processed > 0) {
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "water_usage.import",
+        description: `Imported ${processed} water usage records for period ${period}`,
+        targetType: "water_usage",
+        metadata: {
+          period,
+          processed,
+          skipped,
+          errors,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       processed,
       skipped,
       errors,
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
     console.error("[water-usages-import]", error);
     return NextResponse.json(
       { error: (error as Error).message },

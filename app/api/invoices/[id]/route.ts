@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { logActivity } from "@/lib/activity/logger";
+import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, verifyAuth } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
@@ -38,20 +38,25 @@ export async function PATCH(
     const payload = body.data ?? body;
     const validated = updateInvoiceSchema.parse(payload);
 
-    const invoice = await InvoiceRepository.update(id, validated);
+    const oldInvoice = await InvoiceRepository.getById(id);
+    const updatedInvoice = await InvoiceRepository.update(id, validated);
 
-    logActivity({
-      actorId: session.$id,
-      actorName: session.name || session.email,
-      action: "invoice.update",
-      description: `Updated invoice for period ${invoice.period}`,
-      targetType: "invoice",
-      targetId: invoice.$id,
-      unitId: invoice.unitId,
-      metadata: validated,
-    });
+    const changes = getChanges(oldInvoice, validated);
 
-    return NextResponse.json({ result: invoice });
+    if (changes.length > 0) {
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "invoice.update",
+        description: `Updated invoice for period ${oldInvoice.period}`,
+        targetType: "invoice",
+        targetId: updatedInvoice.$id,
+        unitId: updatedInvoice.unitId,
+        metadata: { changes },
+      });
+    }
+
+    return NextResponse.json({ result: updatedInvoice });
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
