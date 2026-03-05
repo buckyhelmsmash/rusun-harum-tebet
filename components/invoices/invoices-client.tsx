@@ -131,6 +131,15 @@ export function InvoicesClient() {
   const columns: ColumnDef<Invoice>[] = useMemo(
     () => [
       {
+        accessorKey: "invoiceNumber",
+        header: "Invoice No",
+        cell: ({ row }) => (
+          <span className="text-xs font-mono text-slate-500">
+            {row.original.invoiceNumber || "—"}
+          </span>
+        ),
+      },
+      {
         accessorKey: "period",
         header: "Period",
         cell: ({ row }) => (
@@ -185,6 +194,24 @@ export function InvoicesClient() {
         ),
       },
       {
+        accessorKey: "publicFacilityFee",
+        header: () => <span className="text-right block">Sarana Umum</span>,
+        cell: ({ row }) => (
+          <span className="text-sm text-right block">
+            {formatCurrency(row.original.publicFacilityFee || 0)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "guardFee",
+        header: () => <span className="text-right block">Penjagaan</span>,
+        cell: ({ row }) => (
+          <span className="text-sm text-right block">
+            {formatCurrency(row.original.guardFee || 0)}
+          </span>
+        ),
+      },
+      {
         accessorKey: "vehicleFee",
         header: () => <span className="text-right block">Vehicle</span>,
         cell: ({ row }) => (
@@ -195,14 +222,43 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "arrears",
-        header: "Arrears",
-        cell: ({ row }) => (
-          <span
-            className={`text-sm text-right block ${row.original.arrears > 0 ? "text-rose-600 font-medium" : "text-slate-400"}`}
-          >
-            {formatCurrency(row.original.arrears)}
-          </span>
-        ),
+        header: () => <span className="text-right block">Arrears</span>,
+        cell: ({ row }) => {
+          const content = (
+            <span
+              className={`text-sm text-right block ${row.original.arrears > 0 ? "text-rose-600 font-medium" : "text-slate-400"}`}
+            >
+              {formatCurrency(row.original.arrears)}
+            </span>
+          );
+
+          if (!row.original.arrearsBreakdown) return content;
+
+          try {
+            const breakdown = JSON.parse(
+              row.original.arrearsBreakdown,
+            ) as Array<{ period: string; amount: number }>;
+            return (
+              <div className="group relative inline-block w-full text-right block">
+                {content}
+                <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-48 rounded bg-slate-900 p-2 text-xs text-white opacity-0 shadow-lg group-hover:block group-hover:opacity-100">
+                  <div className="font-semibold mb-1 border-b border-slate-700 pb-1">
+                    Breakdown
+                  </div>
+                  {breakdown.map((b) => (
+                    <div key={b.period} className="flex justify-between">
+                      <span>{b.period}:</span>
+                      <span>{formatCurrency(b.amount)}</span>
+                    </div>
+                  ))}
+                  <div className="absolute -bottom-1 right-4 h-2 w-2 rotate-45 bg-slate-900"></div>
+                </div>
+              </div>
+            );
+          } catch {
+            return content;
+          }
+        },
       },
       {
         accessorKey: "totalDue",

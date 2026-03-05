@@ -6,12 +6,14 @@ import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { CreateInvoiceInput } from "@/lib/schemas/invoices";
+import type { WaterUsage } from "@/lib/schemas/water-usages";
 import type { Vehicle } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
 
 const DEFAULT_IPL_FEE = 250_000;
-const DEFAULT_WATER_FEE = 100_000;
+const DEFAULT_PUBLIC_FACILITY_FEE = 15_000;
+const DEFAULT_GUARD_FEE = 35_000;
 
 function generateUniqueCode(): number {
   return randomInt(100, 1000);
@@ -137,6 +139,24 @@ export async function POST() {
       ),
     );
 
+    // Fetch water usages for this billing period
+    const waterUsagesResult = await db.listRows({
+      databaseId: DB_ID,
+      tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
+      queries: [Query.equal("period", billingPeriod), Query.limit(500)],
+    });
+
+    const waterUsageMap = new Map<string, number>();
+    for (const row of waterUsagesResult.rows) {
+      const w = row as unknown as WaterUsage;
+      let unitId = "";
+      if (typeof w.unit === "string") unitId = w.unit;
+      else if (w.unit && typeof w.unit === "object") unitId = w.unit.$id;
+      if (unitId) {
+        waterUsageMap.set(unitId, w.amount || 0);
+      }
+    }
+
     let created = 0;
 
     for (const unit of unitsToGenerate) {
@@ -152,6 +172,7 @@ export async function POST() {
       );
 
       const arrears = arrearsMap.get(unit.$id) ?? 0;
+      const waterFee = waterUsageMap.get(unit.$id) ?? 0; // Dynamic from water_usages
 
       let uniqueCode = generateUniqueCode();
       while (usedCodes.has(uniqueCode)) {
@@ -160,7 +181,17 @@ export async function POST() {
       usedCodes.add(uniqueCode);
 
       const totalDue =
-        DEFAULT_IPL_FEE + DEFAULT_WATER_FEE + vehicleFee + arrears + uniqueCode;
+        DEFAULT_IPL_FEE +
+        DEFAULT_PUBLIC_FACILITY_FEE +
+        DEFAULT_GUARD_FEE +
+        waterFee +
+        vehicleFee +
+        arrears +
+        uniqueCode;
+
+      // Invoice period: e.g., 2026-03. Parse to 202603.
+      const condensedPeriod = billingPeriod.replace("-", "");
+      const invoiceNumber = `INV-${condensedPeriod}-${unit.displayId}`;
 
       const data: CreateInvoiceInput = {
         unit: unit.$id,
@@ -168,12 +199,15 @@ export async function POST() {
         status: "unpaid",
         dueDate,
         iplFee: DEFAULT_IPL_FEE,
-        waterFee: DEFAULT_WATER_FEE,
+        publicFacilityFee: DEFAULT_PUBLIC_FACILITY_FEE,
+        guardFee: DEFAULT_GUARD_FEE,
+        waterFee,
         vehicleFee,
         arrears,
         uniqueCode,
         totalDue,
         accessToken: generateAccessToken(),
+        invoiceNumber,
       };
 
       await InvoiceRepository.create(data);

@@ -49,13 +49,17 @@ export interface Vehicle extends Models.Document {
 
 export interface Invoice extends Models.Document {
   accessToken: string;
+  invoiceNumber: string;
   period: string; // e.g., '2023-10'
   status: "paid" | "unpaid";
   dueDate: string;
   arrears: number;
+  arrearsBreakdown?: string;
   totalDue: number;
   iplFee: number;
   waterFee: number;
+  publicFacilityFee?: number;
+  guardFee?: number;
   vehicleFee: number;
   uniqueCode: number;
   payDate?: string;

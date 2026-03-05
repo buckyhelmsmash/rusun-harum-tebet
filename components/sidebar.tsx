@@ -4,6 +4,7 @@ import {
   BarChart3,
   Building2,
   Car,
+  Droplet,
   FileText,
   LogOut,
   Newspaper,
@@ -38,6 +39,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/admin", label: "Analytics", icon: BarChart3 },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
+  { href: "/admin/water-usages", label: "Water Usages", icon: Droplet },
   { href: "/admin/units", label: "Units", icon: Building2 },
   { href: "/admin/vehicles", label: "Vehicles", icon: Car },
   { href: "/admin/residents", label: "Residents", icon: Users },

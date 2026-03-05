@@ -38,6 +38,8 @@ export function InvoiceFormDialog({
 
   const [iplFee, setIplFee] = useState(0);
   const [waterFee, setWaterFee] = useState(0);
+  const [publicFacilityFee, setPublicFacilityFee] = useState(0);
+  const [guardFee, setGuardFee] = useState(0);
   const [vehicleFee, setVehicleFee] = useState(0);
   const [arrears, setArrears] = useState(0);
   const [uniqueCode, setUniqueCode] = useState(0);
@@ -47,6 +49,8 @@ export function InvoiceFormDialog({
     if (invoice) {
       setIplFee(invoice.iplFee);
       setWaterFee(invoice.waterFee);
+      setPublicFacilityFee(invoice.publicFacilityFee || 0);
+      setGuardFee(invoice.guardFee || 0);
       setVehicleFee(invoice.vehicleFee);
       setArrears(invoice.arrears);
       setUniqueCode(invoice.uniqueCode);
@@ -54,7 +58,14 @@ export function InvoiceFormDialog({
     }
   }, [invoice]);
 
-  const totalDue = iplFee + waterFee + vehicleFee + arrears + uniqueCode;
+  const totalDue =
+    iplFee +
+    waterFee +
+    publicFacilityFee +
+    guardFee +
+    vehicleFee +
+    arrears +
+    uniqueCode;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +77,8 @@ export function InvoiceFormDialog({
         data: {
           iplFee,
           waterFee,
+          publicFacilityFee,
+          guardFee,
           vehicleFee,
           arrears,
           totalDue,
@@ -117,6 +130,26 @@ export function InvoiceFormDialog({
                 type="number"
                 value={waterFee}
                 onChange={(e) => setWaterFee(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="publicFacilityFee">Sarana Umum Fee (Rp)</Label>
+              <Input
+                id="publicFacilityFee"
+                type="number"
+                value={publicFacilityFee}
+                onChange={(e) => setPublicFacilityFee(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="guardFee">Penjagaan Fasilitas Fee (Rp)</Label>
+              <Input
+                id="guardFee"
+                type="number"
+                value={guardFee}
+                onChange={(e) => setGuardFee(Number(e.target.value))}
                 min={0}
               />
             </div>

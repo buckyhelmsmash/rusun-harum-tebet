@@ -12,6 +12,8 @@ export const APPWRITE = {
     NEWS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_NEWS as string,
     ACTIVITY_LOGS: process.env
       .NEXT_PUBLIC_APPWRITE_COLLECTION_ACTIVITY_LOGS as string,
+    WATER_USAGES: process.env
+      .NEXT_PUBLIC_APPWRITE_COLLECTION_WATER_USAGES as string,
   },
   AUTH: {
     ADMIN_EMAILS: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "")
