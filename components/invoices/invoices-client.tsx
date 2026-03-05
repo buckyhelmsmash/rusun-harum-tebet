@@ -1,12 +1,13 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format, subMonths } from "date-fns";
 import {
   Calendar as CalendarIcon,
   FileText,
   Pencil,
-  Plus,
+  RefreshCw,
   Zap,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -32,6 +33,7 @@ import {
 import { useGetInvoices } from "@/hooks/api/use-invoices";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
+import { formatPeriodRange, getTargetBillingPeriod } from "@/lib/utils/period";
 import type { Invoice, Unit } from "@/types";
 import { InvoiceFormDialog } from "./invoice-form-dialog";
 
@@ -86,6 +88,10 @@ export function InvoicesClient() {
   const [formOpen, setFormOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const queryClient = useQueryClient();
+  const targetPeriod = getTargetBillingPeriod();
+  const targetPeriodLabel = formatPeriodRange(targetPeriod);
+
   const periodFilter = periodDate ? format(periodDate, "yyyy-MM") : undefined;
 
   const filters = useMemo(
@@ -118,9 +124,10 @@ export function InvoicesClient() {
         throw new Error(err.error || "Generation failed");
       }
       const result = await res.json();
-      goeyToast.success(`Successfully generated ${result.count ?? 0} invoices`);
+      goeyToast.success(`Successfully synced ${result.count ?? 0} invoices`);
+      await queryClient.invalidateQueries({ queryKey: ["invoices"] });
     } catch (error) {
-      goeyToast.error("Failed to generate invoices", {
+      goeyToast.error("Failed to sync invoices", {
         description: (error as Error).message,
       });
     } finally {
@@ -143,7 +150,9 @@ export function InvoicesClient() {
         accessorKey: "period",
         header: "Period",
         cell: ({ row }) => (
-          <span className="text-sm font-medium">{row.original.period}</span>
+          <span className="text-xs font-medium">
+            {formatPeriodRange(row.original.period)}
+          </span>
         ),
       },
       {
@@ -406,9 +415,9 @@ export function InvoicesClient() {
           {isGenerating ? (
             <Zap className="h-4 w-4 mr-2 animate-pulse" />
           ) : (
-            <Plus className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4 mr-2" />
           )}
-          {isGenerating ? "Generating…" : "Generate Monthly Invoices"}
+          {isGenerating ? "Syncing…" : `Sync & Generate — ${targetPeriodLabel}`}
         </Button>
       </div>
 

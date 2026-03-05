@@ -31,11 +31,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const db = await getAdminDb();
     const { searchParams } = new URL(request.url);
     const limit = Number(searchParams.get("limit") || "25");
     const offset = Number(searchParams.get("offset") || "0");
     const period = searchParams.get("period");
     const unitId = searchParams.get("unitId");
+    const block = searchParams.get("block");
 
     const queries = [];
     if (period) {
@@ -45,11 +47,33 @@ export async function GET(request: Request) {
       queries.push(Query.equal("unit", unitId));
     }
 
+    // Block filter: find unit IDs that belong to this block, then filter water usages
+    if (block) {
+      const blockUnits = await db.listRows({
+        databaseId: DB_ID,
+        tableId: APPWRITE.COLLECTIONS.UNITS,
+        queries: [
+          Query.startsWith("displayId", `${block}-`),
+          Query.select(["$id"]),
+          Query.limit(500),
+        ],
+      });
+
+      const blockUnitIds = blockUnits.rows.map(
+        (u) => (u as unknown as { $id: string }).$id,
+      );
+
+      if (blockUnitIds.length === 0) {
+        return NextResponse.json({ total: 0, rows: [] });
+      }
+
+      queries.push(Query.equal("unit", blockUnitIds));
+    }
+
     queries.push(Query.orderDesc("period"));
     queries.push(Query.limit(limit));
     queries.push(Query.offset(offset));
 
-    const db = await getAdminDb();
     const result = await db.listRows({
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.WATER_USAGES,

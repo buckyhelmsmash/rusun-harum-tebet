@@ -3,7 +3,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format, subMonths } from "date-fns";
-import { Calendar as CalendarIcon, Droplet, UploadCloud } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Droplet,
+  Pencil,
+  UploadCloud,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
@@ -14,12 +19,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { WaterUsageEditDialog } from "@/components/water-usages/water-usage-edit-dialog";
 import { WaterUsageImport } from "@/components/water-usages/water-usage-import";
 import { useGetWaterUsages } from "@/hooks/api/use-water-usages";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { WaterUsage } from "@/lib/schemas/water-usages";
+import { formatPeriodRange } from "@/lib/utils/period";
 
 const PAGE_SIZE = 25;
+const BLOCKS = ["A", "B", "C", "D"] as const;
 
 function getInitialPeriodDate(urlPeriod: string | null): Date | undefined {
   if (urlPeriod) {
@@ -37,14 +52,18 @@ function getUnitDisplayId(unit: WaterUsage["unit"]): string {
 export function WaterUsagesClient() {
   const searchParams = useSearchParams();
   const urlPeriod = searchParams.get("period");
+  const urlBlock = searchParams.get("block");
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [periodDate, setPeriodDate] = useState<Date | undefined>(() =>
     getInitialPeriodDate(urlPeriod),
   );
+  const [blockFilter, setBlockFilter] = useState(urlBlock ?? "A");
   const [pageIndex, setPageIndex] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
+  const [editingUsage, setEditingUsage] = useState<WaterUsage | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -56,29 +75,29 @@ export function WaterUsagesClient() {
       limit: PAGE_SIZE,
       offset: pageIndex * PAGE_SIZE,
       period: periodFilter,
+      block: blockFilter !== "all" ? blockFilter : undefined,
     }),
-    [debouncedSearch, periodFilter, pageIndex],
+    [debouncedSearch, periodFilter, blockFilter, pageIndex],
   );
 
   const { data, isLoading } = useGetWaterUsages(filters);
   const rows = data?.rows ?? [];
   const total = data?.total ?? 0;
 
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["waterUsages"] });
+  };
+
   const columns: ColumnDef<WaterUsage>[] = useMemo(
     () => [
       {
         accessorKey: "period",
         header: "Period",
-        cell: ({ row }) => {
-          const periodStr = row.original.period;
-          const [year, month] = periodStr.split("-").map(Number);
-          const date = new Date(year, month - 1, 1);
-          return (
-            <span className="font-medium text-slate-900 dark:text-white">
-              {format(date, "MMM yyyy")}
-            </span>
-          );
-        },
+        cell: ({ row }) => (
+          <span className="font-medium text-slate-900 dark:text-white text-xs">
+            {formatPeriodRange(row.original.period)}
+          </span>
+        ),
       },
       {
         accessorKey: "unit",
@@ -125,6 +144,23 @@ export function WaterUsagesClient() {
           </span>
         ),
       },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              setEditingUsage(row.original);
+              setEditOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ),
+      },
     ],
     [],
   );
@@ -140,9 +176,22 @@ export function WaterUsagesClient() {
             <p className="font-bold text-slate-900 dark:text-white">
               {getUnitDisplayId(usage.unit)}
             </p>
-            <p className="text-xs text-slate-500">{usage.period}</p>
+            <p className="text-xs text-slate-500">
+              {formatPeriodRange(usage.period)}
+            </p>
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => {
+            setEditingUsage(usage);
+            setEditOpen(true);
+          }}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-slate-500">
         <div>
@@ -173,9 +222,17 @@ export function WaterUsagesClient() {
       <WaterUsageImport
         open={importOpen}
         onOpenChange={setImportOpen}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["waterUsages"] });
+        onSuccess={handleRefresh}
+      />
+
+      <WaterUsageEditDialog
+        usage={editingUsage}
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditingUsage(null);
         }}
+        onSuccess={handleRefresh}
       />
 
       {/* Page Title & CTA */}
@@ -197,7 +254,7 @@ export function WaterUsagesClient() {
         </Button>
       </div>
 
-      {/* DataTable with filters via the slot pattern */}
+      {/* DataTable with filters */}
       <DataTable
         columns={columns}
         data={rows}
@@ -211,42 +268,66 @@ export function WaterUsagesClient() {
           setPageIndex(0);
         }}
         filters={
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                data-empty={!periodDate}
-                className="min-w-[160px] justify-start text-left font-normal shadow-sm data-[empty=true]:text-muted-foreground"
-              >
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                {periodDate ? format(periodDate, "MMMM yyyy") : "All Periods"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <MonthPicker
-                selectedMonth={periodDate}
-                onMonthSelect={(date) => {
-                  setPeriodDate(date);
-                  setPageIndex(0);
-                }}
-              />
-              {periodDate && (
-                <div className="p-2 border-t border-slate-200 dark:border-slate-800">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => {
-                      setPeriodDate(undefined);
-                      setPageIndex(0);
-                    }}
-                  >
-                    Clear filter
-                  </Button>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
+          <>
+            {/* Block filter */}
+            <Select
+              value={blockFilter}
+              onValueChange={(val) => {
+                setBlockFilter(val);
+                setPageIndex(0);
+              }}
+            >
+              <SelectTrigger className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-w-[100px] shadow-sm">
+                <SelectValue placeholder="Block" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Blocks</SelectItem>
+                {BLOCKS.map((b) => (
+                  <SelectItem key={b} value={b}>
+                    Block {b}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Month picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  data-empty={!periodDate}
+                  className="min-w-[160px] justify-start text-left font-normal shadow-sm data-[empty=true]:text-muted-foreground"
+                >
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {periodDate ? format(periodDate, "MMMM yyyy") : "All Periods"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <MonthPicker
+                  selectedMonth={periodDate}
+                  onMonthSelect={(date) => {
+                    setPeriodDate(date);
+                    setPageIndex(0);
+                  }}
+                />
+                {periodDate && (
+                  <div className="p-2 border-t border-slate-200 dark:border-slate-800">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => {
+                        setPeriodDate(undefined);
+                        setPageIndex(0);
+                      }}
+                    >
+                      Clear filter
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+          </>
         }
         total={total}
         pageSize={PAGE_SIZE}

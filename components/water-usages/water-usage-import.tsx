@@ -35,6 +35,7 @@ import {
   type ExcelImportRow,
   excelImportRowSchema,
 } from "@/lib/schemas/water-usages";
+import { getTargetBillingPeriod } from "@/lib/utils/period";
 
 interface WaterUsageImportProps {
   open: boolean;
@@ -48,7 +49,7 @@ export function WaterUsageImport({
   onSuccess,
 }: WaterUsageImportProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
+  const [period, setPeriod] = useState(() => getTargetBillingPeriod());
   const [parsedData, setParsedData] = useState<ExcelImportRow[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isImporting, setIsImporting] = useState(false);
