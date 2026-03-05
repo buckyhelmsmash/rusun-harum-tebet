@@ -10,11 +10,11 @@ export const createVehicleSchema = z.object({
         .string()
         .regex(
           /^[A-Z]{1,2}\s?\d{1,4}\s?[A-Z]{0,3}$/,
-          "Invalid plate format (e.g. B 1234 ABC)",
+          "Format plat tidak valid (misal: B 1234 ABC)",
         ),
     ),
-  color: z.string().min(1, "Color is required").max(30),
-  brand: z.string().min(1, "Brand is required").max(50),
+  color: z.string().min(1, "Warna wajib diisi").max(30),
+  brand: z.string().min(1, "Merek wajib diisi").max(50),
   unit: z.string().min(1),
 });
 

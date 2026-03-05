@@ -29,20 +29,20 @@ interface SettingsData {
 const FEE_FIELDS = [
   {
     key: "publicFacilityFee" as const,
-    label: "Public Facility Fee",
-    description: "Monthly public facility maintenance contribution",
-    suffix: "/ month",
+    label: "Biaya Sarana Umum",
+    description: "Kontribusi bulanan untuk pemeliharaan fasilitas umum",
+    suffix: "/ bulan",
   },
   {
     key: "guardFee" as const,
-    label: "Security Guard Fee",
-    description: "Monthly security / guard service fee per unit",
-    suffix: "/ month",
+    label: "Biaya Penjagaan",
+    description: "Biaya bulanan layanan keamanan / penjagaan per unit",
+    suffix: "/ bulan",
   },
   {
     key: "waterRate" as const,
-    label: "Water Rate",
-    description: "Price per cubic meter of water usage",
+    label: "Tarif Air",
+    description: "Harga per meter kubik pemakaian air",
     suffix: "/ m³",
   },
 ];
@@ -50,18 +50,18 @@ const FEE_FIELDS = [
 const CAR_FEE_FIELDS = [
   {
     key: "car1Fee" as const,
-    label: "1 Car Fee",
-    description: "Monthly parking fee when a unit has 1 car",
+    label: "Biaya 1 Mobil",
+    description: "Biaya parkir bulanan untuk unit yang memiliki 1 mobil",
   },
   {
     key: "car2Fee" as const,
-    label: "2 Cars Fee",
-    description: "Monthly parking fee when a unit has 2 cars",
+    label: "Biaya 2 Mobil",
+    description: "Biaya parkir bulanan untuk unit yang memiliki 2 mobil",
   },
   {
     key: "car3Fee" as const,
-    label: "3 Cars Fee (max)",
-    description: "Monthly parking fee when a unit has 3 cars",
+    label: "Biaya 3 Mobil (maks)",
+    description: "Biaya parkir bulanan untuk unit yang memiliki 3 mobil",
   },
 ];
 
@@ -87,7 +87,7 @@ export function SettingsClient() {
         setSettings(data);
         setOriginal(data);
       })
-      .catch(() => goeyToast.error("Failed to load settings"))
+      .catch(() => goeyToast.error("Gagal memuat pengaturan"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -102,7 +102,9 @@ export function SettingsClient() {
 
   const handleSave = async () => {
     if (!meetingNumber.trim()) {
-      goeyToast.error("Meeting number is required to save changes");
+      goeyToast.error(
+        "Nomor berita acara rapat wajib diisi untuk menyimpan perubahan",
+      );
       return;
     }
 
@@ -122,14 +124,14 @@ export function SettingsClient() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save settings");
+      if (!res.ok) throw new Error("Gagal menyimpan pengaturan");
 
       const updated: SettingsData = await res.json();
       setSettings(updated);
       setOriginal(updated);
-      goeyToast.success("Settings updated successfully");
+      goeyToast.success("Pengaturan berhasil diperbarui");
     } catch {
-      goeyToast.error("Failed to save settings");
+      goeyToast.error("Gagal menyimpan pengaturan");
     } finally {
       setSaving(false);
     }
@@ -155,9 +157,10 @@ export function SettingsClient() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Pengaturan</h1>
           <p className="text-muted-foreground">
-            Manage billing fee parameters used for invoice generation
+            Kelola parameter biaya tagihan yang digunakan untuk pembuatan
+            tagihan
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving || !hasChanges}>
@@ -174,11 +177,11 @@ export function SettingsClient() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Settings className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Billing Fees</CardTitle>
+            <CardTitle>Biaya Tagihan</CardTitle>
           </div>
           <CardDescription>
-            These values are applied when generating monthly invoices and
-            calculating water usage amounts.
+            Nilai-nilai ini diterapkan saat membuat tagihan bulanan dan
+            menghitung jumlah pemakaian air.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 sm:grid-cols-2">
@@ -206,10 +209,10 @@ export function SettingsClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Vehicle Parking Fees</CardTitle>
+          <CardTitle>Biaya Parkir Kendaraan</CardTitle>
           <CardDescription>
-            Tiered monthly fee based on the number of cars per unit. Max 3 cars
-            per unit. Motorcycles are free.
+            Biaya bulanan bertingkat berdasarkan jumlah mobil per unit. Maksimal
+            3 mobil per unit. Motor gratis.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 sm:grid-cols-3">
@@ -223,7 +226,7 @@ export function SettingsClient() {
               </label>
               <CurrencyInput
                 id={field.key}
-                suffix="/ month"
+                suffix="/ bulan"
                 value={settings[field.key]}
                 onChange={(e) => handleFieldChange(field.key, e.target.value)}
               />
@@ -239,19 +242,21 @@ export function SettingsClient() {
         <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
           <CardHeader>
             <CardTitle className="text-amber-800 dark:text-amber-200">
-              General Meeting Approval
+              Persetujuan Rapat Umum
             </CardTitle>
             <CardDescription className="text-amber-700 dark:text-amber-300">
-              Changing fee settings requires approval from the General Meeting
-              of Members. Enter the meeting reference number below.
+              Mengubah pengaturan biaya memerlukan persetujuan dari Rapat Umum
+              Anggota. Masukkan nomor referensi berita acara rapat di bawah ini.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="meetingNumber">Meeting Reference Number</Label>
+              <Label htmlFor="meetingNumber">
+                Nomor Referensi Berita Acara Rapat
+              </Label>
               <Input
                 id="meetingNumber"
-                placeholder="e.g. RAPAT/2026/III/001"
+                placeholder="mis. RAPAT/2026/III/001"
                 value={meetingNumber}
                 onChange={(e) => setMeetingNumber(e.target.value)}
               />

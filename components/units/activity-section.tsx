@@ -9,19 +9,19 @@ type BadgeVariant = "success" | "info" | "destructive" | "default" | "warning";
 
 const ACTION_LABELS: Record<string, { label: string; variant: BadgeVariant }> =
   {
-    "vehicle.create": { label: "Added", variant: "success" },
-    "vehicle.update": { label: "Updated", variant: "info" },
-    "vehicle.delete": { label: "Removed", variant: "destructive" },
-    "unit.update": { label: "Updated", variant: "info" },
-    "owner.assign": { label: "Assigned", variant: "success" },
-    "owner.remove": { label: "Removed", variant: "destructive" },
-    "tenant.assign": { label: "Assigned", variant: "success" },
-    "tenant.remove": { label: "Removed", variant: "destructive" },
-    "invoice.create": { label: "Created", variant: "success" },
-    "invoice.update": { label: "Updated", variant: "info" },
-    "news.create": { label: "Created", variant: "success" },
-    "news.update": { label: "Updated", variant: "info" },
-    "news.delete": { label: "Removed", variant: "destructive" },
+    "vehicle.create": { label: "Ditambahkan", variant: "success" },
+    "vehicle.update": { label: "Diperbarui", variant: "info" },
+    "vehicle.delete": { label: "Dihapus", variant: "destructive" },
+    "unit.update": { label: "Diperbarui", variant: "info" },
+    "owner.assign": { label: "Ditetapkan", variant: "success" },
+    "owner.remove": { label: "Dihapus", variant: "destructive" },
+    "tenant.assign": { label: "Ditetapkan", variant: "success" },
+    "tenant.remove": { label: "Dihapus", variant: "destructive" },
+    "invoice.create": { label: "Dibuat", variant: "success" },
+    "invoice.update": { label: "Diperbarui", variant: "info" },
+    "news.create": { label: "Dibuat", variant: "success" },
+    "news.update": { label: "Diperbarui", variant: "info" },
+    "news.delete": { label: "Dihapus", variant: "destructive" },
   };
 
 function formatRelativeTime(dateStr: string): string {
@@ -30,12 +30,12 @@ function formatRelativeTime(dateStr: string): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1) return "Baru saja";
+  if (diffMins < 60) return `${diffMins}m yang lalu`;
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffHours < 24) return `${diffHours}j yang lalu`;
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 7) return `${diffDays}h yang lalu`;
   return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
@@ -54,17 +54,17 @@ export function ActivitySection({ unitId }: ActivitySectionProps) {
   return (
     <DetailCard>
       <DetailCardHeader
-        title="Recent Activity"
+        title="Aktivitas Terbaru"
         icon={<Clock className="h-5 w-5" />}
       />
 
       {isLoading ? (
         <div className="p-6 text-center text-sm text-slate-400">
-          Loading activity...
+          Memuat aktivitas...
         </div>
       ) : logs.length === 0 ? (
         <div className="p-6 text-center text-sm text-slate-400 italic">
-          No activity recorded yet
+          Belum ada aktivitas yang dicatat
         </div>
       ) : (
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -124,7 +124,7 @@ export function ActivitySection({ unitId }: ActivitySectionProps) {
                   )}
 
                   <p className="text-xs text-slate-400 mt-1">
-                    by {log.actorName} · {formatRelativeTime(log.$createdAt)}
+                    oleh {log.actorName} · {formatRelativeTime(log.$createdAt)}
                   </p>
                 </div>
                 <StatusBadge variant={actionInfo.variant}>

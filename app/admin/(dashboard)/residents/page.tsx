@@ -1,8 +1,8 @@
 import { ResidentsClient } from "@/components/residents/residents-client";
 
 export const metadata = {
-  title: "Residents | Rusun Harum Tebet",
-  description: "Manage owners and tenants across all units",
+  title: "Penghuni | Rusun Harum Tebet",
+  description: "Kelola pemilik dan penyewa di seluruh unit",
 };
 
 export default function ResidentsPage() {

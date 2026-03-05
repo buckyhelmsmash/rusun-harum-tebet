@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 const baseResidentSchema = z.object({
-  fullName: z.string().min(1, "Full name is required").max(255),
-  phoneNumber: z.string().min(1, "Phone number is required").max(20),
-  ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
+  fullName: z.string().min(1, "Nama lengkap wajib diisi").max(255),
+  phoneNumber: z.string().min(1, "Nomor telepon wajib diisi").max(20),
+  ktpNumber: z.string().regex(/^\d{16}$/, "KTP harus tepat 16 digit"),
   email: z.string().email().nullable().optional(),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  dateOfBirth: z.string().min(1, "Tanggal lahir wajib diisi"),
 });
 
 export const createOwnerSchema = baseResidentSchema;

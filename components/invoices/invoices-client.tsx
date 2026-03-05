@@ -56,9 +56,9 @@ function getResidentName(unit: Unit | undefined): string {
 }
 
 const STATUS_TABS = [
-  { value: "all", label: "All" },
-  { value: "paid", label: "Paid" },
-  { value: "unpaid", label: "Unpaid" },
+  { value: "all", label: "Semua" },
+  { value: "paid", label: "Lunas" },
+  { value: "unpaid", label: "Belum Lunas" },
 ] as const;
 
 function getInitialPeriodDate(urlPeriod: string | null): Date | undefined {
@@ -116,16 +116,16 @@ export function InvoicesClient() {
     generateInvoices.mutate(undefined, {
       onSuccess: (result) => {
         const parts: string[] = [];
-        if (result.count > 0) parts.push(`${result.count} created`);
-        if (result.updated > 0) parts.push(`${result.updated} updated`);
+        if (result.count > 0) parts.push(`${result.count} dibuat`);
+        if (result.updated > 0) parts.push(`${result.updated} diperbarui`);
         goeyToast.success(
           parts.length > 0
-            ? `Invoices synced: ${parts.join(", ")}`
-            : (result.message ?? "All invoices are up to date"),
+            ? `Tagihan disinkronkan: ${parts.join(", ")}`
+            : (result.message ?? "Semua tagihan sudah yang terbaru"),
         );
       },
       onError: (error) => {
-        goeyToast.error("Failed to sync invoices", {
+        goeyToast.error("Gagal menyinkronkan tagihan", {
           description: error.message,
         });
       },
@@ -136,7 +136,7 @@ export function InvoicesClient() {
     () => [
       {
         accessorKey: "invoiceNumber",
-        header: "Invoice No",
+        header: "No. Tagihan",
         cell: ({ row }) => (
           <span className="text-xs font-mono text-slate-500">
             {row.original.invoiceNumber || "—"}
@@ -145,7 +145,7 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "period",
-        header: "Period",
+        header: "Periode",
         cell: ({ row }) => (
           <span className="text-xs font-medium">
             {formatPeriodRange(row.original.period)}
@@ -173,7 +173,7 @@ export function InvoicesClient() {
       },
       {
         id: "resident",
-        header: "Recipient",
+        header: "Penghuni",
         cell: ({ row }) => {
           const unit =
             typeof row.original.unit === "object"
@@ -189,7 +189,7 @@ export function InvoicesClient() {
 
       {
         accessorKey: "waterFee",
-        header: () => <span className="text-right block">Water</span>,
+        header: () => <span className="text-right block">Air</span>,
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.waterFee)}
@@ -216,7 +216,7 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "vehicleFee",
-        header: () => <span className="text-right block">Vehicle</span>,
+        header: () => <span className="text-right block">Kendaraan</span>,
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.vehicleFee)}
@@ -225,7 +225,7 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "arrears",
-        header: () => <span className="text-right block">Arrears</span>,
+        header: () => <span className="text-right block">Tunggakan</span>,
         cell: ({ row }) => {
           const content = (
             <span
@@ -246,7 +246,7 @@ export function InvoicesClient() {
                 {content}
                 <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-48 rounded bg-slate-900 p-2 text-xs text-white opacity-0 shadow-lg group-hover:block group-hover:opacity-100">
                   <div className="font-semibold mb-1 border-b border-slate-700 pb-1">
-                    Breakdown
+                    Rincian
                   </div>
                   {breakdown.map((b) => (
                     <div key={b.period} className="flex justify-between">
@@ -265,7 +265,7 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "totalDue",
-        header: "Total Due",
+        header: "Total Tagihan",
         cell: ({ row }) => (
           <span className="text-sm font-bold text-slate-900 dark:text-white text-right block">
             {formatCurrency(row.original.totalDue)}
@@ -279,7 +279,7 @@ export function InvoicesClient() {
           <StatusBadge
             variant={row.original.status === "paid" ? "success" : "destructive"}
           >
-            {row.original.status === "paid" ? "Paid" : "Unpaid"}
+            {row.original.status === "paid" ? "Lunas" : "Belum Lunas"}
           </StatusBadge>
         ),
       },
@@ -334,23 +334,23 @@ export function InvoicesClient() {
           <StatusBadge
             variant={invoice.status === "paid" ? "success" : "destructive"}
           >
-            {invoice.status === "paid" ? "Paid" : "Unpaid"}
+            {invoice.status === "paid" ? "Lunas" : "Belum Lunas"}
           </StatusBadge>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 mb-3">
           <div>
-            <span className="text-slate-400">Period:</span> {invoice.period}
+            <span className="text-slate-400">Periode:</span> {invoice.period}
           </div>
           <div className="text-right">
-            <span className="text-slate-400">Facility:</span>{" "}
+            <span className="text-slate-400">Fasilitas:</span>{" "}
             {formatCurrency(invoice.publicFacilityFee || 0)}
           </div>
           <div>
-            <span className="text-slate-400">Water:</span>{" "}
+            <span className="text-slate-400">Air:</span>{" "}
             {formatCurrency(invoice.waterFee)}
           </div>
           <div className="text-right">
-            <span className="text-slate-400">Vehicle:</span>{" "}
+            <span className="text-slate-400">Kendaraan:</span>{" "}
             {formatCurrency(invoice.vehicleFee)}
           </div>
         </div>
@@ -358,7 +358,7 @@ export function InvoicesClient() {
           <div>
             {invoice.arrears > 0 && (
               <span className="text-xs text-rose-600 mr-2">
-                Arrears: {formatCurrency(invoice.arrears)}
+                Tunggakan: {formatCurrency(invoice.arrears)}
               </span>
             )}
           </div>
@@ -377,12 +377,12 @@ export function InvoicesClient() {
             }}
           >
             <Pencil className="h-3.5 w-3.5 mr-1.5" />
-            Edit
+            Ubah
           </Button>
           <TimelineSheet
             targetId={invoice.$id}
             targetType="invoice"
-            title={`Invoice ${invoice.period}`}
+            title={`Tagihan ${invoice.period}`}
           />
         </div>
       </div>
@@ -395,10 +395,10 @@ export function InvoicesClient() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Invoices
+            Tagihan
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage monthly billings and payment status for all residents.
+            Kelola tagihan bulanan dan status pembayaran untuk semua penghuni.
           </p>
         </div>
         <Button
@@ -412,8 +412,8 @@ export function InvoicesClient() {
             <RefreshCw className="h-4 w-4 mr-2" />
           )}
           {generateInvoices.isPending
-            ? "Syncing…"
-            : `Sync & Generate — ${targetPeriodLabel}`}
+            ? "Menyinkronkan…"
+            : `Sinkronisasi & Buat Tagihan — ${targetPeriodLabel}`}
         </Button>
       </div>
 
@@ -424,7 +424,7 @@ export function InvoicesClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(inv) => inv.$id}
-        searchPlaceholder="Search by unit ID (e.g. A-101)..."
+        searchPlaceholder="Cari ID unit (mis. A-101)..."
         searchValue={search}
         onSearchChange={(val) => {
           setSearch(val);
@@ -441,13 +441,13 @@ export function InvoicesClient() {
               }}
             >
               <SelectTrigger className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-w-[100px] shadow-sm">
-                <SelectValue placeholder="Block" />
+                <SelectValue placeholder="Blok" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Blocks</SelectItem>
+                <SelectItem value="all">Semua Blok</SelectItem>
                 {BLOCKS.map((b) => (
                   <SelectItem key={b} value={b}>
-                    Block {b}
+                    Blok {b}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -462,7 +462,9 @@ export function InvoicesClient() {
                   className="min-w-[160px] justify-start text-left font-normal shadow-sm data-[empty=true]:text-muted-foreground"
                 >
                   <CalendarIcon className="h-4 w-4 mr-2" />
-                  {periodDate ? format(periodDate, "MMMM yyyy") : "All Periods"}
+                  {periodDate
+                    ? format(periodDate, "MMMM yyyy")
+                    : "Semua Periode"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -484,7 +486,7 @@ export function InvoicesClient() {
                         setPageIndex(0);
                       }}
                     >
-                      Clear filter
+                      Hapus filter
                     </Button>
                   </div>
                 )}

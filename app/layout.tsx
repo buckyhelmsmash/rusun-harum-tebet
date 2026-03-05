@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Rusun Harum Tebet",
-  description: "Management and Billing System",
+  description: "Sistem Manajemen dan Penagihan",
 };
 
 export default function RootLayout({

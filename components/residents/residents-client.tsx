@@ -84,7 +84,7 @@ export function ResidentsClient() {
     () => [
       {
         accessorKey: "fullName",
-        header: "Name",
+        header: "Nama",
         cell: ({ row }) => (
           <span className="font-semibold">{row.original.fullName}</span>
         ),
@@ -98,7 +98,7 @@ export function ResidentsClient() {
       },
       {
         accessorKey: "phoneNumber",
-        header: "Phone",
+        header: "Telepon",
       },
       {
         accessorKey: "email",
@@ -154,7 +154,7 @@ export function ResidentsClient() {
             <TimelineSheet
               targetId={row.original.$id}
               targetType="owner"
-              title={`Owner ${row.original.fullName}`}
+              title={`Pemilik ${row.original.fullName}`}
             />
           </div>
         ),
@@ -168,7 +168,7 @@ export function ResidentsClient() {
     () => [
       {
         accessorKey: "fullName",
-        header: "Name",
+        header: "Nama",
         cell: ({ row }) => (
           <span className="font-semibold">{row.original.fullName}</span>
         ),
@@ -182,7 +182,7 @@ export function ResidentsClient() {
       },
       {
         accessorKey: "phoneNumber",
-        header: "Phone",
+        header: "Telepon",
       },
       {
         id: "unit",
@@ -203,7 +203,7 @@ export function ResidentsClient() {
       },
       {
         id: "lease",
-        header: "Lease Period",
+        header: "Masa Sewa",
         cell: ({ row }) => {
           if (!row.original.startDate && !row.original.endDate)
             return <span className="text-slate-400">—</span>;
@@ -243,7 +243,7 @@ export function ResidentsClient() {
             <TimelineSheet
               targetId={row.original.$id}
               targetType="tenant"
-              title={`Tenant ${row.original.fullName}`}
+              title={`Penyewa ${row.original.fullName}`}
             />
           </div>
         ),
@@ -291,7 +291,7 @@ export function ResidentsClient() {
           <TimelineSheet
             targetId={owner.$id}
             targetType="owner"
-            title={`Owner ${owner.fullName}`}
+            title={`Pemilik ${owner.fullName}`}
           />
         </div>
       </div>
@@ -341,7 +341,7 @@ export function ResidentsClient() {
           <TimelineSheet
             targetId={tenant.$id}
             targetType="tenant"
-            title={`Tenant ${tenant.fullName}`}
+            title={`Penyewa ${tenant.fullName}`}
           />
         </div>
       </div>
@@ -361,10 +361,10 @@ export function ResidentsClient() {
     if (!deletingOwner) return;
     try {
       await deleteOwnerMutation.mutateAsync({ id: deletingOwner.$id });
-      goeyToast.success(`Owner ${deletingOwner.fullName} deleted`);
+      goeyToast.success(`Pemilik ${deletingOwner.fullName} dihapus`);
       setDeletingOwner(null);
     } catch (error) {
-      goeyToast.error("Failed to delete owner.", {
+      goeyToast.error("Gagal menghapus pemilik.", {
         description: (error as Error).message,
       });
     }
@@ -374,10 +374,10 @@ export function ResidentsClient() {
     if (!deletingTenant) return;
     try {
       await deleteTenantMutation.mutateAsync({ id: deletingTenant.$id });
-      goeyToast.success(`Tenant ${deletingTenant.fullName} deleted`);
+      goeyToast.success(`Penyewa ${deletingTenant.fullName} dihapus`);
       setDeletingTenant(null);
     } catch (error) {
-      goeyToast.error("Failed to delete tenant.", {
+      goeyToast.error("Gagal menghapus penyewa.", {
         description: (error as Error).message,
       });
     }
@@ -388,10 +388,10 @@ export function ResidentsClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Residents
+            Penghuni
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage owners and tenants
+            Kelola pemilik dan penyewa
           </p>
         </div>
         <Button
@@ -406,14 +406,14 @@ export function ResidentsClient() {
           }}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add {activeTab === "owners" ? "Owner" : "Tenant"}
+          Tambah {activeTab === "owners" ? "Pemilik" : "Penyewa"}
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 max-w-xs">
-          <TabsTrigger value="owners">Owners</TabsTrigger>
-          <TabsTrigger value="tenants">Tenants</TabsTrigger>
+          <TabsTrigger value="owners">Pemilik</TabsTrigger>
+          <TabsTrigger value="tenants">Penyewa</TabsTrigger>
         </TabsList>
 
         <TabsContent value="owners" className="mt-4">
@@ -423,7 +423,7 @@ export function ResidentsClient() {
             isLoading={ownersLoading}
             mobileCardRender={renderOwnerMobileCard}
             keyExtractor={(o) => o.$id}
-            searchPlaceholder="Search owners..."
+            searchPlaceholder="Cari pemilik..."
             searchValue={ownerSearch}
             onSearchChange={(val) => {
               setOwnerSearch(val);
@@ -446,7 +446,7 @@ export function ResidentsClient() {
             isLoading={tenantsLoading}
             mobileCardRender={renderTenantMobileCard}
             keyExtractor={(t) => t.$id}
-            searchPlaceholder="Search tenants..."
+            searchPlaceholder="Cari penyewa..."
             searchValue={tenantSearch}
             onSearchChange={(val) => {
               setTenantSearch(val);
@@ -487,9 +487,9 @@ export function ResidentsClient() {
       <ConfirmDialog
         isOpen={!!deletingOwner}
         onClose={() => setDeletingOwner(null)}
-        title="Delete Owner"
-        description={`Are you sure you want to delete ${deletingOwner?.fullName}? This action cannot be undone.`}
-        confirmText="Delete"
+        title="Hapus Pemilik"
+        description={`Apakah Anda yakin ingin menghapus ${deletingOwner?.fullName}? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Hapus"
         variant="destructive"
         isLoading={deleteOwnerMutation.isPending}
         onConfirm={handleDeleteOwner}
@@ -499,9 +499,9 @@ export function ResidentsClient() {
       <ConfirmDialog
         isOpen={!!deletingTenant}
         onClose={() => setDeletingTenant(null)}
-        title="Delete Tenant"
-        description={`Are you sure you want to delete ${deletingTenant?.fullName}? This action cannot be undone.`}
-        confirmText="Delete"
+        title="Hapus Penyewa"
+        description={`Apakah Anda yakin ingin menghapus ${deletingTenant?.fullName}? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Hapus"
         variant="destructive"
         isLoading={deleteTenantMutation.isPending}
         onConfirm={handleDeleteTenant}

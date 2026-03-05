@@ -80,17 +80,17 @@ export function VehicleFormDialog({
             unitId,
             data: value,
           });
-          goeyToast.success("Vehicle updated successfully");
+          goeyToast.success("Kendaraan berhasil diperbarui");
         } else {
           await createMutation.mutateAsync({
             ...value,
             unit: unitId,
           });
-          goeyToast.success("Vehicle added successfully");
+          goeyToast.success("Kendaraan berhasil ditambahkan");
         }
         onOpenChange(false);
       } catch (error) {
-        goeyToast.error("Failed to save vehicle.", {
+        goeyToast.error("Gagal menyimpan kendaraan.", {
           description: (error as Error).message,
         });
       }
@@ -121,11 +121,11 @@ export function VehicleFormDialog({
     <ResponsiveFormContainer
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditing ? "Edit Vehicle" : "Add Vehicle"}
+      title={isEditing ? "Edit Kendaraan" : "Tambah Kendaraan"}
       description={
         isEditing
-          ? "Update details for the registered vehicle."
-          : "Register a new vehicle for this unit."
+          ? "Perbarui detail untuk kendaraan terdaftar."
+          : "Daftarkan kendaraan baru untuk unit ini."
       }
     >
       <form
@@ -148,7 +148,7 @@ export function VehicleFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>License Plate</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Plat Nomor</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -175,7 +175,7 @@ export function VehicleFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Vehicle Type</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Tipe Kendaraan</FieldLabel>
                   <Select
                     onValueChange={(val) =>
                       field.handleChange(
@@ -189,11 +189,11 @@ export function VehicleFormDialog({
                       className="capitalize"
                       aria-invalid={isInvalid}
                     >
-                      <SelectValue placeholder="Select vehicle type" />
+                      <SelectValue placeholder="Pilih tipe kendaraan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="car">Car</SelectItem>
-                      <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                      <SelectItem value="car">Mobil</SelectItem>
+                      <SelectItem value="motorcycle">Motor</SelectItem>
                     </SelectContent>
                   </Select>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -214,7 +214,7 @@ export function VehicleFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Brand</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Merek</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -222,7 +222,7 @@ export function VehicleFormDialog({
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      placeholder="e.g. Toyota"
+                      placeholder="contoh: Toyota"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -243,7 +243,7 @@ export function VehicleFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Color</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Warna</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -251,7 +251,7 @@ export function VehicleFormDialog({
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      placeholder="e.g. Black"
+                      placeholder="contoh: Hitam"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -270,7 +270,7 @@ export function VehicleFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            Batal
           </Button>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
@@ -280,7 +280,9 @@ export function VehicleFormDialog({
                 type="submit"
                 disabled={!canSubmit || isLoading || isSubmitting}
               >
-                {isLoading || isSubmitting ? "Saving..." : "Save Vehicle"}
+                {isLoading || isSubmitting
+                  ? "Menyimpan..."
+                  : "Simpan Kendaraan"}
               </Button>
             )}
           </form.Subscribe>

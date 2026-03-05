@@ -17,11 +17,11 @@ import { useCreateOwner, useUpdateOwner } from "@/hooks/api/use-owners";
 import type { Owner } from "@/types";
 
 const ownerSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
-  ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
-  email: z.string().email("Invalid email").optional().or(z.literal("")),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  fullName: z.string().min(1, "Nama lengkap wajib diisi"),
+  phoneNumber: z.string().min(1, "Nomor telepon wajib diisi"),
+  ktpNumber: z.string().regex(/^\d{16}$/, "KTP harus tepat 16 digit"),
+  email: z.string().email("Email tidak valid").optional().or(z.literal("")),
+  dateOfBirth: z.string().min(1, "Tanggal lahir wajib diisi"),
 });
 
 interface OwnerFormDialogProps {
@@ -57,15 +57,15 @@ export function OwnerFormDialog({
           const { ktpNumber: _ktp, ...updateFields } = value;
           const payload = { ...updateFields, email: value.email || undefined };
           await updateMutation.mutateAsync({ id: owner.$id, data: payload });
-          goeyToast.success("Owner updated successfully");
+          goeyToast.success("Pemilik berhasil diperbarui");
         } else {
           const payload = { ...value, email: value.email || undefined };
           await createMutation.mutateAsync(payload);
-          goeyToast.success("Owner added successfully");
+          goeyToast.success("Pemilik berhasil ditambahkan");
         }
         onOpenChange(false);
       } catch (error) {
-        goeyToast.error("Failed to save owner.", {
+        goeyToast.error("Gagal menyimpan pemilik.", {
           description: (error as Error).message,
         });
       }
@@ -100,9 +100,11 @@ export function OwnerFormDialog({
     <ResponsiveFormContainer
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditing ? "Edit Owner" : "Add Owner"}
+      title={isEditing ? "Edit Pemilik" : "Tambah Pemilik"}
       description={
-        isEditing ? "Update details for this owner." : "Register a new owner."
+        isEditing
+          ? "Perbarui detail untuk pemilik ini."
+          : "Daftarkan pemilik baru."
       }
     >
       <form
@@ -123,7 +125,7 @@ export function OwnerFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Nama Lengkap</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -151,7 +153,7 @@ export function OwnerFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>KTP Number</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Nomor KTP</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -187,7 +189,7 @@ export function OwnerFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Phone Number</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Nomor Telepon</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -214,7 +216,7 @@ export function OwnerFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Date of Birth</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Tanggal Lahir</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -242,7 +244,7 @@ export function OwnerFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Email (optional)</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Email (opsional)</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -270,7 +272,7 @@ export function OwnerFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            Batal
           </Button>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
@@ -280,7 +282,7 @@ export function OwnerFormDialog({
                 type="submit"
                 disabled={!canSubmit || isLoading || isSubmitting}
               >
-                {isLoading || isSubmitting ? "Saving..." : "Save Owner"}
+                {isLoading || isSubmitting ? "Menyimpan..." : "Simpan Pemilik"}
               </Button>
             )}
           </form.Subscribe>

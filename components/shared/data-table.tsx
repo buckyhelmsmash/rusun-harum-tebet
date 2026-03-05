@@ -50,7 +50,7 @@ export function DataTable<TData, TValue>({
   isLoading,
   mobileCardRender,
   keyExtractor,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = "Cari...",
   searchValue,
   onSearchChange,
   filters,
@@ -121,7 +121,7 @@ export function DataTable<TData, TValue>({
                     colSpan={columns.length}
                     className="text-center py-8 text-slate-500 dark:text-slate-400"
                   >
-                    Loading...
+                    Memuat...
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows?.length ? (
@@ -150,7 +150,7 @@ export function DataTable<TData, TValue>({
                     colSpan={columns.length}
                     className="text-center py-8 text-slate-500 dark:text-slate-400"
                   >
-                    No results found.
+                    Tidak ada hasil yang ditemukan.
                   </TableCell>
                 </TableRow>
               )}
@@ -164,11 +164,11 @@ export function DataTable<TData, TValue>({
         <div className="grid grid-cols-1 gap-4 md:hidden">
           {isLoading ? (
             <div className="text-center py-8 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 shadow-sm">
-              Loading...
+              Memuat...
             </div>
           ) : data.length === 0 ? (
             <div className="text-center py-8 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 shadow-sm">
-              No results found.
+              Tidak ada hasil yang ditemukan.
             </div>
           ) : (
             data.map((item, index) => (
@@ -185,19 +185,19 @@ export function DataTable<TData, TValue>({
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Showing{" "}
+          Menampilkan{" "}
           <span className="font-semibold text-slate-900 dark:text-white">
             {total > 0 ? startIndex : 0}
           </span>{" "}
-          to{" "}
+          hingga{" "}
           <span className="font-semibold text-slate-900 dark:text-white">
             {endIndex}
           </span>{" "}
-          of{" "}
+          dari{" "}
           <span className="font-semibold text-slate-900 dark:text-white">
             {total}
           </span>{" "}
-          items
+          entri
         </p>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button
@@ -207,7 +207,7 @@ export function DataTable<TData, TValue>({
             disabled={!hasPrevPage || isLoading}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            Sebelumnya
           </Button>
           <Button
             variant="outline"
@@ -215,7 +215,7 @@ export function DataTable<TData, TValue>({
             onClick={onNextPage}
             disabled={!hasNextPage || isLoading}
           >
-            Next
+            Selanjutnya
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

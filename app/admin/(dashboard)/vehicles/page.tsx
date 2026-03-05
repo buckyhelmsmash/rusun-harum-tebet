@@ -1,8 +1,8 @@
 import { VehiclesClient } from "@/components/vehicles/vehicles-client";
 
 export const metadata = {
-  title: "Vehicles | Rusun Harum Tebet",
-  description: "Manage registered vehicles across all units",
+  title: "Kendaraan | Rusun Harum Tebet",
+  description: "Kelola kendaraan terdaftar di seluruh unit",
 };
 
 export default function VehiclesPage() {

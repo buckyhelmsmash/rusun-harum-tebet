@@ -55,10 +55,10 @@ export function InvoiceFormDialog({
           payDate: status === "paid" ? new Date().toISOString() : undefined,
         },
       });
-      goeyToast.success("Invoice updated successfully");
+      goeyToast.success("Tagihan berhasil diperbarui");
       onOpenChange(false);
     } catch (error) {
-      goeyToast.error("Failed to update invoice", {
+      goeyToast.error("Gagal memperbarui tagihan", {
         description: (error as Error).message,
       });
     }
@@ -72,27 +72,27 @@ export function InvoiceFormDialog({
       : invoice.unitId;
 
   const feeBreakdown = [
-    { label: "Public Facility Fee", value: invoice.publicFacilityFee || 0 },
-    { label: "Security Guard Fee", value: invoice.guardFee || 0 },
-    { label: "Water Fee", value: invoice.waterFee },
-    { label: "Vehicle Fee", value: invoice.vehicleFee },
-    { label: "Arrears", value: invoice.arrears },
-    { label: "Unique Code", value: invoice.uniqueCode },
+    { label: "Biaya Sarana Umum", value: invoice.publicFacilityFee || 0 },
+    { label: "Biaya Penjagaan", value: invoice.guardFee || 0 },
+    { label: "Biaya Air", value: invoice.waterFee },
+    { label: "Biaya Kendaraan", value: invoice.vehicleFee },
+    { label: "Tunggakan", value: invoice.arrears },
+    { label: "Kode Unik", value: invoice.uniqueCode },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Invoice</DialogTitle>
+          <DialogTitle>Ubah Tagihan</DialogTitle>
           <DialogDescription>
-            Unit {unitDisplay} — Period {invoice.period}
+            Unit {unitDisplay} — Periode {invoice.period}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="rounded-lg border p-4 space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Fee Breakdown
+              Rincian Biaya
             </p>
             {feeBreakdown.map((item) => (
               <div
@@ -106,7 +106,7 @@ export function InvoiceFormDialog({
               </div>
             ))}
             <div className="border-t pt-2 mt-2 flex items-center justify-between">
-              <span className="font-semibold">Total Due</span>
+              <span className="font-semibold">Total Tagihan</span>
               <span className="text-lg font-bold tabular-nums">
                 {formatCurrency(invoice.totalDue)}
               </span>
@@ -123,8 +123,8 @@ export function InvoiceFormDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unpaid">Unpaid</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="unpaid">Belum Lunas</SelectItem>
+                <SelectItem value="paid">Lunas</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -135,10 +135,10 @@ export function InvoiceFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving…" : "Save Changes"}
+              {updateMutation.isPending ? "Menyimpan…" : "Simpan Perubahan"}
             </Button>
           </DialogFooter>
         </form>

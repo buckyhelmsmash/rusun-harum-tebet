@@ -31,8 +31,8 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText = "Konfirmasi",
+  cancelText = "Batal",
   variant = "default",
   isLoading = false,
 }: ConfirmDialogProps) {
@@ -62,7 +62,7 @@ export function ConfirmDialog({
                 "bg-yellow-500 text-white hover:bg-yellow-600",
             )}
           >
-            {isLoading ? "Processing..." : confirmText}
+            {isLoading ? "Memproses..." : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

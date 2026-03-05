@@ -92,7 +92,7 @@ export function WaterUsagesClient() {
     () => [
       {
         accessorKey: "period",
-        header: "Period",
+        header: "Periode",
         cell: ({ row }) => (
           <span className="font-medium text-slate-900 dark:text-white text-xs">
             {formatPeriodRange(row.original.period)}
@@ -110,7 +110,7 @@ export function WaterUsagesClient() {
       },
       {
         accessorKey: "previousMeter",
-        header: "Prev Meter",
+        header: "Meteran Awal",
         cell: ({ row }) => (
           <span className="text-sm">
             {row.original.previousMeter.toLocaleString()}
@@ -119,7 +119,7 @@ export function WaterUsagesClient() {
       },
       {
         accessorKey: "currentMeter",
-        header: "Current Meter",
+        header: "Meteran Akhir",
         cell: ({ row }) => (
           <span className="text-sm">
             {row.original.currentMeter.toLocaleString()}
@@ -128,7 +128,7 @@ export function WaterUsagesClient() {
       },
       {
         accessorKey: "usage",
-        header: "Usage (m³)",
+        header: "Pemakaian (m³)",
         cell: ({ row }) => (
           <span className="font-semibold text-emerald-600 dark:text-emerald-400">
             {row.original.usage.toLocaleString()}
@@ -137,7 +137,7 @@ export function WaterUsagesClient() {
       },
       {
         accessorKey: "amount",
-        header: () => <span className="text-right block">Amount (Rp)</span>,
+        header: () => <span className="text-right block">Tagihan (Rp)</span>,
         cell: ({ row }) => (
           <span className="font-semibold text-slate-900 dark:text-white text-right block">
             {row.original.amount.toLocaleString("id-ID")}
@@ -195,15 +195,15 @@ export function WaterUsagesClient() {
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-slate-500">
         <div>
-          <span className="text-slate-400">Prev:</span>{" "}
+          <span className="text-slate-400">Awal:</span>{" "}
           {usage.previousMeter.toLocaleString()}
         </div>
         <div>
-          <span className="text-slate-400">Curr:</span>{" "}
+          <span className="text-slate-400">Akhir:</span>{" "}
           {usage.currentMeter.toLocaleString()}
         </div>
         <div className="text-right">
-          <span className="text-slate-400">Usage:</span>{" "}
+          <span className="text-slate-400">Pemakaian:</span>{" "}
           <span className="font-semibold text-emerald-600">
             {usage.usage.toLocaleString()}
           </span>
@@ -239,10 +239,10 @@ export function WaterUsagesClient() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Water Usages
+            Penggunaan Air
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage and import monthly water meter readings.
+            Kelola dan impor pembacaan meteran air bulanan.
           </p>
         </div>
         <Button
@@ -250,7 +250,7 @@ export function WaterUsagesClient() {
           className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
         >
           <UploadCloud className="h-4 w-4 mr-2" />
-          Import Excel
+          Impor Excel
         </Button>
       </div>
 
@@ -261,7 +261,7 @@ export function WaterUsagesClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(usage) => usage.$id}
-        searchPlaceholder="Search by unit ID (e.g. A-101)..."
+        searchPlaceholder="Cari ID unit (mis. A-101)..."
         searchValue={search}
         onSearchChange={(val) => {
           setSearch(val);
@@ -278,13 +278,13 @@ export function WaterUsagesClient() {
               }}
             >
               <SelectTrigger className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-w-[100px] shadow-sm">
-                <SelectValue placeholder="Block" />
+                <SelectValue placeholder="Blok" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Blocks</SelectItem>
+                <SelectItem value="all">Semua Blok</SelectItem>
                 {BLOCKS.map((b) => (
                   <SelectItem key={b} value={b}>
-                    Block {b}
+                    Blok {b}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -299,7 +299,9 @@ export function WaterUsagesClient() {
                   className="min-w-[160px] justify-start text-left font-normal shadow-sm data-[empty=true]:text-muted-foreground"
                 >
                   <CalendarIcon className="h-4 w-4 mr-2" />
-                  {periodDate ? format(periodDate, "MMMM yyyy") : "All Periods"}
+                  {periodDate
+                    ? format(periodDate, "MMMM yyyy")
+                    : "Semua Periode"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -321,7 +323,7 @@ export function WaterUsagesClient() {
                         setPageIndex(0);
                       }}
                     >
-                      Clear filter
+                      Hapus filter
                     </Button>
                   </div>
                 )}

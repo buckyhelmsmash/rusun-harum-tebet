@@ -37,13 +37,13 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/admin", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/invoices", label: "Invoices", icon: FileText },
-  { href: "/admin/water-usages", label: "Water Usages", icon: Droplet },
-  { href: "/admin/units", label: "Units", icon: Building2 },
-  { href: "/admin/vehicles", label: "Vehicles", icon: Car },
-  { href: "/admin/residents", label: "Residents", icon: Users },
-  { href: "/admin/news", label: "News", icon: Newspaper },
+  { href: "/admin", label: "Beranda", icon: BarChart3 },
+  { href: "/admin/invoices", label: "Tagihan", icon: FileText },
+  { href: "/admin/water-usages", label: "Penggunaan Air", icon: Droplet },
+  { href: "/admin/units", label: "Daftar Unit", icon: Building2 },
+  { href: "/admin/vehicles", label: "Kendaraan", icon: Car },
+  { href: "/admin/residents", label: "Penghuni", icon: Users },
+  { href: "/admin/news", label: "Berita", icon: Newspaper },
 ];
 
 export function Sidebar() {
@@ -67,7 +67,7 @@ export function Sidebar() {
               Rusun Harum
             </span>
             <span className="text-[10px] sm:text-xs text-slate-400 truncate">
-              Property Management
+              Manajemen Properti
             </span>
           </div>
         </div>
@@ -117,12 +117,12 @@ export function Sidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              tooltip="Settings"
+              tooltip="Pengaturan"
               className="text-slate-400 hover:text-white group transition-colors mb-2 py-5"
             >
               <Link href="/admin/settings">
                 <Settings className="text-slate-400 group-hover:text-white" />
-                <span>Settings</span>
+                <span>Pengaturan</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -166,13 +166,13 @@ export function Sidebar() {
                     className="text-red-500 cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>Keluar</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center px-4 py-2">
-                <span className="text-sm text-slate-500">Loading...</span>
+                <span className="text-sm text-slate-500">Memuat...</span>
               </div>
             )}
           </SidebarMenuItem>

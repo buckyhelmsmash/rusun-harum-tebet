@@ -36,13 +36,40 @@ interface UnitDetailClientProps {
 function getStatusVariant(status: string) {
   switch (status) {
     case "owner_occupied":
+    case "dihuni_pemilik":
       return "success";
     case "rented":
+    case "disewa":
       return "info";
     case "vacant":
+    case "kosong":
       return "destructive";
     default:
       return "default";
+  }
+}
+
+function translateStatus(status: string) {
+  switch (status) {
+    case "owner_occupied":
+      return "Dihuni Pemilik";
+    case "rented":
+      return "Disewa";
+    case "vacant":
+      return "Kosong";
+    default:
+      return status.replace("_", " ");
+  }
+}
+
+function translateType(type: string) {
+  switch (type) {
+    case "residential":
+      return "Residensial";
+    case "commercial":
+      return "Komersial";
+    default:
+      return type;
   }
 }
 
@@ -80,7 +107,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   if (isLoading) {
     return (
       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-        Loading unit details...
+        Memuat detail unit...
       </div>
     );
   }
@@ -88,7 +115,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
   if (isError || !unit) {
     return (
       <div className="p-8 text-center text-red-600 dark:text-red-400">
-        Failed to load unit details.
+        Gagal memuat detail unit.
       </div>
     );
   }
@@ -107,9 +134,9 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
     if (!deleteTarget) return;
     try {
       await deleteVehicle({ id: deleteTarget, unitId });
-      goeyToast.success("Vehicle removed successfully");
+      goeyToast.success("Kendaraan berhasil dihapus");
     } catch {
-      goeyToast.error("Failed to remove vehicle");
+      goeyToast.error("Gagal menghapus kendaraan");
     } finally {
       setDeleteTarget(null);
     }
@@ -142,13 +169,15 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                 Unit {unit.displayId}
               </h1>
               <p className="text-slate-500 dark:text-slate-400 mt-1">
-                Block {unit.block}, Floor {unit.floor}, Unit {unit.unitNumber} •{" "}
-                <span className="capitalize">{unit.unitType} Unit</span>
+                Blok {unit.block}, Lantai {unit.floor}, Unit {unit.unitNumber} •{" "}
+                <span className="capitalize">
+                  Unit {translateType(unit.unitType)}
+                </span>
               </p>
             </div>
           </div>
           <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
-            {unit.occupancyStatus.replace("_", " ")}
+            {translateStatus(unit.occupancyStatus)}
           </StatusBadge>
         </div>
 
@@ -158,12 +187,12 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           <DetailCard>
             <DetailCardHeader
               icon={<Info className="h-4 w-4" />}
-              title="Unit Information"
+              title="Informasi Unit"
             />
             <div className="p-6 grid grid-cols-2 gap-y-6 gap-x-4">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Block
+                  Blok
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">
                   {unit.block}
@@ -171,7 +200,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Floor
+                  Lantai
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white">
                   {unit.floor}
@@ -179,18 +208,22 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Unit Type
+                  Tipe Unit
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                  {unit.unitType}
+                  {translateType(unit.unitType)}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Billing Recipient
+                  Penerima Tagihan
                 </p>
                 <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                  {unit.ownerId ? unit.billRecipient : "—"}
+                  {unit.ownerId
+                    ? unit.billRecipient === "owner"
+                      ? "Pemilik"
+                      : "Penyewa"
+                    : "—"}
                 </p>
               </div>
             </div>
@@ -200,7 +233,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           <DetailCard>
             <DetailCardHeader
               icon={<User className="h-4 w-4" />}
-              title="Owner"
+              title="Pemilik"
               action={
                 <div className="flex gap-1">
                   {unit.owner && (
@@ -239,11 +272,11 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   </div>
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
                     <Mail className="h-3.5 w-3.5" />
-                    {unit.owner.email || "No email provided"}
+                    {unit.owner.email || "Tidak ada email"}
                   </div>
                   <div className="pt-2">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      KTP Number
+                      Nomor KTP
                     </p>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {unit.owner.ktpNumber}
@@ -257,14 +290,14 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   <User className="h-6 w-6 text-slate-300" />
                 </div>
                 <p className="italic text-slate-500 dark:text-slate-400">
-                  No owner assigned to this unit
+                  Tidak ada pemilik di unit ini
                 </p>
                 <Button
                   variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
                   onClick={() => handleOpenResidentPicker("owner")}
                 >
-                  Assign Owner
+                  Pilih Pemilik
                 </Button>
               </div>
             )}
@@ -274,7 +307,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           <DetailCard>
             <DetailCardHeader
               icon={<Users className="h-4 w-4" />}
-              title="Current Tenant"
+              title="Penyewa Saat Ini"
               action={
                 unit.ownerId ? (
                   <div className="flex gap-1">
@@ -315,7 +348,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   </div>
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
                     <Mail className="h-3.5 w-3.5" />
-                    {unit.tenant.email || "No email provided"}
+                    {unit.tenant.email || "Tidak ada email"}
                   </div>
                   {(unit.tenant.startDate || unit.tenant.endDate) && (
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm pt-1">
@@ -337,7 +370,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   )}
                   <div className="pt-2">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      KTP Number
+                      Nomor KTP
                     </p>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {unit.tenant.ktpNumber}
@@ -352,16 +385,16 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                 </div>
                 <p className="italic text-slate-500 dark:text-slate-400">
                   {unit.ownerId
-                    ? "No active tenant registered for this unit"
-                    : "Assign an owner to this unit first"}
+                    ? "Tidak ada penyewa aktif untuk unit ini"
+                    : "Pilih pemilik untuk unit ini terlebih dahulu"}
                 </p>
                 {unit.ownerId && (
                   <Button
                     variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
                     onClick={() => handleOpenResidentPicker("tenant")}
                   >
-                    Assign Tenant
+                    Pilih Penyewa
                   </Button>
                 )}
               </div>
@@ -372,7 +405,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
           <DetailCard>
             <DetailCardHeader
               icon={<Car className="h-4 w-4" />}
-              title="Registered Vehicles"
+              title="Kendaraan Terdaftar"
               action={
                 unit.ownerId ? (
                   <button
@@ -381,7 +414,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                     onClick={handleAddVehicle}
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    Add Vehicle
+                    Tambah Kendaraan
                   </button>
                 ) : null
               }
@@ -400,7 +433,8 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                           {v.licensePlate}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {v.brand || "Unknown"} {v.color ? `(${v.color})` : ""}
+                          {v.brand || "Tidak diketahui"}{" "}
+                          {v.color ? `(${v.color})` : ""}
                         </p>
                       </div>
                     </div>
@@ -429,20 +463,20 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   <Car className="h-6 w-6 text-slate-300" />
                 </div>
                 <p className="italic text-slate-500 dark:text-slate-400">
-                  No vehicles registered for this unit
+                  Tidak ada kendaraan yang terdaftar untuk unit ini
                 </p>
                 {unit.ownerId ? (
                   <Button
                     variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
                     onClick={handleAddVehicle}
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Add Vehicle
+                    Tambah Kendaraan
                   </Button>
                 ) : (
                   <p className="text-xs text-slate-400">
-                    Assign an owner to add vehicles
+                    Pilih pemilik untuk menambah kendaraan
                   </p>
                 )}
               </div>
@@ -474,9 +508,9 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmDeleteVehicle}
-        title="Remove Vehicle"
-        description="Are you sure you want to remove this vehicle? This action cannot be undone."
-        confirmText="Remove"
+        title="Hapus Kendaraan"
+        description="Apakah Anda yakin ingin menghapus kendaraan ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Hapus"
         variant="destructive"
         isLoading={isDeleting}
       />
@@ -492,17 +526,19 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
               type: removeResidentType,
             });
             goeyToast.success(
-              `${removeResidentType === "owner" ? "Owner" : "Tenant"} removed from unit`,
+              `${removeResidentType === "owner" ? "Pemilik" : "Penyewa"} dihapus dari unit`,
             );
           } catch {
-            goeyToast.error(`Failed to remove ${removeResidentType}`);
+            goeyToast.error(
+              `Gagal menghapus ${removeResidentType === "owner" ? "pemilik" : "penyewa"}`,
+            );
           } finally {
             setRemoveResidentType(null);
           }
         }}
-        title={`Remove ${removeResidentType === "owner" ? "Owner" : "Tenant"}`}
-        description={`Are you sure you want to remove the current ${removeResidentType} from this unit?`}
-        confirmText="Remove"
+        title={`Hapus ${removeResidentType === "owner" ? "Pemilik" : "Penyewa"}`}
+        description={`Apakah Anda yakin ingin menghapus ${removeResidentType === "owner" ? "pemilik" : "penyewa"} saat ini dari unit ini?`}
+        confirmText="Hapus"
         variant="destructive"
         isLoading={removeMutation.isPending}
       />

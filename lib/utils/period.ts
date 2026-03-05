@@ -1,4 +1,5 @@
 import { format, subMonths } from "date-fns";
+import { id } from "date-fns/locale";
 
 /**
  * Converts a `yyyy-MM` period string into a human-readable billing date range.
@@ -13,8 +14,8 @@ export function formatPeriodRange(period: string): string {
   const endDate = new Date(year, month - 1, 25);
   const startDate = subMonths(endDate, 1);
 
-  const startStr = format(startDate, "d MMM");
-  const endStr = format(endDate, "d MMM yyyy");
+  const startStr = format(startDate, "d MMM", { locale: id });
+  const endStr = format(endDate, "d MMM yyyy", { locale: id });
 
   return `${startStr} – ${endStr}`;
 }
@@ -28,7 +29,7 @@ export function formatPeriodLabel(period: string): string {
   const [year, month] = period.split("-").map(Number);
   if (!year || !month) return period;
 
-  return format(new Date(year, month - 1, 1), "MMM yyyy");
+  return format(new Date(year, month - 1, 1), "MMM yyyy", { locale: id });
 }
 
 /**

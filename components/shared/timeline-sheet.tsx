@@ -54,9 +54,31 @@ function getActionColor(action: string) {
 
 function formatActionLabel(action: string) {
   const [entity, verb] = action.split(".");
-  const entityLabel = entity.charAt(0).toUpperCase() + entity.slice(1);
-  const verbLabel = verb.charAt(0).toUpperCase() + verb.slice(1);
-  return `${entityLabel} ${verbLabel}d`;
+
+  const entityMap: Record<string, string> = {
+    invoice: "Tagihan",
+    water_usage: "Penggunaan Air",
+    unit: "Unit",
+    vehicle: "Kendaraan",
+    resident: "Penghuni",
+    user: "Pengguna",
+  };
+
+  const verbMap: Record<string, string> = {
+    create: "Dibuat",
+    update: "Diperbarui",
+    delete: "Dihapus",
+    assign: "Ditugaskan",
+    remove: "Dihapus dari",
+    generate: "Dihasilkan",
+  };
+
+  const entityLabel =
+    entityMap[entity] || entity.charAt(0).toUpperCase() + entity.slice(1);
+  const verbLabel =
+    verbMap[verb] || verb.charAt(0).toUpperCase() + verb.slice(1);
+
+  return `${entityLabel} ${verbLabel}`;
 }
 
 function formatTimestamp(dateStr: string) {
@@ -101,7 +123,7 @@ function TimelineItem({ log }: { log: ActivityLog }) {
           {log.description}
         </p>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-          by {log.actorName}
+          oleh {log.actorName}
         </p>
       </div>
     </div>
@@ -128,14 +150,14 @@ export function TimelineSheet({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          title="View history"
+          title="Lihat riwayat"
         >
           <Clock className="h-4 w-4" />
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle>History</SheetTitle>
+          <SheetTitle>Riwayat</SheetTitle>
           <SheetDescription>{title}</SheetDescription>
         </SheetHeader>
 
@@ -147,7 +169,7 @@ export function TimelineSheet({
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Clock className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-3" />
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              No activity recorded yet.
+              Belum ada aktivitas terekam.
             </p>
           </div>
         ) : (

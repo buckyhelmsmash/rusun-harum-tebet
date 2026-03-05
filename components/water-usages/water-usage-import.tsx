@@ -64,7 +64,7 @@ export function WaterUsageImport({
           Authorization: `Bearer ${session.jwt}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to download template");
+      if (!res.ok) throw new Error("Gagal mengunduh templat");
       const rawBlob = await res.blob();
       const blob = new Blob([rawBlob], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -118,7 +118,9 @@ export function WaterUsageImport({
       );
 
       if (filledRows.length === 0) {
-        setErrors(["No filled rows found. Please fill in the meter readings."]);
+        setErrors([
+          "Tidak ada baris yang valid diisi. Harap lengkapi pembacaan meteran.",
+        ]);
         setParsedData([]);
         return;
       }
@@ -129,7 +131,7 @@ export function WaterUsageImport({
 
       if (!validationResult.success) {
         setErrors([
-          "Invalid file format. Ensure columns exact match: 'Unit ID', 'Previous Meter', 'Current Meter'.",
+          "Format file tidak valid. Pastikan kolom sesuai: 'Unit ID', 'Previous Meter', 'Current Meter'.",
         ]);
         setParsedData([]);
         return;
@@ -141,7 +143,7 @@ export function WaterUsageImport({
       validRows.forEach((row, idx) => {
         if (row["Current Meter"] < row["Previous Meter"]) {
           validationErrors.push(
-            `Row ${idx + 2}: Current meter (${row["Current Meter"]}) is less than previous (${row["Previous Meter"]}) for unit ${row["Unit ID"]}`,
+            `Baris ${idx + 2}: Meteran akhir (${row["Current Meter"]}) kurang dari awal (${row["Previous Meter"]}) untuk unit ${row["Unit ID"]}`,
           );
         }
       });
@@ -155,7 +157,7 @@ export function WaterUsageImport({
       }
     } catch {
       setErrors([
-        "Failed to read the excel file. Please make sure it is a valid .xlsx or .csv",
+        "Gagal membaca file excel. Pastikan format valid .xlsx atau .csv",
       ]);
       setParsedData([]);
     }
@@ -187,28 +189,28 @@ export function WaterUsageImport({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to import");
+        throw new Error(errorData.error || "Gagal mengimpor");
       }
 
       const result = await response.json();
 
       if (result.errors?.length > 0) {
         setErrors([
-          `Processed ${result.processed}, but failed on ${result.skipped}:`,
+          `Diproses ${result.processed}, namun gagal pada ${result.skipped}:`,
           ...result.errors,
         ]);
-        goeyToast.warning(`Import completed with ${result.skipped} errors`);
+        goeyToast.warning(`Impor selesai dengan ${result.skipped} kesalahan`);
         if (result.processed > 0) {
           onSuccess();
         }
       } else {
-        goeyToast.success(`Successfully imported ${result.processed} records!`);
+        goeyToast.success(`Berhasil mengimpor ${result.processed} data!`);
         clearFile();
         onSuccess();
         onOpenChange(false);
       }
     } catch (error) {
-      goeyToast.error("Import failed", {
+      goeyToast.error("Impor gagal", {
         description: (error as Error).message,
       });
     } finally {
@@ -238,10 +240,10 @@ export function WaterUsageImport({
               </div>
               <div>
                 <DialogTitle className="text-lg">
-                  Import Water Usages
+                  Impor Penggunaan Air
                 </DialogTitle>
                 <DialogDescription className="text-sm mt-0.5">
-                  Upload monthly water meter readings via Excel or CSV.
+                  Unggah pembacaan meteran air bulanan melalui Excel atau CSV.
                 </DialogDescription>
               </div>
             </div>
@@ -251,7 +253,7 @@ export function WaterUsageImport({
           <div className="mt-4 flex items-center gap-3 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-lg px-3.5 py-2.5 border border-blue-100 dark:border-blue-900/40">
             <Download className="h-4 w-4 text-blue-500 shrink-0" />
             <p className="text-xs text-slate-600 dark:text-slate-400 flex-1">
-              Need the template?{" "}
+              Butuh templat?{" "}
               <button
                 type="button"
                 onClick={handleDownloadTemplate}
@@ -261,14 +263,14 @@ export function WaterUsageImport({
                 {isDownloading ? (
                   <>
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    Generating…
+                    Membuat…
                   </>
                 ) : (
-                  "Download template"
+                  "Unduh templat"
                 )}
               </button>{" "}
               <span className="text-slate-400 dark:text-slate-500">
-                — pre-filled with all current units.
+                — sudah terisi dengan semua unit saat ini.
               </span>
             </p>
           </div>
@@ -283,7 +285,7 @@ export function WaterUsageImport({
                 1
               </span>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                Select period & file
+                Pilih periode & file
               </h3>
             </div>
 
@@ -294,7 +296,7 @@ export function WaterUsageImport({
                   htmlFor="period"
                   className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
-                  Billing Period
+                  Periode Tagihan
                 </label>
                 <Input
                   id="period"
@@ -311,7 +313,7 @@ export function WaterUsageImport({
                   htmlFor="excel-file"
                   className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
-                  Excel / CSV File
+                  File Excel / CSV
                 </label>
                 {!file ? (
                   <label
@@ -320,7 +322,7 @@ export function WaterUsageImport({
                   >
                     <UploadCloud className="h-4 w-4 text-slate-400 group-hover:text-blue-500 transition-colors shrink-0" />
                     <span className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                      Choose file…
+                      Pilih file…
                     </span>
                     <input
                       id="excel-file"
@@ -364,7 +366,7 @@ export function WaterUsageImport({
                 <AlertCircle className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
                 <div className="space-y-1 min-w-0">
                   <p className="text-sm font-medium text-rose-800 dark:text-rose-300">
-                    {errors.length} error{errors.length > 1 ? "s" : ""} found
+                    Ditemukan {errors.length} kesalahan
                   </p>
                   <ul className="text-xs text-rose-600 dark:text-rose-400/80 list-disc pl-4 space-y-0.5">
                     {errors.map((errorMsg) => (
@@ -384,10 +386,10 @@ export function WaterUsageImport({
                   2
                 </span>
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Review & confirm
+                  Tinjau & konfirmasi
                 </h3>
                 <span className="ml-auto text-xs text-slate-400">
-                  {parsedData.length} record{parsedData.length > 1 ? "s" : ""}
+                  {parsedData.length} data
                 </span>
               </div>
 
@@ -401,13 +403,13 @@ export function WaterUsageImport({
                           Unit
                         </TableHead>
                         <TableHead className="text-xs font-semibold uppercase tracking-wider text-right text-slate-500">
-                          Prev
+                          Awal
                         </TableHead>
                         <TableHead className="text-xs font-semibold uppercase tracking-wider text-right text-slate-500">
-                          Current
+                          Akhir
                         </TableHead>
                         <TableHead className="text-xs font-semibold uppercase tracking-wider text-right text-slate-500">
-                          Usage
+                          Pemakaian
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -480,7 +482,7 @@ export function WaterUsageImport({
             disabled={isImporting}
             className="sm:w-auto"
           >
-            Cancel
+            Batal
           </Button>
           <Button
             onClick={handleImport}
@@ -490,12 +492,12 @@ export function WaterUsageImport({
             {isImporting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Uploading…
+                Mengunggah…
               </>
             ) : (
               <>
                 <UploadCloud className="h-4 w-4 mr-2" />
-                Upload{hasPreview ? ` (${parsedData.length})` : ""}
+                Unggah{hasPreview ? ` (${parsedData.length})` : ""}
               </>
             )}
           </Button>

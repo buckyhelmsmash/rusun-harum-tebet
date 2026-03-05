@@ -22,13 +22,40 @@ const PAGE_SIZE = 25;
 function getStatusVariant(status: string) {
   switch (status) {
     case "owner_occupied":
+    case "dihuni_pemilik":
       return "success";
     case "rented":
+    case "disewa":
       return "info";
     case "vacant":
+    case "kosong":
       return "destructive";
     default:
       return "default";
+  }
+}
+
+function translateStatus(status: string) {
+  switch (status) {
+    case "owner_occupied":
+      return "Dihuni Pemilik";
+    case "rented":
+      return "Disewa";
+    case "vacant":
+      return "Kosong";
+    default:
+      return status.replace("_", " ");
+  }
+}
+
+function translateType(type: string) {
+  switch (type) {
+    case "residential":
+      return "Residensial";
+    case "commercial":
+      return "Komersial";
+    default:
+      return type;
   }
 }
 
@@ -68,17 +95,19 @@ export function UnitsClient() {
       },
       {
         accessorKey: "block",
-        header: "Block",
+        header: "Blok",
       },
       {
         accessorKey: "floor",
-        header: "Floor",
+        header: "Lantai",
       },
       {
         accessorKey: "unitType",
-        header: "Type",
+        header: "Tipe",
         cell: ({ row }) => (
-          <span className="capitalize">{row.original.unitType}</span>
+          <span className="capitalize">
+            {translateType(row.original.unitType)}
+          </span>
         ),
       },
       {
@@ -86,13 +115,13 @@ export function UnitsClient() {
         header: "Status",
         cell: ({ row }) => (
           <StatusBadge variant={getStatusVariant(row.original.occupancyStatus)}>
-            {row.original.occupancyStatus.replace("_", " ")}
+            {translateStatus(row.original.occupancyStatus)}
           </StatusBadge>
         ),
       },
       {
         accessorKey: "owner",
-        header: "Owner",
+        header: "Pemilik",
         cell: ({ row }) => {
           const owner = row.original.owner;
           if (owner && typeof owner === "object") return owner.fullName;
@@ -129,18 +158,18 @@ export function UnitsClient() {
             {unit.displayId}
           </span>
           <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
-            {unit.occupancyStatus.replace("_", " ")}
+            {translateStatus(unit.occupancyStatus)}
           </StatusBadge>
         </div>
         <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-          <span className="capitalize">{unit.unitType}</span>
+          <span className="capitalize">{translateType(unit.unitType)}</span>
           <span>
-            Block {unit.block}, Floor {unit.floor}
+            Blok {unit.block}, Lantai {unit.floor}
           </span>
         </div>
         {unit.owner && typeof unit.owner === "object" && (
           <p className="text-xs text-slate-500 mt-1">
-            Owner: {unit.owner.fullName}
+            Pemilik: {unit.owner.fullName}
           </p>
         )}
       </Link>
@@ -152,10 +181,10 @@ export function UnitsClient() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Units
+          Daftar Unit
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Manage residential and commercial units across all blocks
+          Kelola unit residensial dan komersial di seluruh blok
         </p>
       </div>
 
@@ -165,7 +194,7 @@ export function UnitsClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(u) => u.$id}
-        searchPlaceholder="Search by unit ID..."
+        searchPlaceholder="Cari ID unit..."
         searchValue={search}
         onSearchChange={(val) => {
           setSearch(val);
@@ -181,14 +210,14 @@ export function UnitsClient() {
               }}
             >
               <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Block: All" />
+                <SelectValue placeholder="Blok: Semua" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Blocks</SelectItem>
-                <SelectItem value="A">Block A</SelectItem>
-                <SelectItem value="B">Block B</SelectItem>
-                <SelectItem value="C">Block C</SelectItem>
-                <SelectItem value="D">Block D</SelectItem>
+                <SelectItem value="all">Semua Blok</SelectItem>
+                <SelectItem value="A">Blok A</SelectItem>
+                <SelectItem value="B">Blok B</SelectItem>
+                <SelectItem value="C">Blok C</SelectItem>
+                <SelectItem value="D">Blok D</SelectItem>
               </SelectContent>
             </Select>
 
@@ -200,13 +229,13 @@ export function UnitsClient() {
               }}
             >
               <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Floor: All" />
+                <SelectValue placeholder="Lantai: Semua" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Floors</SelectItem>
+                <SelectItem value="all">Semua Lantai</SelectItem>
                 {[1, 2, 3, 4, 5].map((f) => (
                   <SelectItem key={f} value={String(f)}>
-                    Floor {f}
+                    Lantai {f}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -220,13 +249,13 @@ export function UnitsClient() {
               }}
             >
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Status: All" />
+                <SelectValue placeholder="Status: Semua" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="owner_occupied">Owner Occupied</SelectItem>
-                <SelectItem value="rented">Rented</SelectItem>
-                <SelectItem value="vacant">Vacant</SelectItem>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="owner_occupied">Dihuni Pemilik</SelectItem>
+                <SelectItem value="rented">Disewa</SelectItem>
+                <SelectItem value="vacant">Kosong</SelectItem>
               </SelectContent>
             </Select>
           </>

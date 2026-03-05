@@ -17,11 +17,11 @@ import { useCreateTenant, useUpdateTenant } from "@/hooks/api/use-tenants";
 import type { Tenant } from "@/types";
 
 const tenantSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
-  ktpNumber: z.string().regex(/^\d{16}$/, "KTP must be exactly 16 digits"),
-  email: z.string().email("Invalid email").optional().or(z.literal("")),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  fullName: z.string().min(1, "Nama lengkap wajib diisi"),
+  phoneNumber: z.string().min(1, "Nomor telepon wajib diisi"),
+  ktpNumber: z.string().regex(/^\d{16}$/, "KTP harus tepat 16 digit"),
+  email: z.string().email("Email tidak valid").optional().or(z.literal("")),
+  dateOfBirth: z.string().min(1, "Tanggal lahir wajib diisi"),
 });
 
 interface TenantFormDialogProps {
@@ -57,15 +57,15 @@ export function TenantFormDialog({
           const { ktpNumber: _ktp, ...updateFields } = value;
           const payload = { ...updateFields, email: value.email || undefined };
           await updateMutation.mutateAsync({ id: tenant.$id, data: payload });
-          goeyToast.success("Tenant updated successfully");
+          goeyToast.success("Penyewa berhasil diperbarui");
         } else {
           const payload = { ...value, email: value.email || undefined };
           await createMutation.mutateAsync(payload);
-          goeyToast.success("Tenant added successfully");
+          goeyToast.success("Penyewa berhasil ditambahkan");
         }
         onOpenChange(false);
       } catch (error) {
-        goeyToast.error("Failed to save tenant.", {
+        goeyToast.error("Gagal menyimpan penyewa.", {
           description: (error as Error).message,
         });
       }
@@ -100,9 +100,11 @@ export function TenantFormDialog({
     <ResponsiveFormContainer
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditing ? "Edit Tenant" : "Add Tenant"}
+      title={isEditing ? "Edit Penyewa" : "Tambah Penyewa"}
       description={
-        isEditing ? "Update details for this tenant." : "Register a new tenant."
+        isEditing
+          ? "Perbarui detail untuk penyewa ini."
+          : "Daftarkan penyewa baru."
       }
     >
       <form
@@ -123,7 +125,7 @@ export function TenantFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Nama Lengkap</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -151,7 +153,7 @@ export function TenantFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>KTP Number</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Nomor KTP</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -187,7 +189,7 @@ export function TenantFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Phone Number</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Nomor Telepon</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -214,7 +216,7 @@ export function TenantFormDialog({
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Date of Birth</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Tanggal Lahir</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -242,7 +244,7 @@ export function TenantFormDialog({
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Email (optional)</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Email (opsional)</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -270,7 +272,7 @@ export function TenantFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            Batal
           </Button>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
@@ -280,7 +282,7 @@ export function TenantFormDialog({
                 type="submit"
                 disabled={!canSubmit || isLoading || isSubmitting}
               >
-                {isLoading || isSubmitting ? "Saving..." : "Save Tenant"}
+                {isLoading || isSubmitting ? "Menyimpan..." : "Simpan Penyewa"}
               </Button>
             )}
           </form.Subscribe>

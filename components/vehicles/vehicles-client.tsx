@@ -35,10 +35,19 @@ function getTypeVariant(type: string) {
 }
 
 function formatType(type: string) {
-  return type
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  switch (type) {
+    case "car":
+      return "Mobil";
+    case "motorcycle":
+      return "Motor";
+    case "box_car":
+      return "Mobil Box";
+    default:
+      return type
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+  }
 }
 
 export function VehiclesClient() {
@@ -68,7 +77,7 @@ export function VehiclesClient() {
     () => [
       {
         accessorKey: "licensePlate",
-        header: "License Plate",
+        header: "Plat Nomor",
         cell: ({ row }) => (
           <span className="font-bold uppercase tracking-tight">
             {row.original.licensePlate}
@@ -77,7 +86,7 @@ export function VehiclesClient() {
       },
       {
         accessorKey: "vehicleType",
-        header: "Type",
+        header: "Tipe",
         cell: ({ row }) => (
           <StatusBadge variant={getTypeVariant(row.original.vehicleType)}>
             {formatType(row.original.vehicleType)}
@@ -86,12 +95,12 @@ export function VehiclesClient() {
       },
       {
         accessorKey: "brand",
-        header: "Brand",
+        header: "Merek",
         cell: ({ row }) => row.original.brand || "—",
       },
       {
         accessorKey: "color",
-        header: "Color",
+        header: "Warna",
         cell: ({ row }) => row.original.color || "—",
       },
 
@@ -129,14 +138,14 @@ export function VehiclesClient() {
                     className="h-8 gap-1.5 text-xs"
                   >
                     <Eye className="h-3.5 w-3.5" />
-                    View Unit
+                    Lihat Unit
                   </Button>
                 </Link>
               )}
               <TimelineSheet
                 targetId={row.original.$id}
                 targetType="vehicle"
-                title={`Vehicle ${row.original.licensePlate}`}
+                title={`Kendaraan ${row.original.licensePlate}`}
               />
             </div>
           );
@@ -162,7 +171,7 @@ export function VehiclesClient() {
                 {vehicle.licensePlate}
               </p>
               <p className="text-xs text-slate-500">
-                {vehicle.brand || "Unknown"}{" "}
+                {vehicle.brand || "Tidak Diketahui"}{" "}
                 {vehicle.color ? `(${vehicle.color})` : ""}
               </p>
             </div>
@@ -181,7 +190,7 @@ export function VehiclesClient() {
             <TimelineSheet
               targetId={vehicle.$id}
               targetType="vehicle"
-              title={`Vehicle ${vehicle.licensePlate}`}
+              title={`Kendaraan ${vehicle.licensePlate}`}
             />
             {unitId && (
               <Button
@@ -212,10 +221,10 @@ export function VehiclesClient() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Vehicles
+          Kendaraan
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          All registered vehicles across units
+          Semua kendaraan terdaftar di seluruh unit
         </p>
       </div>
 
@@ -225,7 +234,7 @@ export function VehiclesClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(v) => v.$id}
-        searchPlaceholder="Search license plate..."
+        searchPlaceholder="Cari plat nomor..."
         searchValue={search}
         onSearchChange={(val) => {
           setSearch(val);
@@ -240,13 +249,13 @@ export function VehiclesClient() {
             }}
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Types" />
+              <SelectValue placeholder="Semua Tipe" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="car">Car</SelectItem>
-              <SelectItem value="motorcycle">Motorcycle</SelectItem>
-              <SelectItem value="box_car">Box Car</SelectItem>
+              <SelectItem value="all">Semua Tipe</SelectItem>
+              <SelectItem value="car">Mobil</SelectItem>
+              <SelectItem value="motorcycle">Motor</SelectItem>
+              <SelectItem value="box_car">Mobil Box</SelectItem>
             </SelectContent>
           </Select>
         }

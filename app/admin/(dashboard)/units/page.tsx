@@ -1,8 +1,8 @@
 import { UnitsClient } from "@/components/units/units-client";
 
 export const metadata = {
-  title: "Units | Rusun Harum Tebet",
-  description: "Manage residential and commercial units across all blocks",
+  title: "Daftar Unit | Rusun Harum Tebet",
+  description: "Kelola unit residensial dan komersial di seluruh blok",
 };
 
 export default function UnitsPage() {

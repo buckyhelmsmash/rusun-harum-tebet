@@ -27,7 +27,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>More</DrawerTitle>
+          <DrawerTitle>Lainnya</DrawerTitle>
         </DrawerHeader>
         <nav className="px-2 pb-6">
           <ul className="space-y-1">
@@ -38,7 +38,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
               >
                 <Car className="h-5 w-5 text-muted-foreground" />
-                Vehicles
+                Kendaraan
               </Link>
             </li>
             <li>
@@ -48,7 +48,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
               >
                 <Droplet className="h-5 w-5 text-muted-foreground" />
-                Water Usages
+                Penggunaan Air
               </Link>
             </li>
             <li>
@@ -58,7 +58,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
               >
                 <Newspaper className="h-5 w-5 text-muted-foreground" />
-                News & Announcements
+                Berita & Pengumuman
               </Link>
             </li>
             <li>
@@ -68,7 +68,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
               >
                 <Settings className="h-5 w-5 text-muted-foreground" />
-                Settings
+                Pengaturan
               </Link>
             </li>
             <li>
@@ -78,7 +78,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
-                Logout
+                Keluar
               </button>
             </li>
           </ul>

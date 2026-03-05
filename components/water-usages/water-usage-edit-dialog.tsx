@@ -70,14 +70,14 @@ export function WaterUsageEditDialog({
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Update failed");
+        throw new Error(err.error || "Pembaruan gagal");
       }
 
-      goeyToast.success("Water usage updated");
+      goeyToast.success("Pemakaian air diperbarui");
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      goeyToast.error("Failed to update", {
+      goeyToast.error("Gagal memperbarui", {
         description: (error as Error).message,
       });
     } finally {
@@ -91,7 +91,7 @@ export function WaterUsageEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Water Usage</DialogTitle>
+          <DialogTitle>Edit Penggunaan Air</DialogTitle>
           <DialogDescription>
             {getUnitLabel(usage.unit)} · {formatPeriodRange(usage.period)}
           </DialogDescription>
@@ -100,7 +100,7 @@ export function WaterUsageEditDialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-prev-meter">Previous Meter</Label>
+              <Label htmlFor="edit-prev-meter">Meteran Awal</Label>
               <Input
                 id="edit-prev-meter"
                 type="number"
@@ -110,7 +110,7 @@ export function WaterUsageEditDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-curr-meter">Current Meter</Label>
+              <Label htmlFor="edit-curr-meter">Meteran Akhir</Label>
               <Input
                 id="edit-curr-meter"
                 type="number"
@@ -123,19 +123,19 @@ export function WaterUsageEditDialog({
 
           {!isValid && (
             <p className="text-sm text-rose-600">
-              Current meter cannot be less than previous meter.
+              Meteran akhir tidak boleh kurang dari meteran awal.
             </p>
           )}
 
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-slate-500">Usage</span>
+              <span className="text-slate-500">Pemakaian</span>
               <p className="font-semibold text-emerald-600">
                 {liveUsage.toLocaleString()} m³
               </p>
             </div>
             <div>
-              <span className="text-slate-500">Amount</span>
+              <span className="text-slate-500">Tagihan</span>
               <p className="font-semibold text-slate-900 dark:text-white">
                 Rp {liveAmount.toLocaleString("id-ID")}
               </p>
@@ -149,7 +149,7 @@ export function WaterUsageEditDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
           >
-            Cancel
+            Batal
           </Button>
           <Button
             onClick={handleSave}
@@ -159,10 +159,10 @@ export function WaterUsageEditDialog({
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving…
+                Menyimpan…
               </>
             ) : (
-              "Save Changes"
+              "Simpan Perubahan"
             )}
           </Button>
         </DialogFooter>

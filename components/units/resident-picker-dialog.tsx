@@ -61,11 +61,11 @@ export function ResidentPickerDialog({
         }),
       });
       goeyToast.success(
-        `${type === "owner" ? "Owner" : "Tenant"} assigned successfully`,
+        `${type === "owner" ? "Pemilik" : "Penyewa"} berhasil ditetapkan`,
       );
       resetAndClose();
     } catch (error) {
-      goeyToast.error("Failed to assign resident.", {
+      goeyToast.error("Gagal memilih penghuni.", {
         description: (error as Error).message,
       });
     }
@@ -86,15 +86,15 @@ export function ResidentPickerDialog({
         if (!val) resetAndClose();
         else onOpenChange(val);
       }}
-      title={type === "owner" ? "Assign Owner" : "Assign Tenant"}
-      description={`Search and select a resident to assign as the ${type} for this unit.`}
+      title={type === "owner" ? "Pilih Pemilik" : "Pilih Penyewa"}
+      description={`Cari dan pilih penghuni untuk ditetapkan sebagai ${type === "owner" ? "pemilik" : "penyewa"} untuk unit ini.`}
     >
       <div className="space-y-4">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder={`Search ${type}s by name or KTP...`}
+            placeholder={`Cari ${type === "owner" ? "pemilik" : "penyewa"} berdasarkan nama atau KTP...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -105,13 +105,13 @@ export function ResidentPickerDialog({
         <div className="max-h-60 overflow-y-auto border rounded-lg divide-y divide-slate-100 dark:divide-slate-800">
           {isListLoading ? (
             <div className="p-6 text-center text-sm text-slate-500">
-              Loading...
+              Memuat...
             </div>
           ) : residents.length === 0 ? (
             <div className="p-6 text-center text-sm text-slate-500">
               {search
-                ? `No ${type}s found matching "${search}"`
-                : `No ${type}s registered yet`}
+                ? `Tidak ada ${type === "owner" ? "pemilik" : "penyewa"} yang sesuai dengan "${search}"`
+                : `Belum ada ${type === "owner" ? "pemilik" : "penyewa"} yang terdaftar`}
             </div>
           ) : (
             residents.map((r) => {
@@ -139,7 +139,7 @@ export function ResidentPickerDialog({
                       {r.fullName}
                       {isCurrent && (
                         <span className="ml-2 text-xs font-normal text-emerald-600">
-                          (current)
+                          (saat ini)
                         </span>
                       )}
                     </p>
@@ -178,7 +178,7 @@ export function ResidentPickerDialog({
           <FieldGroup>
             <div className="grid grid-cols-2 gap-4">
               <Field>
-                <FieldLabel>Lease Start Date</FieldLabel>
+                <FieldLabel>Tanggal Mulai Sewa</FieldLabel>
                 <Input
                   type="date"
                   value={startDate}
@@ -187,9 +187,9 @@ export function ResidentPickerDialog({
               </Field>
               <Field>
                 <FieldLabel>
-                  Lease End Date{" "}
+                  Tanggal Selesai Sewa{" "}
                   <span className="text-xs text-slate-400 font-normal">
-                    (optional)
+                    (opsional)
                   </span>
                 </FieldLabel>
                 <Input
@@ -205,15 +205,15 @@ export function ResidentPickerDialog({
         {/* Actions */}
         <div className="flex w-full justify-end gap-2 pt-2">
           <Button variant="outline" onClick={resetAndClose}>
-            Cancel
+            Batal
           </Button>
           <Button
             disabled={!selectedId || assignMutation.isPending}
             onClick={handleAssign}
           >
             {assignMutation.isPending
-              ? "Assigning..."
-              : `Assign ${type === "owner" ? "Owner" : "Tenant"}`}
+              ? "Menetapkan..."
+              : `Pilih ${type === "owner" ? "Pemilik" : "Penyewa"}`}
           </Button>
         </div>
       </div>

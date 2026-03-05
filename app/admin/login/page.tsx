@@ -48,21 +48,21 @@ export default function AdminLoginPage({
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
+          <CardTitle className="text-2xl text-center">Login Admin</CardTitle>
           <CardDescription className="text-center">
-            Sign in with your authorized Google Account.
+            Masuk dengan Akun Google Anda yang terdaftar.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center p-6">
           <Button onClick={loginWithGoogle} size="lg" className="w-full">
             <LogIn className="mr-2 h-4 w-4" />
-            Sign in with Google
+            Masuk dengan Google
           </Button>
         </CardContent>
         <CardFooter className="flex justify-center">
           <div className="text-sm text-center text-muted-foreground">
             <Link href="/" className="underline hover:text-primary">
-              Return to Home
+              Kembali ke Beranda
             </Link>
           </div>
         </CardFooter>
