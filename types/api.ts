@@ -1,4 +1,11 @@
-import type { ActivityLog, Owner, Tenant, Unit, Vehicle } from "@/types";
+import type {
+  ActivityLog,
+  Invoice,
+  Owner,
+  Tenant,
+  Unit,
+  Vehicle,
+} from "@/types";
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -39,6 +46,13 @@ export type GetOwnersResponse = PaginatedResponse<Owner>;
 
 // GET /api/tenants
 export type GetTenantsResponse = PaginatedResponse<Tenant>;
+
+/**
+ * INVOICE ENDPOINTS
+ */
+
+// GET /api/invoices
+export type GetInvoicesResponse = PaginatedResponse<Invoice>;
 
 /**
  * ACTIVITY LOG ENDPOINTS

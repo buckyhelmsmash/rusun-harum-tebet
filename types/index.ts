@@ -57,9 +57,11 @@ export interface Invoice extends Models.Document {
   iplFee: number;
   waterFee: number;
   vehicleFee: number;
+  uniqueCode: number;
   payDate?: string;
   receiptId?: string;
   unit?: Unit;
+  unitId?: string;
 }
 
 export interface News extends Models.Document {
