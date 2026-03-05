@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, LogOut, Newspaper, Settings } from "lucide-react";
+import { Car, Droplet, LogOut, Newspaper, Settings } from "lucide-react";
 import Link from "next/link";
 import {
   Drawer,
@@ -39,6 +39,16 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
               >
                 <Car className="h-5 w-5 text-muted-foreground" />
                 Vehicles
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/water-usages"
+                onClick={() => onOpenChange(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+              >
+                <Droplet className="h-5 w-5 text-muted-foreground" />
+                Water Usages
               </Link>
             </li>
             <li>
