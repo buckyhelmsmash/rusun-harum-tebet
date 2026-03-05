@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ApiClient } from "@/lib/api/api-client";
-import {
-  type WaterUsage,
-  waterUsageListParamsSchema,
-} from "@/lib/schemas/water-usages";
+import type { WaterUsage } from "@/lib/schemas/water-usages";
 
 interface WaterUsagePageData {
   total: number;
