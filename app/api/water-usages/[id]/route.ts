@@ -73,7 +73,7 @@ export async function PATCH(
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "water_usage.update",
-        description: `Updated water usage for period ${updated.period}`,
+        description: `Memperbarui penggunaan air untuk periode ${updated.period}`,
         targetType: "water_usage",
         targetId: updated.$id,
         unitId:

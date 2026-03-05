@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "invoice.create",
-      description: `Created invoice for period ${validated.period}`,
+      description: `Membuat tagihan untuk periode ${validated.period}`,
       targetType: "invoice",
       targetId: invoice.$id,
       unitId: validated.unit,

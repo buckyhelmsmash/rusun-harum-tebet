@@ -48,7 +48,7 @@ export async function PATCH(
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "invoice.update",
-        description: `Updated invoice for period ${oldInvoice.period}`,
+        description: `Memperbarui tagihan untuk periode ${oldInvoice.period}`,
         targetType: "invoice",
         targetId: updatedInvoice.$id,
         unitId: updatedInvoice.unitId,

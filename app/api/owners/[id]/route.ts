@@ -46,7 +46,7 @@ export async function PATCH(
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "owner.update",
-      description: `Updated owner ${owner.fullName}`,
+      description: `Memperbarui pemilik ${owner.fullName}`,
       targetType: "owner",
       targetId: owner.$id,
       metadata: changes.length > 0 ? { changes } : undefined,
@@ -86,7 +86,7 @@ export async function DELETE(
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "owner.delete",
-      description: `Removed owner ${owner.fullName}`,
+      description: `Menghapus pemilik ${owner.fullName}`,
       targetType: "owner",
       targetId: id,
     });

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "vehicle.create",
-      description: `Added vehicle ${validated.licensePlate} to unit ${unit.displayId}`,
+      description: `Menambahkan kendaraan ${validated.licensePlate} ke unit ${unit.displayId}`,
       targetType: "vehicle",
       targetId: vehicle.$id,
       unitId: validated.unit,

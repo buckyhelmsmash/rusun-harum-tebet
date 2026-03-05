@@ -45,7 +45,7 @@ export async function PATCH(
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "unit.update",
-      description: `Updated unit ${unit.displayId}`,
+      description: `Memperbarui unit ${unit.displayId}`,
       targetType: "unit",
       targetId: unit.$id,
       unitId: unit.$id,

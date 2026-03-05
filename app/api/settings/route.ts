@@ -52,7 +52,7 @@ export async function PATCH(request: Request) {
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "settings.update",
-        description: `Updated system settings (Meeting No: ${parsed.data.meetingNumber})`,
+        description: `Memperbarui pengaturan sistem (No. Rapat: ${parsed.data.meetingNumber})`,
         targetType: "settings",
         metadata: {
           changes,

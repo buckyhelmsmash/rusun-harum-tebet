@@ -194,6 +194,10 @@ export async function POST(request: Request) {
 
     let created = 0;
     let updated = 0;
+    const createdInvoices: { invoiceNumber: string; unitDisplayId: string }[] =
+      [];
+    const updatedInvoices: { invoiceNumber: string; unitDisplayId: string }[] =
+      [];
 
     for (const unit of unitsToCreate) {
       const vehicleFee = await getVehicleFee(unit.$id);
@@ -234,6 +238,7 @@ export async function POST(request: Request) {
       };
 
       await InvoiceRepository.create(data);
+      createdInvoices.push({ invoiceNumber, unitDisplayId: unit.displayId });
       created++;
     }
 
@@ -258,6 +263,10 @@ export async function POST(request: Request) {
         arrears,
         totalDue,
       });
+
+      const condensedPeriod = billingPeriod.replace("-", "");
+      const invoiceNumber = `INV-${condensedPeriod}-${unit.displayId}`;
+      updatedInvoices.push({ invoiceNumber, unitDisplayId: unit.displayId });
       updated++;
     }
 
@@ -266,12 +275,14 @@ export async function POST(request: Request) {
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "invoice.generate",
-        description: `Generated ${created} new, updated ${updated} existing invoices for ${billingPeriod}`,
+        description: `Membuat ${created} tagihan baru, memperbarui ${updated} tagihan untuk periode ${billingPeriod}`,
         targetType: "invoice",
         metadata: {
           created,
           updated,
           period: billingPeriod,
+          createdInvoices,
+          updatedInvoices,
         },
       });
     }
@@ -280,7 +291,7 @@ export async function POST(request: Request) {
       count: created,
       updated,
       period: billingPeriod,
-      message: `Generated ${created} new, updated ${updated} existing invoices for ${billingPeriod}`,
+      message: `Membuat ${created} tagihan baru, memperbarui ${updated} tagihan untuk periode ${billingPeriod}`,
     });
   } catch (error: unknown) {
     if (error instanceof AuthError) {

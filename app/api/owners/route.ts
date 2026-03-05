@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "owner.create",
-      description: `Added owner ${validated.fullName}`,
+      description: `Menambahkan pemilik ${validated.fullName}`,
       targetType: "owner",
       targetId: owner.$id,
     });

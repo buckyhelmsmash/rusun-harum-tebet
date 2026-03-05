@@ -83,6 +83,7 @@ export async function POST(req: Request) {
     let processed = 0;
     let skipped = 0;
     const errors: string[] = [];
+    const processedUnits: { displayId: string }[] = [];
 
     // 3. Process each row
     for (const [index, row] of rows.entries()) {
@@ -168,6 +169,7 @@ export async function POST(req: Request) {
           });
         }
 
+        processedUnits.push({ displayId: row["Unit ID"].trim() });
         processed++;
       } catch (saveError) {
         console.error(
@@ -186,13 +188,14 @@ export async function POST(req: Request) {
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "water_usage.import",
-        description: `Imported ${processed} water usage records for period ${period}`,
+        description: `Mengimpor ${processed} data penggunaan air untuk periode ${period}`,
         targetType: "water_usage",
         metadata: {
           period,
           processed,
           skipped,
           errors,
+          processedUnits,
         },
       });
     }

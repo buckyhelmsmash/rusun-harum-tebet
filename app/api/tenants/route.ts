@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       actorId: session.$id,
       actorName: session.name || session.email,
       action: "tenant.create",
-      description: `Added tenant ${validated.fullName}`,
+      description: `Menambahkan penyewa ${validated.fullName}`,
       targetType: "tenant",
       targetId: tenant.$id,
     });
