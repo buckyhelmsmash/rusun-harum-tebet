@@ -22,21 +22,47 @@ function mapRowToInvoice(row: unknown): Invoice {
   return invoice;
 }
 
+const VALID_ORDER_FIELDS = ["arrears", "totalDue", "period", "$createdAt"];
+
+async function getUnitIdsForBlock(block: string): Promise<string[]> {
+  const db = await getAdminDb();
+  const result = await db.listRows({
+    databaseId: DB_ID,
+    tableId: APPWRITE.COLLECTIONS.UNITS,
+    queries: [
+      Query.equal("block", block),
+      Query.limit(200),
+      Query.select(["$id"]),
+    ],
+  });
+  return result.rows.map((row) => (row as unknown as { $id: string }).$id);
+}
+
 export const InvoiceRepository = {
   async list(params: InvoiceListParams): Promise<PaginatedResult<Invoice>> {
     const db = await getAdminDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 
-    const queries: string[] = [
-      Query.limit(limit),
-      Query.offset(offset),
-      Query.orderDesc("$createdAt"),
-    ];
+    const queries: string[] = [Query.limit(limit), Query.offset(offset)];
 
     if (params.status) queries.push(Query.equal("status", params.status));
     if (params.period) queries.push(Query.equal("period", params.period));
     if (params.search) queries.push(Query.search("period", params.search));
+
+    if (params.block) {
+      const unitIds = await getUnitIdsForBlock(params.block);
+      if (unitIds.length === 0) {
+        return { items: [], total: 0, limit, offset };
+      }
+      queries.push(Query.equal("unit", unitIds));
+    }
+
+    if (params.orderBy && VALID_ORDER_FIELDS.includes(params.orderBy)) {
+      queries.push(Query.orderDesc(params.orderBy));
+    } else {
+      queries.push(Query.orderDesc("$createdAt"));
+    }
 
     const result = await db.listRows({
       databaseId: DB_ID,

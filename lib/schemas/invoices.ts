@@ -35,6 +35,8 @@ export const invoiceListParamsSchema = z.object({
   search: z.string().optional(),
   status: z.enum(["unpaid", "paid"]).optional(),
   period: z.string().optional(),
+  block: z.string().optional(),
+  orderBy: z.string().optional(),
   limit: z.coerce.number().min(1).max(100).optional(),
   offset: z.coerce.number().min(0).optional(),
 });

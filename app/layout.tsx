@@ -29,6 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary/20`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           <Providers>{children}</Providers>

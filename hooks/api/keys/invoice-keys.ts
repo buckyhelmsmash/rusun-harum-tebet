@@ -2,6 +2,8 @@ export interface InvoiceFilters {
   search?: string;
   status?: string;
   period?: string;
+  block?: string;
+  orderBy?: string;
   limit?: number;
   offset?: number;
 }
