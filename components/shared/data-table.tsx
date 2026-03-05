@@ -4,11 +4,9 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
-  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -65,15 +62,10 @@ export function DataTable<TData, TValue>({
   hasNextPage,
   hasPrevPage,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: { sorting },
   });
 
   const startIndex = pageIndex * pageSize + 1;
@@ -109,31 +101,14 @@ export function DataTable<TData, TValue>({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className={cn(
-                        "text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider",
-                        header.column.getCanSort() &&
-                          "cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors",
-                      )}
-                      onClick={header.column.getToggleSortingHandler()}
+                      className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                     >
-                      <div className="flex items-center gap-1">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                        {header.column.getCanSort() && (
-                          <ArrowUpDown
-                            className={cn(
-                              "h-3 w-3 shrink-0 transition-opacity",
-                              header.column.getIsSorted()
-                                ? "opacity-100"
-                                : "opacity-30",
-                            )}
-                          />
-                        )}
-                      </div>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>

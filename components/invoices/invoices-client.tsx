@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetInvoices } from "@/hooks/api/use-invoices";
+import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import type { Invoice, Unit } from "@/types";
 import { InvoiceFormDialog } from "./invoice-form-dialog";
@@ -78,6 +79,8 @@ export function InvoicesClient() {
     getInitialPeriodDate(urlPeriod),
   );
   const [blockFilter, setBlockFilter] = useState(urlBlock ?? "A");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [pageIndex, setPageIndex] = useState(0);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -87,6 +90,7 @@ export function InvoicesClient() {
 
   const filters = useMemo(
     () => ({
+      search: debouncedSearch || undefined,
       status:
         statusFilter !== "all"
           ? (statusFilter as "paid" | "unpaid")
@@ -96,7 +100,7 @@ export function InvoicesClient() {
       limit: PAGE_SIZE,
       offset: pageIndex * PAGE_SIZE,
     }),
-    [statusFilter, periodFilter, blockFilter, pageIndex],
+    [debouncedSearch, statusFilter, periodFilter, blockFilter, pageIndex],
   );
 
   const { data, isLoading } = useGetInvoices(filters);
@@ -129,7 +133,6 @@ export function InvoicesClient() {
       {
         accessorKey: "period",
         header: "Period",
-        enableSorting: false,
         cell: ({ row }) => (
           <span className="text-sm font-medium">{row.original.period}</span>
         ),
@@ -137,7 +140,6 @@ export function InvoicesClient() {
       {
         id: "unit",
         header: "Unit",
-        enableSorting: false,
         cell: ({ row }) => {
           const unit = row.original.unit;
           const displayId =
@@ -152,7 +154,6 @@ export function InvoicesClient() {
       {
         id: "resident",
         header: "Recipient",
-        enableSorting: false,
         cell: ({ row }) => {
           const unit =
             typeof row.original.unit === "object"
@@ -168,7 +169,6 @@ export function InvoicesClient() {
       {
         accessorKey: "iplFee",
         header: () => <span className="text-right block">IPL Fee</span>,
-        enableSorting: false,
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.iplFee)}
@@ -178,7 +178,6 @@ export function InvoicesClient() {
       {
         accessorKey: "waterFee",
         header: () => <span className="text-right block">Water</span>,
-        enableSorting: false,
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.waterFee)}
@@ -188,7 +187,6 @@ export function InvoicesClient() {
       {
         accessorKey: "vehicleFee",
         header: () => <span className="text-right block">Vehicle</span>,
-        enableSorting: false,
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.vehicleFee)}
@@ -218,7 +216,6 @@ export function InvoicesClient() {
       {
         accessorKey: "status",
         header: "Status",
-        enableSorting: false,
         cell: ({ row }) => (
           <StatusBadge
             variant={row.original.status === "paid" ? "success" : "destructive"}
@@ -230,7 +227,6 @@ export function InvoicesClient() {
       {
         id: "actions",
         header: "",
-        enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1">
             <Button
@@ -367,7 +363,12 @@ export function InvoicesClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(inv) => inv.$id}
-        searchPlaceholder="Search invoices, units, or residents..."
+        searchPlaceholder="Search by period (e.g. 2026-03)..."
+        searchValue={search}
+        onSearchChange={(val) => {
+          setSearch(val);
+          setPageIndex(0);
+        }}
         filters={
           <>
             {/* Block filter */}

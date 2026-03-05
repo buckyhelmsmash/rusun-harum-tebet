@@ -12,6 +12,7 @@ import { goeyToast } from "@/components/ui/goey-toaster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDeleteOwner, useGetOwners } from "@/hooks/api/use-owners";
 import { useDeleteTenant, useGetTenants } from "@/hooks/api/use-tenants";
+import { useDebounce } from "@/hooks/use-debounce";
 import type { Owner, Tenant } from "@/types";
 import { OwnerFormDialog } from "./owner-form-dialog";
 import { TenantFormDialog } from "./tenant-form-dialog";
@@ -32,6 +33,7 @@ export function ResidentsClient() {
 
   // Owners state
   const [ownerSearch, setOwnerSearch] = useState("");
+  const debouncedOwnerSearch = useDebounce(ownerSearch, 300);
   const [ownerPageIndex, setOwnerPageIndex] = useState(0);
   const [ownerFormOpen, setOwnerFormOpen] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
@@ -39,6 +41,7 @@ export function ResidentsClient() {
 
   // Tenants state
   const [tenantSearch, setTenantSearch] = useState("");
+  const debouncedTenantSearch = useDebounce(tenantSearch, 300);
   const [tenantPageIndex, setTenantPageIndex] = useState(0);
   const [tenantFormOpen, setTenantFormOpen] = useState(false);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
@@ -47,11 +50,11 @@ export function ResidentsClient() {
   // Owners query
   const ownerFilters = useMemo(
     () => ({
-      search: ownerSearch || undefined,
+      search: debouncedOwnerSearch || undefined,
       limit: PAGE_SIZE,
       offset: ownerPageIndex * PAGE_SIZE,
     }),
-    [ownerSearch, ownerPageIndex],
+    [debouncedOwnerSearch, ownerPageIndex],
   );
   const { data: ownersData, isLoading: ownersLoading } =
     useGetOwners(ownerFilters);
@@ -61,11 +64,11 @@ export function ResidentsClient() {
   // Tenants query
   const tenantFilters = useMemo(
     () => ({
-      search: tenantSearch || undefined,
+      search: debouncedTenantSearch || undefined,
       limit: PAGE_SIZE,
       offset: tenantPageIndex * PAGE_SIZE,
     }),
-    [tenantSearch, tenantPageIndex],
+    [debouncedTenantSearch, tenantPageIndex],
   );
   const { data: tenantsData, isLoading: tenantsLoading } =
     useGetTenants(tenantFilters);

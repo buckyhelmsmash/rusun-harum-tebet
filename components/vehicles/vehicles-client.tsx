@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetVehicles } from "@/hooks/api/use-vehicles";
+import { useDebounce } from "@/hooks/use-debounce";
 import type { Vehicle } from "@/types";
 
 const PAGE_SIZE = 25;
@@ -42,12 +43,13 @@ function formatType(type: string) {
 
 export function VehiclesClient() {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [typeFilter, setTypeFilter] = useState("all");
   const [pageIndex, setPageIndex] = useState(0);
 
   const filters = useMemo(
     () => ({
-      search: search || undefined,
+      search: debouncedSearch || undefined,
       vehicleType:
         typeFilter !== "all"
           ? (typeFilter as "car" | "motorcycle" | "box_car")
@@ -55,7 +57,7 @@ export function VehiclesClient() {
       limit: PAGE_SIZE,
       offset: pageIndex * PAGE_SIZE,
     }),
-    [search, typeFilter, pageIndex],
+    [debouncedSearch, typeFilter, pageIndex],
   );
 
   const { data, isLoading } = useGetVehicles(filters);
