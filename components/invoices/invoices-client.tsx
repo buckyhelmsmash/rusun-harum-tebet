@@ -363,7 +363,7 @@ export function InvoicesClient() {
         isLoading={isLoading}
         mobileCardRender={renderMobileCard}
         keyExtractor={(inv) => inv.$id}
-        searchPlaceholder="Search by period (e.g. 2026-03)..."
+        searchPlaceholder="Search by unit ID (e.g. A-101)..."
         searchValue={search}
         onSearchChange={(val) => {
           setSearch(val);

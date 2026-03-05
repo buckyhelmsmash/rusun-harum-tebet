@@ -68,7 +68,6 @@ export function InvoiceFormDialog({
           waterFee,
           vehicleFee,
           arrears,
-          uniqueCode,
           totalDue,
           status,
           payDate: status === "paid" ? new Date().toISOString() : undefined,
@@ -86,7 +85,9 @@ export function InvoiceFormDialog({
   if (!invoice) return null;
 
   const unitDisplay =
-    typeof invoice.unit === "object" ? invoice.unit?.displayId : invoice.unitId;
+    typeof invoice.unit === "object" && invoice.unit
+      ? ((invoice.unit as { displayId?: string }).displayId ?? invoice.unitId)
+      : invoice.unitId;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -148,9 +149,8 @@ export function InvoiceFormDialog({
                 id="uniqueCode"
                 type="number"
                 value={uniqueCode}
-                onChange={(e) => setUniqueCode(Number(e.target.value))}
-                min={100}
-                max={999}
+                disabled
+                className="bg-slate-100 dark:bg-slate-800 cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">

@@ -1,4 +1,5 @@
-import { endOfMonth, format, subMonths } from "date-fns";
+import { randomInt, randomUUID } from "node:crypto";
+import { format, subMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
@@ -13,17 +14,11 @@ const DEFAULT_IPL_FEE = 250_000;
 const DEFAULT_WATER_FEE = 100_000;
 
 function generateUniqueCode(): number {
-  return Math.floor(Math.random() * 900) + 100;
+  return randomInt(100, 1000);
 }
 
 function generateAccessToken(): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let token = "";
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+  return randomUUID();
 }
 
 interface UnitRow {
@@ -36,9 +31,12 @@ export async function POST() {
   try {
     const db = await getAdminDb();
     const now = new Date();
-    const currentPeriod = format(now, "yyyy-MM");
-    const previousPeriod = format(subMonths(now, 1), "yyyy-MM");
-    const dueDate = format(endOfMonth(now), "yyyy-MM-dd");
+    const billingPeriod = format(subMonths(now, 1), "yyyy-MM");
+    const arrearsPeriod = format(subMonths(now, 2), "yyyy-MM");
+    const dueDate = format(
+      new Date(now.getFullYear(), now.getMonth(), 15),
+      "yyyy-MM-dd",
+    );
 
     const allUnits: UnitRow[] = [];
     let offset = 0;
@@ -70,7 +68,7 @@ export async function POST() {
     const existingInvoices = await db.listRows({
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.INVOICES,
-      queries: [Query.equal("period", currentPeriod), Query.limit(500)],
+      queries: [Query.equal("period", billingPeriod), Query.limit(500)],
     });
 
     const invoicedUnitIds = new Set(
@@ -91,7 +89,7 @@ export async function POST() {
     if (unitsToGenerate.length === 0) {
       return NextResponse.json({
         count: 0,
-        message: `All ${allUnits.length} occupied units already have invoices for ${currentPeriod}`,
+        message: `All ${allUnits.length} occupied units already have invoices for ${billingPeriod}`,
       });
     }
 
@@ -99,7 +97,7 @@ export async function POST() {
       databaseId: DB_ID,
       tableId: APPWRITE.COLLECTIONS.INVOICES,
       queries: [
-        Query.equal("period", previousPeriod),
+        Query.equal("period", arrearsPeriod),
         Query.equal("status", "unpaid"),
         Query.limit(500),
       ],
@@ -123,6 +121,22 @@ export async function POST() {
       }
     }
 
+    // Fetch existing unique codes for this billing period to ensure no duplicates
+    const existingCodesResult = await db.listRows({
+      databaseId: DB_ID,
+      tableId: APPWRITE.COLLECTIONS.INVOICES,
+      queries: [
+        Query.equal("period", billingPeriod),
+        Query.limit(500),
+        Query.select(["uniqueCode"]),
+      ],
+    });
+    const usedCodes = new Set<number>(
+      existingCodesResult.rows.map(
+        (row) => (row as unknown as { uniqueCode: number }).uniqueCode,
+      ),
+    );
+
     let created = 0;
 
     for (const unit of unitsToGenerate) {
@@ -138,13 +152,19 @@ export async function POST() {
       );
 
       const arrears = arrearsMap.get(unit.$id) ?? 0;
-      const uniqueCode = generateUniqueCode();
+
+      let uniqueCode = generateUniqueCode();
+      while (usedCodes.has(uniqueCode)) {
+        uniqueCode = generateUniqueCode();
+      }
+      usedCodes.add(uniqueCode);
+
       const totalDue =
         DEFAULT_IPL_FEE + DEFAULT_WATER_FEE + vehicleFee + arrears + uniqueCode;
 
       const data: CreateInvoiceInput = {
         unit: unit.$id,
-        period: currentPeriod,
+        period: billingPeriod,
         status: "unpaid",
         dueDate,
         iplFee: DEFAULT_IPL_FEE,
@@ -162,8 +182,8 @@ export async function POST() {
 
     return NextResponse.json({
       count: created,
-      period: currentPeriod,
-      message: `Generated ${created} invoices for ${currentPeriod}`,
+      period: billingPeriod,
+      message: `Generated ${created} invoices for ${billingPeriod}`,
     });
   } catch (error) {
     console.error("[generate-invoices] Error:", error);

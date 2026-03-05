@@ -48,7 +48,26 @@ export const InvoiceRepository = {
 
     if (params.status) queries.push(Query.equal("status", params.status));
     if (params.period) queries.push(Query.equal("period", params.period));
-    if (params.search) queries.push(Query.search("period", params.search));
+
+    // Search by unit displayId (2-step: find matching units, then filter invoices)
+    if (params.search) {
+      const searchUnits = await db.listRows({
+        databaseId: DB_ID,
+        tableId: APPWRITE.COLLECTIONS.UNITS,
+        queries: [
+          Query.contains("displayId", params.search),
+          Query.limit(200),
+          Query.select(["$id"]),
+        ],
+      });
+      const searchUnitIds = searchUnits.rows.map(
+        (row) => (row as unknown as { $id: string }).$id,
+      );
+      if (searchUnitIds.length === 0) {
+        return { items: [], total: 0, limit, offset };
+      }
+      queries.push(Query.equal("unit", searchUnitIds));
+    }
 
     if (params.block) {
       const unitIds = await getUnitIdsForBlock(params.block);
@@ -70,8 +89,47 @@ export const InvoiceRepository = {
       queries,
     });
 
+    const invoices = result.rows.map(mapRowToInvoice);
+
+    // Expand unit relationships so columns can access displayId, owner, tenant
+    const unitIds = [
+      ...new Set(
+        invoices.map((inv) => inv.unitId).filter((id): id is string => !!id),
+      ),
+    ];
+
+    if (unitIds.length > 0) {
+      const unitRows = await Promise.all(
+        unitIds.map((id) =>
+          db
+            .getRow({
+              databaseId: DB_ID,
+              tableId: APPWRITE.COLLECTIONS.UNITS,
+              rowId: id,
+            })
+            .catch(() => null),
+        ),
+      );
+
+      const unitMap = new Map<string, Record<string, unknown>>();
+      for (const row of unitRows) {
+        if (row) {
+          const r = row as unknown as { $id: string };
+          unitMap.set(r.$id, row as unknown as Record<string, unknown>);
+        }
+      }
+
+      for (const inv of invoices) {
+        if (inv.unitId && unitMap.has(inv.unitId)) {
+          (inv as unknown as Record<string, unknown>).unit = unitMap.get(
+            inv.unitId,
+          );
+        }
+      }
+    }
+
     return {
-      items: result.rows.map(mapRowToInvoice),
+      items: invoices,
       total: result.total,
       limit,
       offset,
