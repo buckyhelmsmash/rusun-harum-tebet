@@ -7,7 +7,6 @@ import { Calendar as CalendarIcon, Droplet, UploadCloud } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/monthpicker";
 import {
@@ -126,15 +125,6 @@ export function WaterUsagesClient() {
           </span>
         ),
       },
-      {
-        accessorKey: "isBilled",
-        header: "Billed",
-        cell: ({ row }) => (
-          <StatusBadge variant={row.original.isBilled ? "success" : "warning"}>
-            {row.original.isBilled ? "Billed" : "Unbilled"}
-          </StatusBadge>
-        ),
-      },
     ],
     [],
   );
@@ -153,9 +143,6 @@ export function WaterUsagesClient() {
             <p className="text-xs text-slate-500">{usage.period}</p>
           </div>
         </div>
-        <StatusBadge variant={usage.isBilled ? "success" : "warning"}>
-          {usage.isBilled ? "Billed" : "Unbilled"}
-        </StatusBadge>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-slate-500">
         <div>

@@ -125,12 +125,13 @@ export async function POST(req: Request) {
 
       try {
         if (existingId) {
+          // Don't re-assign the `unit` relationship on update
+          const { unit: _unit, ...updateData } = data;
           await db.updateRow({
             databaseId: DB_ID,
             tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
             rowId: existingId,
-            data,
-            permissions: [],
+            data: updateData,
           });
         } else {
           await db.createRow({
@@ -138,7 +139,6 @@ export async function POST(req: Request) {
             tableId: APPWRITE.COLLECTIONS.WATER_USAGES,
             rowId: ID.unique(),
             data,
-            permissions: [],
           });
         }
 
@@ -170,12 +170,15 @@ export async function POST(req: Request) {
               waterFee: amount,
               totalDue: newTotalDue,
             },
-            permissions: [],
           });
         }
 
         processed++;
-      } catch {
+      } catch (saveError) {
+        console.error(
+          `[water-usages-import] Failed to save row for ${row["Unit ID"]}:`,
+          saveError,
+        );
         skipped++;
         errors.push(
           `Row ${index + 1}: Failed to save data for ${row["Unit ID"]}`,
