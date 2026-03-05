@@ -73,7 +73,7 @@ export function InvoiceFormDialog({
 
   const feeBreakdown = [
     { label: "Biaya Sarana Umum", value: invoice.publicFacilityFee || 0 },
-    { label: "Biaya Penjagaan", value: invoice.guardFee || 0 },
+    { label: "Biaya Penjagaan Fasilitas", value: invoice.guardFee || 0 },
     { label: "Biaya Air", value: invoice.waterFee },
     { label: "Biaya Kendaraan", value: invoice.vehicleFee },
     { label: "Tunggakan", value: invoice.arrears },

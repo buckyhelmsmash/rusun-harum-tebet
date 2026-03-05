@@ -207,7 +207,9 @@ export function InvoicesClient() {
       },
       {
         accessorKey: "guardFee",
-        header: () => <span className="text-right block">Penjagaan</span>,
+        header: () => (
+          <span className="text-right block">Penjagaan Fasilitas</span>
+        ),
         cell: ({ row }) => (
           <span className="text-sm text-right block">
             {formatCurrency(row.original.guardFee || 0)}

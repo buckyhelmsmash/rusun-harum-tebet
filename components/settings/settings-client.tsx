@@ -35,7 +35,7 @@ const FEE_FIELDS = [
   },
   {
     key: "guardFee" as const,
-    label: "Biaya Penjagaan",
+    label: "Biaya Penjagaan Fasilitas",
     description: "Biaya bulanan layanan keamanan / penjagaan per unit",
     suffix: "/ bulan",
   },
