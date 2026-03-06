@@ -305,6 +305,11 @@ export function InvoicesClient() {
               targetId={row.original.$id}
               targetType="invoice"
               title={`Invoice ${row.original.period}`}
+              bulkContext={
+                row.original.invoiceNumber
+                  ? { invoiceNumber: row.original.invoiceNumber }
+                  : undefined
+              }
             />
           </div>
         ),
@@ -385,6 +390,11 @@ export function InvoicesClient() {
             targetId={invoice.$id}
             targetType="invoice"
             title={`Tagihan ${invoice.period}`}
+            bulkContext={
+              invoice.invoiceNumber
+                ? { invoiceNumber: invoice.invoiceNumber }
+                : undefined
+            }
           />
         </div>
       </div>
