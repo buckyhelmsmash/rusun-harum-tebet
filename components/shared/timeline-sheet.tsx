@@ -108,9 +108,81 @@ function formatTimestamp(dateStr: string) {
   });
 }
 
+const FIELD_LABELS: Record<string, string> = {
+  status: "Status",
+  waterFee: "Biaya Air",
+  waterRate: "Tarif Air",
+  publicFacilityFee: "Sarana Umum",
+  guardFee: "Penjagaan Fasilitas",
+  vehicleFee: "Biaya Kendaraan",
+  iplFee: "IPL",
+  arrears: "Tunggakan",
+  totalDue: "Total Tagihan",
+  previousMeter: "Meteran Awal",
+  currentMeter: "Meteran Akhir",
+  usage: "Pemakaian",
+  amount: "Jumlah",
+  period: "Periode",
+  isBilled: "Tertagih",
+  paymentDate: "Tanggal Bayar",
+  billRecipient: "Penerima Tagihan",
+  uniqueCode: "Kode Unik",
+  fullName: "Nama Lengkap",
+  phone: "Telepon",
+  email: "Email",
+  plateNumber: "Plat Nomor",
+  brand: "Merek",
+  color: "Warna",
+  vehicleType: "Jenis",
+  publicFacilityRate: "Tarif Sarana Umum",
+  guardRate: "Tarif Penjagaan",
+  meetingNumber: "Nomor Rapat",
+  invoiceNumber: "No. Tagihan",
+};
+
+const VALUE_LABELS: Record<string, string> = {
+  paid: "Lunas",
+  unpaid: "Belum Lunas",
+  true: "Ya",
+  false: "Tidak",
+  owner: "Pemilik",
+  tenant: "Penyewa",
+  car: "Mobil",
+  motorcycle: "Motor",
+};
+
+function formatFieldLabel(field: string): string {
+  return FIELD_LABELS[field] ?? field;
+}
+
+function formatChangeValue(val: unknown): string {
+  if (val === null || val === undefined) return "—";
+  const str = String(val);
+  return VALUE_LABELS[str] ?? str;
+}
+
+interface ChangeEntry {
+  field: string;
+  old: unknown;
+  new: unknown;
+}
+
+function parseChanges(log: ActivityLog): ChangeEntry[] {
+  const raw = log.metadata;
+  if (!raw) return [];
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed?.changes)) return parsed.changes as ChangeEntry[];
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
 function TimelineItem({ log }: { log: ActivityLog }) {
   const Icon = getActionIcon(log.action);
   const colorClass = getActionColor(log.action);
+  const changes = parseChanges(log);
 
   return (
     <div className="relative flex gap-4 pb-8 last:pb-0 group">
@@ -137,6 +209,28 @@ function TimelineItem({ log }: { log: ActivityLog }) {
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {log.description}
         </p>
+
+        {changes.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {changes.map((change) => (
+              <div
+                key={change.field}
+                className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-md border border-slate-100 dark:border-slate-800"
+              >
+                <span className="font-medium text-slate-700 dark:text-slate-300 mr-1">
+                  {formatFieldLabel(change.field)}:
+                </span>
+                <span className="line-through opacity-70 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1 rounded mr-1">
+                  {formatChangeValue(change.old)}
+                </span>
+                <span className="opacity-90 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-1 rounded">
+                  {formatChangeValue(change.new)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
           oleh {log.actorName}
         </p>
