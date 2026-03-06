@@ -48,6 +48,7 @@ export interface Vehicle extends Models.Document {
 
 export interface Invoice extends Models.Document {
   accessToken: string;
+  pinCode?: string;
   invoiceNumber: string;
   period: string;
   status: "paid" | "unpaid";
