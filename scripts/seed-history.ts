@@ -3,7 +3,6 @@ import { Client, Databases, ID, Query } from "node-appwrite";
 
 // Require dotenv carefully in standard Node
 require("dotenv").config({ path: ".env" });
-require("dotenv").config({ path: ".env.local" });
 
 const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
 const APPWRITE_PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
