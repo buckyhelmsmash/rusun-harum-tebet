@@ -1,27 +1,31 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Query } from "node-appwrite";
+import { LandingClient } from "@/components/landing/landing-client";
+import { createAdminClient } from "@/lib/appwrite/server";
+import { APPWRITE } from "@/lib/constants";
+import type { News } from "@/types";
 
-export default function HomePage() {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
-      <div className="w-full max-w-3xl text-center space-y-8">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl text-primary">
-          Selamat Datang di Rusun Harum Tebet
-        </h1>
-        <p className="text-xl text-muted-foreground leading-relaxed">
-          Portal resmi penghuni. Cek pengumuman terbaru atau akses tagihan
-          bulanan Anda secara aman melalui Magic Link.
-        </p>
+export const dynamic = "force-dynamic";
 
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <Button asChild size="lg">
-            <Link href="/news">Baca Berita Terbaru</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/admin/login">Masuk sebagai Admin</Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+export default async function HomePage() {
+  let initialNews: News[] = [];
+
+  try {
+    const { tablesDb } = await createAdminClient();
+
+    const response = await tablesDb.listRows({
+      databaseId: APPWRITE.DATABASE_ID,
+      tableId: APPWRITE.COLLECTIONS.NEWS,
+      queries: [
+        Query.equal("isPublished", true),
+        Query.orderDesc("publishedDate"),
+        Query.limit(5),
+      ],
+    });
+
+    initialNews = response.rows as unknown as News[];
+  } catch (error) {
+    console.error("Failed to fetch news:", error);
+  }
+
+  return <LandingClient news={initialNews} />;
 }
