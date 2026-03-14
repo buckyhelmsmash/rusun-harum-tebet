@@ -5,6 +5,7 @@ import { id } from "date-fns/locale";
 import { ArrowRight, Building2, Calendar, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { News } from "@/types";
+import { Button } from "@/components/ui/button";
 
 const BACKGROUND_IMAGES = [
   "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600&q=80",
@@ -197,13 +198,13 @@ export function LandingClient({ news }: Props) {
           </div>
 
           <div className="pt-6">
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-sm font-semibold transition-all"
+            <Button
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2 py-6 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 hover:text-white text-white text-sm font-semibold transition-all backdrop-blur-md"
             >
               Semua Pengumuman
               <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
+            </Button>
           </div>
         </aside>
       </main>
