@@ -3,72 +3,21 @@
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ArrowRight, Building2, Calendar, MapPin } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MOCK_NEWS, HERO_FALLBACK_IMAGES, getNewsImage } from "@/lib/mock-news";
 import type { News } from "@/types";
-
-const HERO_FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600&q=80",
-  "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1600&q=80",
-  "https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1600&q=80",
-  "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1600&q=80",
-];
 
 type Props = {
   news: News[];
 };
-
-const MOCK_NEWS: News[] = [
-  {
-    $id: "mock1",
-    title: "Pemeliharaan Rutin Lift Gedung A dan B",
-    content:
-      "Pengelola rusun akan melaksanakan pemeliharaan rutin lift di Gedung A dan B pada tanggal 5-7 Maret 2026. Selama periode tersebut, penghuni diharapkan menggunakan tangga darurat.",
-    summary: "Jadwal pemeliharaan lift rutin Gedung A & B pada 5-7 Maret 2026.",
-    isPublished: true,
-    publishedDate: "2026-03-01T08:00:00.000Z",
-  } as News,
-  {
-    $id: "mock2",
-    title: "Fogging Lingkungan Berkala",
-    content:
-      "Kegiatan fogging (pengasapan) nyamuk demam berdarah akan dilaksanakan di seluruh area Rusun Harum Tebet. Warga dimohon menutup makanan dan minuman yang terbuka.",
-    summary:
-      "Pengasapan nyamuk DBD di seluruh area rusun untuk pencegahan berkala.",
-    isPublished: true,
-    publishedDate: "2026-02-28T09:30:00.000Z",
-  } as News,
-  {
-    $id: "mock3",
-    title: "Rapat Tahunan Warga RT/RW",
-    content:
-      "Rapat tahunan warga RT/RW akan diselenggarakan di Aula Gedung B lantai 1. Agenda utama meliputi evaluasi keamanan, kebersihan, dan rencana perbaikan fasilitas umum tahun 2026.",
-    summary:
-      "Rapat tahunan membahas evaluasi keamanan dan rencana perbaikan fasilitas.",
-    isPublished: true,
-    publishedDate: "2026-02-20T19:00:00.000Z",
-  } as News,
-  {
-    $id: "mock4",
-    title: "Pembaruan Sistem Akses Gate",
-    content:
-      "Sistem akses gate utama akan diperbarui ke kartu proximity baru. Seluruh penghuni wajib menukarkan kartu lama ke pos keamanan sebelum 28 Februari 2026.",
-    summary:
-      "Penggantian kartu akses gate ke sistem proximity baru untuk seluruh penghuni.",
-    isPublished: true,
-    publishedDate: "2026-02-15T07:00:00.000Z",
-  } as News,
-];
 
 const GREETING_SLIDE = {
   title: "Selamat Datang di\nRusun Harum Tebet",
   summary:
     "Portal informasi dan layanan digital resmi bagi seluruh warga Rusun Harum Tebet. Dapatkan berita terbaru, pengumuman penting, dan kemudahan akses informasi hunian Anda.",
 };
-
-function getNewsImage(index: number): string {
-  return HERO_FALLBACK_IMAGES[index % HERO_FALLBACK_IMAGES.length];
-}
 
 function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
@@ -286,6 +235,14 @@ export function LandingClient({ news }: Props) {
                               )
                             : "Terbaru"}
                         </span>
+                        <Link
+                          href={`/news/${item.$id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors mt-1 inline-flex items-center gap-1"
+                        >
+                          Baca Selengkapnya
+                          <ArrowRight className="w-3 h-3" />
+                        </Link>
                       </div>
                     </div>
                   </button>
@@ -296,11 +253,14 @@ export function LandingClient({ news }: Props) {
 
           <div className="pt-4 md:pt-6">
             <Button
+              asChild
               variant="outline"
               className="w-full flex items-center justify-center gap-2 py-5 md:py-6 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 hover:text-white text-white text-sm font-semibold transition-all backdrop-blur-md"
             >
-              Semua Pengumuman
-              <ArrowRight className="w-4 h-4 ml-1" />
+              <Link href="/news">
+                Semua Pengumuman
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
             </Button>
           </div>
         </aside>
