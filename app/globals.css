@@ -175,10 +175,17 @@ summary::-webkit-details-marker {
 .warta .dropcap::first-letter {
   float: left;
   font-family: var(--font-headline), "Playfair Display", serif;
-  font-size: 4rem;
+  font-size: 3rem;
   line-height: 0.8;
-  padding-right: 8px;
+  padding-right: 6px;
   font-weight: 900;
+}
+
+@media (min-width: 768px) {
+  .warta .dropcap::first-letter {
+    font-size: 4rem;
+    padding-right: 8px;
+  }
 }
 
 .warta a {

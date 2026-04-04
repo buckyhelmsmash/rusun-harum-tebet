@@ -36,7 +36,7 @@ export function WartaLeadArticle({ article, index }: Props) {
               Pengumuman Utama
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black font-headline leading-tight tracking-tight mb-4 group-hover:text-black/70 transition-colors">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-headline leading-tight tracking-tight mb-3 md:mb-4 group-hover:text-black/70 transition-colors">
             {article.title}
           </h2>
           <div className="flex items-center gap-4 text-[0.7rem] font-medium text-neutral-500 uppercase mb-4">
@@ -45,12 +45,12 @@ export function WartaLeadArticle({ article, index }: Props) {
             {publishedDate && <span>{publishedDate}</span>}
           </div>
         </Link>
-        <p className="font-serif-body text-lg leading-relaxed text-neutral-800 dropcap mb-6">
+        <p className="font-serif-body text-base md:text-lg leading-relaxed text-neutral-800 dropcap mb-4 md:mb-6">
           {article.summary || bodyPreview}
         </p>
         <Link
           href={`/news/${article.$id}`}
-          className="inline-flex items-center gap-2 border-b-2 border-black mt-12 font-bold text-[0.75rem] tracking-tighter uppercase hover:text-black/70 transition-colors"
+          className="inline-flex items-center gap-2 border-b-2 border-black mt-6 md:mt-12 font-bold text-[0.75rem] tracking-tighter uppercase hover:text-black/70 transition-colors"
         >
           Baca Selengkapnya
           <ArrowRight className="w-4 h-4" />

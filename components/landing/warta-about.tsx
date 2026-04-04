@@ -1,13 +1,13 @@
 export function WartaAbout() {
   return (
-    <section id="tentang" className="mt-20 py-20 bg-[#f9f8f6] border-t border-black">
+    <section id="tentang" className="mt-12 md:mt-20 py-12 md:py-20 bg-[#f9f8f6] border-t border-black">
       <div className="section-container">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <div className="lg:col-span-4">
-            <span className="text-xs font-bold tracking-[0.3em] uppercase text-black/40 block mb-4">
+            <span className="text-xs font-bold tracking-[0.3em] uppercase text-black/40 block mb-3 md:mb-4">
               Editorial Note
             </span>
-            <h2 className="text-5xl font-black font-headline tracking-tighter uppercase leading-[0.85] mb-8">
+            <h2 className="text-3xl md:text-5xl font-black font-headline tracking-tighter uppercase leading-[0.85] mb-6 md:mb-8">
               Tentang Kami
             </h2>
           </div>
