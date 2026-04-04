@@ -12,7 +12,7 @@ type Props = {
 export function WartaSidebarFeed({ articles, startIndex }: Props) {
   return (
     <div>
-      <div className="border-b-4 border-black pb-2 mb-6">
+      <div className="border-b-4 !border-black pb-2 mb-6">
         <h3 className="text-[0.75rem] font-black tracking-[0.25em] uppercase">
           Berita Terkini
         </h3>
@@ -64,7 +64,7 @@ export function WartaSidebarFeed({ articles, startIndex }: Props) {
         <div className="pt-2">
           <Link
             href="/news"
-            className="block w-full py-3 border-2 border-black font-black text-[0.7rem] tracking-widest uppercase hover:bg-black hover:text-white transition-all text-center"
+            className="block w-full py-3 border-2 !border-black font-black text-[0.7rem] tracking-widest uppercase hover:bg-black hover:!text-white transition-all text-center"
           >
             Lihat semua berita
           </Link>
