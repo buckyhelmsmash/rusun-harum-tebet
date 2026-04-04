@@ -145,3 +145,43 @@ summary::-webkit-details-marker {
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Warta Harum — Newspaper Design System ──────────────────── */
+.warta {
+  font-family: var(--font-body), "Inter", sans-serif;
+  background-color: #fdfdfb;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.warta * {
+  border-color: #e5e5e5;
+}
+
+.warta .section-container {
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.warta .font-headline {
+  font-family: var(--font-headline), "Playfair Display", serif;
+}
+
+.warta .font-serif-body {
+  font-family: var(--font-serif-body), "Lora", serif;
+}
+
+.warta .dropcap::first-letter {
+  float: left;
+  font-family: var(--font-headline), "Playfair Display", serif;
+  font-size: 4rem;
+  line-height: 0.8;
+  padding-right: 8px;
+  font-weight: 900;
+}
+
+.warta a {
+  text-decoration: none;
+  color: inherit;
+}
