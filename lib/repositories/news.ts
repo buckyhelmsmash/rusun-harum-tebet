@@ -3,6 +3,38 @@ import { APPWRITE } from "../constants";
 import { getAdminDb } from "./base";
 import type { News, NewsLabel } from "@/types";
 
+// Next.js Server Components require plain objects, and the Node SDK objects sometimes
+// have prototypes that Next.js serialization rejects.
+function toPlain<T>(obj: T): T {
+  if (!obj) return obj;
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
+
+async function populateLabels(newsItems: News[]): Promise<News[]> {
+  if (!newsItems.length) return newsItems;
+  
+  const db = await getAdminDb();
+  // Fetch all labels once
+  const result = await db.listRows({
+    databaseId: APPWRITE.DATABASE_ID,
+    tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,
+    queries: [Query.limit(100)],
+  });
+  const labelsMap = new Map<string, NewsLabel>();
+  for (const row of result.rows as unknown as NewsLabel[]) {
+    labelsMap.set(row.$id, row);
+  }
+
+  const populated = newsItems.map((item) => {
+    if (item.labelId && item.labelId !== "none" && labelsMap.has(item.labelId)) {
+      item.label = labelsMap.get(item.labelId);
+    }
+    return item;
+  });
+
+  return toPlain(populated);
+}
+
 export const newsRepository = {
   async getNews() {
     const db = await getAdminDb();
@@ -11,7 +43,7 @@ export const newsRepository = {
       tableId: APPWRITE.COLLECTIONS.NEWS,
       queries: [Query.orderDesc("$createdAt")],
     });
-    return result.rows as unknown as News[];
+    return populateLabels(result.rows as unknown as News[]);
   },
 
   async getPublishedLeadNews() {
@@ -25,7 +57,7 @@ export const newsRepository = {
         Query.orderDesc("publishedDate"),
       ],
     });
-    return result.rows as unknown as News[];
+    return populateLabels(result.rows as unknown as News[]);
   },
 
   async getPublishedSidebarNews(limit = 10) {
@@ -39,7 +71,7 @@ export const newsRepository = {
         Query.limit(limit),
       ],
     });
-    return result.rows as unknown as News[];
+    return populateLabels(result.rows as unknown as News[]);
   },
 
   async getPublishedNews(limit = 50) {
@@ -53,7 +85,7 @@ export const newsRepository = {
         Query.limit(limit),
       ],
     });
-    return result.rows as unknown as News[];
+    return populateLabels(result.rows as unknown as News[]);
   },
 
   async getNewsItem(id: string) {
@@ -63,7 +95,8 @@ export const newsRepository = {
       tableId: APPWRITE.COLLECTIONS.NEWS,
       rowId: id,
     });
-    return row as unknown as News;
+    const populated = await populateLabels([row as unknown as News]);
+    return populated[0];
   },
 
   async getNewsBySlug(slug: string) {
@@ -79,7 +112,8 @@ export const newsRepository = {
     });
     const row = result.rows[0];
     if (!row) return null;
-    return row as unknown as News;
+    const populated = await populateLabels([row as unknown as News]);
+    return populated[0];
   },
 
   async slugExists(slug: string) {
@@ -94,24 +128,34 @@ export const newsRepository = {
 
   async createNews(data: Partial<News>) {
     const db = await getAdminDb();
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { label, ...dataToSave } = data;
+    
     const row = await db.createRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
       rowId: ID.unique(),
-      data,
+      data: dataToSave,
     });
-    return row as unknown as News;
+    const populated = await populateLabels([row as unknown as News]);
+    return populated[0];
   },
 
   async updateNews(id: string, data: Partial<News>) {
     const db = await getAdminDb();
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { label, ...dataToSave } = data;
+    
     const row = await db.updateRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
       rowId: id,
-      data,
+      data: dataToSave,
     });
-    return row as unknown as News;
+    const populated = await populateLabels([row as unknown as News]);
+    return populated[0];
   },
 
   async deleteNews(id: string) {
@@ -131,7 +175,7 @@ export const newsRepository = {
       tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,
       queries: [Query.orderAsc("name")],
     });
-    return result.rows as unknown as NewsLabel[];
+    return toPlain(result.rows as unknown as NewsLabel[]);
   },
 
   async getNewsLabelByName(name: string) {
@@ -141,7 +185,7 @@ export const newsRepository = {
       tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,
       queries: [Query.equal("name", name), Query.limit(1)],
     });
-    return (result.rows[0] as unknown as NewsLabel) ?? null;
+    return toPlain((result.rows[0] as unknown as NewsLabel) ?? null);
   },
 
   async createNewsLabel(data: Pick<NewsLabel, "name" | "color">) {
@@ -152,6 +196,6 @@ export const newsRepository = {
       rowId: ID.unique(),
       data,
     });
-    return row as unknown as NewsLabel;
+    return toPlain(row as unknown as NewsLabel);
   },
 };

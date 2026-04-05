@@ -1,21 +1,92 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { useGetNews } from "@/hooks/api/use-news";
+import { useGetNews, useDeleteNews } from "@/hooks/api/use-news";
 import type { News } from "@/types";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { goeyToast } from "@/components/ui/goey-toaster";
+
+function ActionCell({ row }: { row: Row<News> }) {
+  const { mutateAsync: deleteNews, isPending } = useDeleteNews();
+  const [open, setOpen] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      await deleteNews({ id: row.original.$id });
+      goeyToast.success("Artikel berhasil dihapus.");
+      setOpen(false);
+    } catch (error) {
+      console.error(error);
+      goeyToast.error("Gagal menghapus artikel.");
+    }
+  };
+
+  return (
+    <div className="flex justify-end gap-2">
+      <Link
+        href={`/admin/news/${row.original.$id}`}
+        className="text-slate-400 hover:text-blue-600 inline-flex p-1.5"
+      >
+        <Edit className="h-4 w-4" />
+      </Link>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
+          <button className="text-slate-400 hover:text-red-600 inline-flex p-1.5 transition-colors">
+            <Trash className="h-4 w-4" />
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Artikel?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Artikel {" "}
+              <span className="font-semibold text-foreground">
+                {row.original.title}
+              </span>{" "}
+              akan dihapus secara permanen dari server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Batal</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={isPending}
+            >
+              {isPending ? "Menghapus..." : "Hapus"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
 
 export function NewsClient() {
   const [search, setSearch] = useState("");
   const { data, isLoading } = useGetNews();
 
   const news = data?.items ?? [];
-  const total = data?.total ?? 0;
 
   const filteredNews = useMemo(() => {
     if (!search) return news;
@@ -69,16 +140,7 @@ export function NewsClient() {
       {
         id: "actions",
         header: "",
-        cell: ({ row }) => (
-          <div className="flex justify-end gap-2">
-            <Link
-              href={`/admin/news/${row.original.$id}`}
-              className="text-slate-400 hover:text-blue-600 inline-flex p-1.5"
-            >
-              <Edit className="h-4 w-4" />
-            </Link>
-          </div>
-        ),
+        cell: ({ row }) => <ActionCell row={row} />,
       },
     ],
     []

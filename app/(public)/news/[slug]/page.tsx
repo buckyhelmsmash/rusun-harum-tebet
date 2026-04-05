@@ -48,8 +48,9 @@ export default async function NewsDetailPage({
       })
     : null;
 
-  const contentParagraphs = (news.content || "").split("\n\n").filter(Boolean);
-  const readingTime = Math.max(1, Math.ceil(contentParagraphs.length * 0.8));
+  const pureText = (news.content || "").replace(/<[^>]*>?/gm, '');
+  const wordCount = pureText.split(/\s+/).filter(Boolean).length;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   const otherArticles = await newsRepository.getPublishedNews(4);
   const otherNews = otherArticles
@@ -117,55 +118,10 @@ export default async function NewsDetailPage({
             </p>
           )}
 
-          <article className="space-y-6">
-            {contentParagraphs.map((paragraph, idx) => {
-              if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
-                const text = paragraph.slice(2, -2);
-                return (
-                  <h2
-                    key={idx}
-                    className="text-xl md:text-2xl font-black font-headline mt-8 mb-2"
-                  >
-                    {text}
-                  </h2>
-                );
-              }
-
-              const lines = paragraph.split("\n");
-              const isList = lines.every(
-                (l) =>
-                  l.startsWith("- ") ||
-                  l.startsWith("* ") ||
-                  /^\d+\.\s/.test(l),
-              );
-
-              if (isList) {
-                const isOrdered = /^\d+\.\s/.test(lines[0]);
-                const Tag = isOrdered ? "ol" : "ul";
-                return (
-                  <Tag
-                    key={idx}
-                    className={`space-y-2 ${isOrdered ? "list-decimal" : "list-disc"} list-inside font-serif-body text-base md:text-lg leading-relaxed text-neutral-700`}
-                  >
-                    {lines.map((line, li) => (
-                      <li key={li}>
-                        {line.replace(/^[-*]\s|^\d+\.\s/, "")}
-                      </li>
-                    ))}
-                  </Tag>
-                );
-              }
-
-              return (
-                <p
-                  key={idx}
-                  className={`font-serif-body text-base md:text-lg leading-relaxed text-neutral-700 ${idx === 0 ? "dropcap" : ""}`}
-                >
-                  {paragraph}
-                </p>
-              );
-            })}
-          </article>
+          <article 
+            className="prose prose-neutral prose-lg md:prose-xl max-w-none font-serif-body warta-article"
+            dangerouslySetInnerHTML={{ __html: news.content || "" }}
+          />
 
           {/* Actions */}
           <div className="flex items-center gap-4 mt-12 pt-8 border-t border-neutral-200">

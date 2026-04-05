@@ -87,8 +87,8 @@ export function WartaLeadArticle({ articles }: Props) {
                       <div className="flex items-center gap-3 mb-2">
                         {article.label ? (
                           <span
-                            className="text-[0.65rem] font-bold tracking-[0.2em] uppercase"
-                            style={{ color: article.label.color }}
+                            className="inline-block px-2 py-0.5 text-white text-[0.5rem] font-black tracking-widest uppercase"
+                            style={{ backgroundColor: article.label.color }}
                           >
                             {article.label.name}
                           </span>

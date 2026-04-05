@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 import Link from "next/link";
 import { useRef } from "react";
@@ -125,7 +126,7 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.join(", ")}
+                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
                       </p>
                     )}
                   </>
@@ -180,7 +181,7 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.join(", ")}
+                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
                       </p>
                     )}
                   </>
@@ -250,7 +251,7 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.join(", ")}
+                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
                       </p>
                     )}
                   </>
@@ -353,7 +354,7 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.join(", ")}
+                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
                       </p>
                     )}
                   </>
