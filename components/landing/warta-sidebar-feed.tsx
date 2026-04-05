@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import Link from "next/link";
-import { getNewsCategory, getNewsImage } from "@/lib/mock-news";
+import { getNewsImage } from "@/lib/mock-news";
 import type { News } from "@/types";
 
 type Props = {
@@ -21,30 +21,36 @@ export function WartaSidebarFeed({ articles, startIndex }: Props) {
         <ul className="space-y-6">
           {articles.map((item, i) => {
             const imageIndex = startIndex + i;
-            const category = getNewsCategory(item.$id);
+            const badgeLabel = item.label?.name ?? "Berita";
+            const badgeColor = item.label?.color;
             const publishedDate = item.publishedDate
               ? format(new Date(item.publishedDate), "dd MMM yyyy", {
                   locale: localeId,
                 }).toUpperCase()
               : null;
 
+            const href = item.slug ? `/news/${item.slug}` : `/news/${item.$id}`;
+
             return (
               <li
                 key={item.$id}
                 className="group cursor-pointer border-b border-neutral-200 pb-6 last:border-0"
               >
-                <Link href={`/news/${item.$id}`} className="flex gap-4">
+                <Link href={href} className="flex gap-4">
                   <div className="w-24 h-24 flex-shrink-0 border border-black/5 overflow-hidden">
                     <img
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      src={getNewsImage(imageIndex)}
+                      src={item.coverImageId || getNewsImage(imageIndex)}
                     />
                   </div>
                   <div className="flex flex-col justify-between py-1">
                     <div>
-                      <span className="inline-block px-2 py-0.5 bg-black text-white text-[0.5rem] font-black tracking-widest uppercase mb-2">
-                        {category}
+                      <span
+                        className="inline-block px-2 py-0.5 text-white text-[0.5rem] font-black tracking-widest uppercase mb-2"
+                        style={{ backgroundColor: badgeColor ?? "#000000" }}
+                      >
+                        {badgeLabel}
                       </span>
                       <h5 className="text-sm font-bold leading-tight group-hover:underline line-clamp-2">
                         {item.title}

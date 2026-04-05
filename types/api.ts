@@ -5,6 +5,7 @@ import type {
   Tenant,
   Unit,
   Vehicle,
+  News,
 } from "@/types";
 
 export interface PaginatedResponse<T> {
@@ -60,3 +61,10 @@ export type GetInvoicesResponse = PaginatedResponse<Invoice>;
 
 // GET /api/activity
 export type GetActivityResponse = PaginatedResponse<ActivityLog>;
+
+/**
+ * NEWS ENDPOINTS
+ */
+
+// GET /api/news
+export type GetNewsResponse = { items: News[]; total: number };

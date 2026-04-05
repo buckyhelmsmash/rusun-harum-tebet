@@ -4,25 +4,18 @@ import { id as localeId } from "date-fns/locale";
 import { ArrowLeft, Share2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  MOCK_NEWS,
-  getNewsById,
-  getNewsCategory,
-  getNewsImage,
-  getNewsImageById,
-} from "@/lib/mock-news";
+import { newsRepository } from "@/lib/repositories/news";
+import { getNewsImage } from "@/lib/mock-news";
 
-export async function generateStaticParams() {
-  return MOCK_NEWS.map((n) => ({ id: n.$id }));
-}
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const news = getNewsById(id);
+  const { slug } = await params;
+  const news = await newsRepository.getNewsBySlug(slug);
   if (!news) return {};
 
   return {
@@ -32,7 +25,7 @@ export async function generateMetadata({
       title: news.title,
       description: news.summary ?? news.title,
       type: "article",
-      images: [getNewsImageById(id)],
+      images: news.coverImageId ? [news.coverImageId] : [],
     },
   };
 }
@@ -40,14 +33,15 @@ export async function generateMetadata({
 export default async function NewsDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const news = getNewsById(id);
+  const { slug } = await params;
+  const news = await newsRepository.getNewsBySlug(slug);
   if (!news) return notFound();
 
-  const heroImage = getNewsImageById(id);
-  const category = getNewsCategory(id);
+  const badgeLabel = news.label?.name ?? "Berita";
+  const badgeColor = news.label?.color ?? "#000000";
+
   const publishedDate = news.publishedDate
     ? format(new Date(news.publishedDate), "dd MMMM yyyy", {
         locale: localeId,
@@ -56,7 +50,11 @@ export default async function NewsDetailPage({
 
   const contentParagraphs = (news.content || "").split("\n\n").filter(Boolean);
   const readingTime = Math.max(1, Math.ceil(contentParagraphs.length * 0.8));
-  const otherNews = MOCK_NEWS.filter((n) => n.$id !== id).slice(0, 3);
+
+  const otherArticles = await newsRepository.getPublishedNews(4);
+  const otherNews = otherArticles
+    .filter((n) => n.$id !== news.$id)
+    .slice(0, 3);
 
   return (
     <main>
@@ -79,8 +77,11 @@ export default async function NewsDetailPage({
       <div className="section-container pb-8">
         <div className="max-w-4xl">
           <div className="flex items-center gap-3 mb-4">
-            <span className="inline-block px-2.5 py-1 bg-black text-white text-[0.55rem] font-black tracking-widest uppercase">
-              {category}
+            <span
+              className="inline-block px-2.5 py-1 text-white text-[0.55rem] font-black tracking-widest uppercase"
+              style={{ backgroundColor: badgeColor }}
+            >
+              {badgeLabel}
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black font-headline leading-[0.95] tracking-tighter mb-6">
@@ -102,7 +103,7 @@ export default async function NewsDetailPage({
           <img
             alt={news.title}
             className="w-full h-full object-cover"
-            src={heroImage}
+            src={news.coverImageId || getNewsImage(0)}
           />
         </div>
       </div>
@@ -196,32 +197,32 @@ export default async function NewsDetailPage({
               </h2>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
-              {otherNews.map((item) => {
-                const itemIdx = MOCK_NEWS.findIndex(
-                  (n) => n.$id === item.$id,
-                );
-                const itemCategory = getNewsCategory(item.$id);
+              {otherNews.map((item, index) => {
                 const itemDate = item.publishedDate
                   ? format(new Date(item.publishedDate), "dd MMM yyyy", {
                       locale: localeId,
                     })
                   : null;
+                const itemBadge = item.label?.name ?? "Berita";
+                const itemColor = item.label?.color ?? "#000000";
+                const itemHref = item.slug
+                  ? `/news/${item.slug}`
+                  : `/news/${item.$id}`;
 
                 return (
-                  <Link
-                    key={item.$id}
-                    href={`/news/${item.$id}`}
-                    className="group"
-                  >
+                  <Link key={item.$id} href={itemHref} className="group">
                     <div className="aspect-[16/10] overflow-hidden border border-black/5 mb-4">
                       <img
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        src={getNewsImage(itemIdx >= 0 ? itemIdx : 0)}
+                        src={item.coverImageId || getNewsImage(index)}
                       />
                     </div>
-                    <span className="inline-block px-2 py-0.5 bg-black text-white text-[0.5rem] font-black tracking-widest uppercase mb-2">
-                      {itemCategory}
+                    <span
+                      className="inline-block px-2 py-0.5 text-white text-[0.5rem] font-black tracking-widest uppercase mb-2"
+                      style={{ backgroundColor: itemColor }}
+                    >
+                      {itemBadge}
                     </span>
                     <h3 className="text-lg font-bold font-headline leading-tight group-hover:underline mb-2 line-clamp-2">
                       {item.title}

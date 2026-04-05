@@ -67,13 +67,22 @@ export interface Invoice extends Models.Document {
   unitId?: string;
 }
 
+export interface NewsLabel extends Models.Document {
+  name: string;
+  color: string;
+}
+
 export interface News extends Models.Document {
   title: string;
   content: string;
   summary: string;
+  slug?: string;
   coverImageId?: string;
   publishedDate?: string;
   isPublished: boolean;
+  isLeadArticle?: boolean;
+  labelId?: string;
+  label?: NewsLabel;
 }
 
 export type ActivityAction =
@@ -109,7 +118,8 @@ export type TargetType =
   | "tenant"
   | "invoice"
   | "water_usage"
-  | "settings";
+  | "settings"
+  | "news";
 
 export interface ActivityLog extends Models.Document {
   actorId: string;
