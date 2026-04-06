@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import Link from "next/link";
-import { MOCK_NEWS, getNewsCategory, getNewsImage } from "@/lib/mock-news";
+import { newsRepository } from "@/lib/repositories/news";
+import { getNewsImage } from "@/lib/mock-news";
 
 export const metadata: Metadata = {
   title: "Indeks Berita | Warta Harum",
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
     "Seluruh berita dan pengumuman resmi Rumah Susun Harum Tebet dalam satu halaman.",
 };
 
-export default function NewsPage() {
+export const revalidate = 60;
+
+export default async function NewsPage() {
+  const items = await newsRepository.getPublishedNews(50);
+
   return (
     <main className="section-container py-12">
       <div className="border-b-4 border-black pb-3 mb-10">
@@ -30,32 +35,37 @@ export default function NewsPage() {
       </div>
 
       <div className="grid gap-0">
-        {MOCK_NEWS.map((item, index) => {
-          const category = getNewsCategory(item.$id);
+        {items.map((item, index) => {
           const publishedDate = item.publishedDate
             ? format(new Date(item.publishedDate), "dd MMMM yyyy", {
                 locale: localeId,
               })
             : null;
+          const badgeLabel = item.label?.name ?? "Berita";
+          const badgeColor = item.label?.color ?? "#000000";
+          const href = item.slug ? `/news/${item.slug}` : `/news/${item.$id}`;
 
           return (
             <Link
               key={item.$id}
-              href={`/news/${item.$id}`}
+              href={href}
               className="group grid grid-cols-1 md:grid-cols-12 gap-6 py-8 border-b border-neutral-200 hover:bg-neutral-50/50 transition-colors -mx-4 px-4"
             >
               <div className="md:col-span-4 aspect-[16/10] overflow-hidden border border-black/5">
                 <img
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  src={getNewsImage(index)}
+                  src={item.coverImageId || getNewsImage(index)}
                 />
               </div>
               <div className="md:col-span-8 flex flex-col justify-between py-1">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="inline-block px-2.5 py-1 bg-black text-white text-[0.5rem] font-black tracking-widest uppercase">
-                      {category}
+                    <span
+                      className="inline-block px-2.5 py-1 text-white text-[0.5rem] font-black tracking-widest uppercase"
+                      style={{ backgroundColor: badgeColor }}
+                    >
+                      {badgeLabel}
                     </span>
                     {publishedDate && (
                       <span className="text-[0.6rem] font-bold text-black/40 uppercase tracking-tighter">
