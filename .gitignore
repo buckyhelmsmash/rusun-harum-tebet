@@ -42,5 +42,4 @@ yarn-error.log*
 next-env.d.ts
 
 update-colors.js
-scripts/seed-residents.ts
-scripts/cleanup-stale-fields.ts
+/scripts/
