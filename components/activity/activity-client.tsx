@@ -383,7 +383,7 @@ function ActivityLogCard({ log }: { log: ActivityLog }) {
   );
 }
 
-export function AktivitasClient() {
+export function ActivityClient() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
   const [targetTypeFilter, setTargetTypeFilter] = useState("all");

@@ -45,7 +45,7 @@ const navItems = [
   { href: "/admin/vehicles", label: "Kendaraan", icon: Car },
   { href: "/admin/residents", label: "Penghuni", icon: Users },
   { href: "/admin/news", label: "Berita", icon: Newspaper },
-  { href: "/admin/aktivitas", label: "Aktivitas", icon: ClipboardList },
+  { href: "/admin/activity", label: "Aktivitas", icon: ClipboardList },
 ];
 
 export function Sidebar() {

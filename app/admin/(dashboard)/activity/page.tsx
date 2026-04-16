@@ -1,15 +1,15 @@
 import { Suspense } from "react";
-import { AktivitasClient } from "@/components/aktivitas/aktivitas-client";
+import { ActivityClient } from "@/components/activity/activity-client";
 
 export const metadata = {
   title: "Aktivitas — Rusun Harum Tebet",
   description: "Riwayat aktivitas dan perubahan data oleh admin.",
 };
 
-export default function AktivitasPage() {
+export default function ActivityPage() {
   return (
     <Suspense>
-      <AktivitasClient />
+      <ActivityClient />
     </Suspense>
   );
 }

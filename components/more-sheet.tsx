@@ -70,7 +70,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
             </li>
             <li>
               <Link
-                href="/admin/aktivitas"
+                href="/admin/activity"
                 onClick={() => onOpenChange(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
               >
