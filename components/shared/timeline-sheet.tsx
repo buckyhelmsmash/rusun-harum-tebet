@@ -26,8 +26,6 @@ interface TimelineSheetProps {
   targetId?: string;
   targetType: TargetType;
   title: string;
-  /** Optional context for query-side bulk log merging. Keys: `unitDisplayId`, `invoiceNumber`. */
-  bulkContext?: Record<string, string>;
 }
 
 interface ChangeEntry {
@@ -112,16 +110,11 @@ export function TimelineSheet({
   targetId,
   targetType,
   title,
-  bulkContext,
 }: TimelineSheetProps) {
   const [open, setOpen] = useState(false);
 
-  const serializedBulkContext = bulkContext
-    ? JSON.stringify(bulkContext)
-    : undefined;
-
   const filters = targetId
-    ? { targetId, limit: 50, bulkContext: serializedBulkContext }
+    ? { targetId, limit: 50 }
     : { targetType, limit: 50 };
 
   const { data, isLoading } = useGetActivity(open ? filters : {});

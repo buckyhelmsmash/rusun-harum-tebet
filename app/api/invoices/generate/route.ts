@@ -194,10 +194,6 @@ export async function POST(request: Request) {
 
     let created = 0;
     let updated = 0;
-    const createdInvoices: { invoiceNumber: string; unitDisplayId: string }[] =
-      [];
-    const updatedInvoices: { invoiceNumber: string; unitDisplayId: string }[] =
-      [];
 
     for (const unit of unitsToCreate) {
       const vehicleFee = await getVehicleFee(unit.$id);
@@ -237,8 +233,19 @@ export async function POST(request: Request) {
         invoiceNumber,
       };
 
-      await InvoiceRepository.create(data);
-      createdInvoices.push({ invoiceNumber, unitDisplayId: unit.displayId });
+      const invoiceDoc = await InvoiceRepository.create(data);
+
+      logActivity({
+        actorId: session.$id,
+        actorName: session.name || session.email,
+        action: "invoice.generate",
+        description: `Tagihan ${invoiceNumber} untuk unit ${unit.displayId} diterbitkan`,
+        targetType: "invoice",
+        targetId: invoiceDoc.$id,
+        unitId: unit.$id,
+        metadata: { period: billingPeriod, totalDue },
+      });
+
       created++;
     }
 
@@ -266,25 +273,19 @@ export async function POST(request: Request) {
 
       const condensedPeriod = billingPeriod.replace("-", "");
       const invoiceNumber = `INV-${condensedPeriod}-${unit.displayId}`;
-      updatedInvoices.push({ invoiceNumber, unitDisplayId: unit.displayId });
-      updated++;
-    }
 
-    if (created > 0 || updated > 0) {
       logActivity({
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "invoice.generate",
-        description: `Membuat ${created} tagihan baru, memperbarui ${updated} tagihan untuk periode ${billingPeriod}`,
+        description: `Tagihan ${invoiceNumber} untuk unit ${unit.displayId} diperbarui`,
         targetType: "invoice",
-        metadata: {
-          created,
-          updated,
-          period: billingPeriod,
-          createdInvoices,
-          updatedInvoices,
-        },
+        targetId: invoice.$id,
+        unitId: unit.$id,
+        metadata: { period: billingPeriod, totalDue },
       });
+
+      updated++;
     }
 
     return NextResponse.json({

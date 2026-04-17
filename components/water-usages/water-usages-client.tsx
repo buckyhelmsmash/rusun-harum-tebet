@@ -165,9 +165,6 @@ export function WaterUsagesClient() {
               targetId={row.original.$id}
               targetType="water_usage"
               title={`Air ${getUnitDisplayId(row.original.unit)} — ${row.original.period}`}
-              bulkContext={{
-                unitDisplayId: getUnitDisplayId(row.original.unit),
-              }}
             />
           </div>
         ),
@@ -208,7 +205,6 @@ export function WaterUsagesClient() {
             targetId={usage.$id}
             targetType="water_usage"
             title={`Air ${getUnitDisplayId(usage.unit)} — ${usage.period}`}
-            bulkContext={{ unitDisplayId: getUnitDisplayId(usage.unit) }}
           />
         </div>
       </div>

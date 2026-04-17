@@ -83,7 +83,6 @@ export async function POST(req: Request) {
     let processed = 0;
     let skipped = 0;
     const errors: string[] = [];
-    const processedUnits: { displayId: string }[] = [];
 
     // 3. Process each row
     for (const [index, row] of rows.entries()) {
@@ -169,7 +168,24 @@ export async function POST(req: Request) {
           });
         }
 
-        processedUnits.push({ displayId: row["Unit ID"].trim() });
+        const waterUsageDocId = existingId ?? "imported";
+
+        logActivity({
+          actorId: session.$id,
+          actorName: session.name || session.email,
+          action: "water_usage.import",
+          description: `Meteran air unit ${row["Unit ID"].trim()} dicatat: ${usage} m³`,
+          targetType: "water_usage",
+          targetId: waterUsageDocId,
+          unitId,
+          metadata: {
+            period,
+            previousMeter: row["Previous Meter"],
+            currentMeter: row["Current Meter"],
+            usage,
+          },
+        });
+
         processed++;
       } catch (saveError) {
         console.error(
@@ -181,23 +197,6 @@ export async function POST(req: Request) {
           `Row ${index + 1}: Failed to save data for ${row["Unit ID"]}`,
         );
       }
-    }
-
-    if (processed > 0) {
-      logActivity({
-        actorId: session.$id,
-        actorName: session.name || session.email,
-        action: "water_usage.import",
-        description: `Mengimpor ${processed} data penggunaan air untuk periode ${period}`,
-        targetType: "water_usage",
-        metadata: {
-          period,
-          processed,
-          skipped,
-          errors,
-          processedUnits,
-        },
-      });
     }
 
     return NextResponse.json({

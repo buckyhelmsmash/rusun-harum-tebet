@@ -7,8 +7,6 @@ export interface ActivityFilters {
   search?: string;
   limit?: number;
   offset?: number;
-  /** Serialized JSON; used for query-side bulk log merging. */
-  bulkContext?: string;
 }
 
 export const activityKeys = {
