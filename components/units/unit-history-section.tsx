@@ -7,9 +7,8 @@ import { useGetActivity } from "@/hooks/api/use-activity";
 import {
   ACTION_LABELS,
   formatActivityTimestamp,
-  formatChangeValue,
-  formatFieldLabel,
 } from "@/lib/activity/constants";
+import { MetadataRenderer } from "@/components/activity/metadata-renderer";
 
 export function UnitHistorySection({ unitId }: { unitId: string }) {
   const { data, isLoading } = useGetActivity({
@@ -42,23 +41,6 @@ export function UnitHistorySection({ unitId }: { unitId: string }) {
               variant: "default" as const,
             };
 
-            let changes: Array<{ field: string; old: unknown; new: unknown }> =
-              [];
-            if (log.metadata) {
-              try {
-                const parsedMetadata =
-                  typeof log.metadata === "string"
-                    ? JSON.parse(log.metadata)
-                    : log.metadata;
-
-                if (Array.isArray(parsedMetadata?.changes)) {
-                  changes = parsedMetadata.changes;
-                }
-              } catch (e) {
-                console.error("Failed to parse activity metadata:", e);
-              }
-            }
-
             return (
               <div
                 key={log.$id}
@@ -69,26 +51,10 @@ export function UnitHistorySection({ unitId }: { unitId: string }) {
                     {log.description}
                   </p>
 
-                  {changes.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {changes.map((change) => (
-                        <div
-                          key={change.field}
-                          className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-md border border-slate-100 dark:border-slate-800"
-                        >
-                          <span className="font-medium text-slate-700 dark:text-slate-300 mr-1">
-                            {formatFieldLabel(change.field)}:
-                          </span>
-                          <span className="line-through opacity-70 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1 rounded mr-1">
-                            {formatChangeValue(change.old)}
-                          </span>
-                          <span className="opacity-90 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-1 rounded">
-                            {formatChangeValue(change.new)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <MetadataRenderer
+                    metadata={log.metadata}
+                    variant="compact"
+                  />
 
                   <p className="text-xs text-slate-400 mt-1">
                     oleh {log.actorName} ·{" "}

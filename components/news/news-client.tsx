@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { TimelineSheet } from "@/components/shared/timeline-sheet";
 import { useGetNews, useDeleteNews } from "@/hooks/api/use-news";
 import type { News } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,11 @@ function ActionCell({ row }: { row: Row<News> }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <TimelineSheet
+        targetId={row.original.$id}
+        targetType="news"
+        title={`Riwayat: ${row.original.title}`}
+      />
     </div>
   );
 }
@@ -157,12 +163,18 @@ export function NewsClient() {
             Kelola pengumuman dan berita portal warga
           </p>
         </div>
-        <Link href="/admin/news/create">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah Berita
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <TimelineSheet
+            targetType="news"
+            title="Riwayat Berita"
+          />
+          <Link href="/admin/news/create">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Berita
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <DataTable

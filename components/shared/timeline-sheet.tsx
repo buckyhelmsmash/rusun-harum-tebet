@@ -2,6 +2,7 @@
 
 import { Clock, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { MetadataRenderer } from "@/components/activity/metadata-renderer";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,8 +16,6 @@ import { useGetActivity } from "@/hooks/api/use-activity";
 import {
   formatActionLabel,
   formatActivityTimestamp,
-  formatChangeValue,
-  formatFieldLabel,
   getActionIcon,
   getActionIconColor,
 } from "@/lib/activity/constants";
@@ -28,42 +27,20 @@ interface TimelineSheetProps {
   title: string;
 }
 
-interface ChangeEntry {
-  field: string;
-  old: unknown;
-  new: unknown;
-}
-
-function parseChanges(log: ActivityLog): ChangeEntry[] {
-  const raw = log.metadata;
-  if (!raw) return [];
-  try {
-    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-    if (Array.isArray(parsed?.changes)) return parsed.changes as ChangeEntry[];
-  } catch {
-    // ignore
-  }
-  return [];
-}
-
 function TimelineItem({ log }: { log: ActivityLog }) {
   const Icon = getActionIcon(log.action);
   const colorClass = getActionIconColor(log.action);
-  const changes = parseChanges(log);
 
   return (
     <div className="relative flex gap-4 pb-8 last:pb-0 group">
-      {/* Vertical connector line */}
       <div className="absolute left-[17px] top-10 bottom-0 w-px bg-slate-200 dark:bg-slate-700 group-last:hidden" />
 
-      {/* Icon bubble */}
       <div
         className={`relative z-10 flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${colorClass}`}
       >
         <Icon className="h-4 w-4" />
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0 pt-0.5">
         <div className="flex items-center justify-between gap-2 mb-1">
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -77,26 +54,7 @@ function TimelineItem({ log }: { log: ActivityLog }) {
           {log.description}
         </p>
 
-        {changes.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {changes.map((change) => (
-              <div
-                key={change.field}
-                className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-md border border-slate-100 dark:border-slate-800"
-              >
-                <span className="font-medium text-slate-700 dark:text-slate-300 mr-1">
-                  {formatFieldLabel(change.field)}:
-                </span>
-                <span className="line-through opacity-70 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1 rounded mr-1">
-                  {formatChangeValue(change.old)}
-                </span>
-                <span className="opacity-90 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-1 rounded">
-                  {formatChangeValue(change.new)}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <MetadataRenderer metadata={log.metadata} />
 
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
           oleh {log.actorName}

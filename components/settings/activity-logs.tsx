@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { ChangesDisplay } from "@/components/activity/changes-display";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -15,9 +16,12 @@ import { useGetActivity } from "@/hooks/api/use-activity";
 import {
   formatActionLabel,
   formatActivityTimestamp,
-  formatChangeValue,
-  formatFieldLabel,
 } from "@/lib/activity/constants";
+import {
+  extractChanges,
+  extractMeetingNumber,
+  parseActivityMetadata,
+} from "@/lib/activity/types";
 
 export function ActivityLogs() {
   const [page, setPage] = useState(0);
@@ -47,49 +51,6 @@ export function ActivityLogs() {
 
   const totalPages = Math.ceil(data.total / limit);
 
-  const renderChanges = (metadata?: string) => {
-    if (!metadata) return null;
-    try {
-      const parsed = JSON.parse(metadata);
-
-      if (parsed.changes && Array.isArray(parsed.changes)) {
-        return (
-          <div className="space-y-0.5">
-            {parsed.changes.map(
-              (c: { field: string; old?: unknown; new?: unknown }) => (
-                <div key={c.field} className="text-xs">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {formatFieldLabel(c.field)}:
-                  </span>{" "}
-                  <span className="text-red-500 line-through">
-                    {formatChangeValue(c.old)}
-                  </span>{" "}
-                  →{" "}
-                  <span className="text-emerald-600 font-medium">
-                    {formatChangeValue(c.new)}
-                  </span>
-                </div>
-              ),
-            )}
-          </div>
-        );
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const getMeetingNumber = (metadata?: string): string | null => {
-    if (!metadata) return null;
-    try {
-      const parsed = JSON.parse(metadata);
-      return parsed.meetingNumber ?? null;
-    } catch {
-      return null;
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -115,7 +76,10 @@ export function ActivityLogs() {
               </TableRow>
             ) : (
               data.items.map((log) => {
-                const meetingNumber = getMeetingNumber(log.metadata);
+                const parsed = parseActivityMetadata(log.metadata);
+                const changes = extractChanges(parsed);
+                const meetingNumber = extractMeetingNumber(parsed);
+
                 return (
                   <TableRow key={log.$id}>
                     <TableCell className="whitespace-nowrap text-xs">
@@ -130,7 +94,9 @@ export function ActivityLogs() {
                       </span>
                     </TableCell>
                     <TableCell className="max-w-[250px]">
-                      {renderChanges(log.metadata)}
+                      {changes && changes.length > 0 ? (
+                        <ChangesDisplay changes={changes} variant="chips" />
+                      ) : null}
                     </TableCell>
                     <TableCell>
                       {meetingNumber ? (
