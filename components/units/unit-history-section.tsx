@@ -1,14 +1,14 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
+import { MetadataRenderer } from "@/components/activity/metadata-renderer";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGetActivity } from "@/hooks/api/use-activity";
 import {
   ACTION_LABELS,
   formatActivityTimestamp,
 } from "@/lib/activity/constants";
-import { MetadataRenderer } from "@/components/activity/metadata-renderer";
 
 export function UnitHistorySection({ unitId }: { unitId: string }) {
   const { data, isLoading } = useGetActivity({
@@ -19,56 +19,57 @@ export function UnitHistorySection({ unitId }: { unitId: string }) {
   const logs = data?.items ?? [];
 
   return (
-    <DetailCard>
-      <DetailCardHeader
-        title="Aktivitas Terbaru"
-        icon={<Clock className="h-5 w-5" />}
-      />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          Aktivitas Terbaru
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-center text-sm text-muted-foreground py-4">
+            Memuat aktivitas...
+          </p>
+        ) : logs.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground italic py-4">
+            Belum ada aktivitas yang dicatat
+          </p>
+        ) : (
+          <div className="divide-y">
+            {logs.map((log) => {
+              const actionInfo = ACTION_LABELS[log.action] ?? {
+                label: log.action,
+                variant: "default" as const,
+              };
 
-      {isLoading ? (
-        <div className="p-6 text-center text-sm text-slate-400">
-          Memuat aktivitas...
-        </div>
-      ) : logs.length === 0 ? (
-        <div className="p-6 text-center text-sm text-slate-400 italic">
-          Belum ada aktivitas yang dicatat
-        </div>
-      ) : (
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {logs.map((log) => {
-            const actionInfo = ACTION_LABELS[log.action] ?? {
-              label: log.action,
-              variant: "default" as const,
-            };
-
-            return (
-              <div
-                key={log.$id}
-                className="px-6 py-3 flex items-start justify-between gap-3"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
-                    {log.description}
-                  </p>
-
-                  <MetadataRenderer
-                    metadata={log.metadata}
-                    variant="compact"
-                  />
-
-                  <p className="text-xs text-slate-400 mt-1">
-                    oleh {log.actorName} ·{" "}
-                    {formatActivityTimestamp(log.$createdAt)}
-                  </p>
+              return (
+                <div
+                  key={log.$id}
+                  className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">
+                      {log.description}
+                    </p>
+                    <MetadataRenderer
+                      metadata={log.metadata}
+                      variant="compact"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      oleh {log.actorName} ·{" "}
+                      {formatActivityTimestamp(log.$createdAt)}
+                    </p>
+                  </div>
+                  <StatusBadge variant={actionInfo.variant}>
+                    {actionInfo.label}
+                  </StatusBadge>
                 </div>
-                <StatusBadge variant={actionInfo.variant}>
-                  {actionInfo.label}
-                </StatusBadge>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </DetailCard>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

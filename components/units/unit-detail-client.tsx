@@ -1,10 +1,11 @@
 "use client";
 
 import {
+  Building2,
   CalendarDays,
   Car,
   ChevronLeft,
-  Info,
+  CreditCard,
   Mail,
   Pencil,
   Phone,
@@ -17,12 +18,27 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { goeyToast } from "@/components/ui/goey-toaster";
-import { UnitHistorySection } from "@/components/units/unit-history-section";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
+import { UnitHistorySection } from "@/components/units/unit-history-section";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useRemoveResident } from "@/hooks/api/use-unit-assignment";
 import { useGetUnit } from "@/hooks/api/use-units";
@@ -73,18 +89,42 @@ function translateType(type: string) {
   }
 }
 
-function VehicleIcon({ type }: { type: string }) {
-  if (type === "motorcycle") {
-    return (
-      <div className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 p-2 rounded-lg">
-        <Car className="h-5 w-5" />
-      </div>
-    );
-  }
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
+function IconButton({
+  tooltip,
+  variant = "ghost",
+  className,
+  onClick,
+  children,
+}: {
+  tooltip: string;
+  variant?: "ghost" | "outline";
+  className?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 p-2 rounded-lg">
-      <Car className="h-5 w-5" />
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant={variant}
+          size="icon"
+          className={`h-8 w-8 transition-colors ${className ?? ""}`}
+          onClick={onClick}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -106,7 +146,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+      <div className="p-8 text-center text-muted-foreground">
         Memuat detail unit...
       </div>
     );
@@ -114,7 +154,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
 
   if (isError || !unit) {
     return (
-      <div className="p-8 text-center text-red-600 dark:text-red-400">
+      <div className="p-8 text-center text-destructive">
         Gagal memuat detail unit.
       </div>
     );
@@ -147,346 +187,386 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
     setResidentModalOpen(true);
   };
 
+  const billRecipientLabel = unit.ownerId
+    ? unit.billRecipient === "owner"
+      ? "Pemilik"
+      : "Penyewa"
+    : "—";
+
   return (
-    <>
+    <TooltipProvider>
       <div className="space-y-6 max-w-5xl mx-auto pb-8">
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              className="mt-1 shadow-sm"
-              asChild
-            >
-              <Link href="/admin/units">
-                <ChevronLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Unit {unit.displayId}
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">
-                Blok {unit.block}, Lantai {unit.floor}, Unit {unit.unitNumber} •{" "}
-                <span className="capitalize">
-                  Unit {translateType(unit.unitType)}
-                </span>
-              </p>
+        {/* ─── Hero Header ─── */}
+        <Card className="gap-0 py-0 overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-start gap-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="mt-0.5 shrink-0 transition-colors"
+                    asChild
+                  >
+                    <Link href="/admin/units">
+                      <ChevronLeft className="h-5 w-5" />
+                      <span className="sr-only">Kembali</span>
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Kembali ke daftar</TooltipContent>
+              </Tooltip>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 justify-between">
+                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                    Unit {unit.displayId}
+                  </h1>
+                  <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
+                    {translateStatus(unit.occupancyStatus)}
+                  </StatusBadge>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Blok {unit.block} · Lantai {unit.floor} · No.{" "}
+                  {unit.unitNumber}
+                </p>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="gap-1.5 py-1 px-2.5">
+                <Building2 className="h-3 w-3" />
+                {translateType(unit.unitType)}
+              </Badge>
+              <Badge variant="outline" className="gap-1.5 py-1 px-2.5">
+                <CreditCard className="h-3 w-3" />
+                Tagihan ke {billRecipientLabel}
+              </Badge>
             </div>
           </div>
-          <StatusBadge variant={getStatusVariant(unit.occupancyStatus)}>
-            {translateStatus(unit.occupancyStatus)}
-          </StatusBadge>
-        </div>
+        </Card>
 
-        {/* Cards Grid */}
+        {/* ─── People Section ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1 — Unit Information */}
-          <DetailCard>
-            <DetailCardHeader
-              icon={<Info className="h-4 w-4" />}
-              title="Informasi Unit"
-            />
-            <div className="p-6 grid grid-cols-2 gap-y-6 gap-x-4">
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Blok
-                </p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {unit.block}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Lantai
-                </p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {unit.floor}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Tipe Unit
-                </p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                  {translateType(unit.unitType)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Penerima Tagihan
-                </p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                  {unit.ownerId
-                    ? unit.billRecipient === "owner"
-                      ? "Pemilik"
-                      : "Penyewa"
-                    : "—"}
-                </p>
-              </div>
-            </div>
-          </DetailCard>
-
-          {/* Card 2 — Owner */}
-          <DetailCard>
-            <DetailCardHeader
-              icon={<User className="h-4 w-4" />}
-              title="Pemilik"
-              action={
+          {/* Owner */}
+          <Card className="transition-shadow hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <User className="h-4 w-4 text-blue-500" />
+                Pemilik
+              </CardTitle>
+              <CardAction>
                 <div className="flex gap-1">
                   {unit.owner && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                    <IconButton
+                      tooltip="Lepas pemilik"
+                      className="text-destructive hover:text-destructive"
                       onClick={() => setRemoveResidentType("owner")}
                     >
                       <UserX className="h-4 w-4" />
-                    </Button>
+                    </IconButton>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                  <IconButton
+                    tooltip={unit.owner ? "Ganti pemilik" : "Pilih pemilik"}
                     onClick={() => handleOpenResidentPicker("owner")}
                   >
                     <Pencil className="h-4 w-4" />
+                  </IconButton>
+                </div>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              {unit.owner ? (
+                <div className="flex items-start gap-3">
+                  <Avatar size="lg" className="bg-blue-100 text-blue-600">
+                    <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-sm">
+                      {getInitials(unit.owner.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="font-semibold truncate">
+                      {unit.owner.fullName}
+                    </p>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Phone className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{unit.owner.phoneNumber}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Mail className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">
+                        {unit.owner.email || "Tidak ada email"}
+                      </span>
+                    </div>
+                    <Separator className="!my-2" />
+                    <div>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        KTP
+                      </p>
+                      <p className="text-xs font-mono">
+                        {unit.owner.ktpNumber}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-4 space-y-3">
+                  <Avatar size="lg">
+                    <AvatarFallback>
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-sm italic text-muted-foreground">
+                    Belum ada pemilik
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenResidentPicker("owner")}
+                  >
+                    Pilih Pemilik
                   </Button>
                 </div>
-              }
-            />
-            {unit.owner ? (
-              <div className="p-6 flex items-start gap-4">
-                <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
-                  <User className="h-7 w-7" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">
-                    {unit.owner.fullName}
-                  </p>
-                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                    <Phone className="h-3.5 w-3.5" />
-                    {unit.owner.phoneNumber}
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                    <Mail className="h-3.5 w-3.5" />
-                    {unit.owner.email || "Tidak ada email"}
-                  </div>
-                  <div className="pt-2">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Nomor KTP
-                    </p>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {unit.owner.ktpNumber}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-slate-300" />
-                </div>
-                <p className="italic text-slate-500 dark:text-slate-400">
-                  Tidak ada pemilik di unit ini
-                </p>
-                <Button
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
-                  onClick={() => handleOpenResidentPicker("owner")}
-                >
-                  Pilih Pemilik
-                </Button>
-              </div>
-            )}
-          </DetailCard>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Card 3 — Current Tenant */}
-          <DetailCard>
-            <DetailCardHeader
-              icon={<Users className="h-4 w-4" />}
-              title="Penyewa Saat Ini"
-              action={
-                unit.ownerId ? (
+          {/* Tenant */}
+          <Card className="transition-shadow hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-4 w-4 text-violet-500" />
+                Penyewa Saat Ini
+              </CardTitle>
+              {unit.ownerId && (
+                <CardAction>
                   <div className="flex gap-1">
                     {unit.tenant && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-600"
+                      <IconButton
+                        tooltip="Lepas penyewa"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => setRemoveResidentType("tenant")}
                       >
                         <UserX className="h-4 w-4" />
-                      </Button>
+                      </IconButton>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                    <IconButton
+                      tooltip={unit.tenant ? "Ganti penyewa" : "Pilih penyewa"}
                       onClick={() => handleOpenResidentPicker("tenant")}
                     >
                       <Pencil className="h-4 w-4" />
-                    </Button>
+                    </IconButton>
                   </div>
-                ) : null
-              }
-            />
-            {unit.tenant ? (
-              <div className="p-6 flex items-start gap-4">
-                <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
-                  <User className="h-7 w-7" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">
-                    {unit.tenant.fullName}
-                  </p>
-                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                    <Phone className="h-3.5 w-3.5" />
-                    {unit.tenant.phoneNumber}
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                    <Mail className="h-3.5 w-3.5" />
-                    {unit.tenant.email || "Tidak ada email"}
-                  </div>
-                  {(unit.tenant.startDate || unit.tenant.endDate) && (
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm pt-1">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {unit.tenant.startDate
-                        ? new Date(unit.tenant.startDate).toLocaleDateString(
-                            "id-ID",
-                            { day: "2-digit", month: "short", year: "numeric" },
-                          )
-                        : "—"}
-                      {" — "}
-                      {unit.tenant.endDate
-                        ? new Date(unit.tenant.endDate).toLocaleDateString(
-                            "id-ID",
-                            { day: "2-digit", month: "short", year: "numeric" },
-                          )
-                        : "∞"}
+                </CardAction>
+              )}
+            </CardHeader>
+            <CardContent>
+              {unit.tenant ? (
+                <div className="flex items-start gap-3">
+                  <Avatar size="lg" className="bg-violet-100 text-violet-600">
+                    <AvatarFallback className="bg-violet-100 text-violet-700 font-bold text-sm">
+                      {getInitials(unit.tenant.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="font-semibold truncate">
+                      {unit.tenant.fullName}
+                    </p>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Phone className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">
+                        {unit.tenant.phoneNumber}
+                      </span>
                     </div>
-                  )}
-                  <div className="pt-2">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Nomor KTP
-                    </p>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {unit.tenant.ktpNumber}
-                    </p>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Mail className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">
+                        {unit.tenant.email || "Tidak ada email"}
+                      </span>
+                    </div>
+                    {(unit.tenant.startDate || unit.tenant.endDate) && (
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                        {unit.tenant.startDate
+                          ? new Date(unit.tenant.startDate).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )
+                          : "—"}
+                        {" — "}
+                        {unit.tenant.endDate
+                          ? new Date(unit.tenant.endDate).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )
+                          : "∞"}
+                      </div>
+                    )}
+                    <Separator className="!my-2" />
+                    <div>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        KTP
+                      </p>
+                      <p className="text-xs font-mono">
+                        {unit.tenant.ktpNumber}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
-                  <Users className="h-6 w-6 text-slate-300" />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-4 space-y-3">
+                  <Avatar size="lg">
+                    <AvatarFallback>
+                      <Users className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-sm italic text-muted-foreground">
+                    {unit.ownerId
+                      ? "Tidak ada penyewa aktif"
+                      : "Pilih pemilik terlebih dahulu"}
+                  </p>
+                  {unit.ownerId && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenResidentPicker("tenant")}
+                    >
+                      Pilih Penyewa
+                    </Button>
+                  )}
                 </div>
-                <p className="italic text-slate-500 dark:text-slate-400">
-                  {unit.ownerId
-                    ? "Tidak ada penyewa aktif untuk unit ini"
-                    : "Pilih pemilik untuk unit ini terlebih dahulu"}
-                </p>
-                {unit.ownerId && (
-                  <Button
-                    variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
-                    onClick={() => handleOpenResidentPicker("tenant")}
-                  >
-                    Pilih Penyewa
-                  </Button>
-                )}
-              </div>
-            )}
-          </DetailCard>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Card 4 — Registered Vehicles */}
-          <DetailCard>
-            <DetailCardHeader
-              icon={<Car className="h-4 w-4" />}
-              title="Kendaraan Terdaftar"
-              action={
-                unit.ownerId ? (
-                  <button
-                    type="button"
-                    className="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline flex items-center gap-1"
-                    onClick={handleAddVehicle}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Tambah Kendaraan
-                  </button>
-                ) : null
-              }
-            />
+        {/* ─── Vehicles Section ─── */}
+        <Card className="transition-shadow hover:shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Car className="h-4 w-4 text-blue-500" />
+              Kendaraan Terdaftar
+              {unit.vehicles && unit.vehicles.length > 0 && (
+                <Badge variant="secondary" className="ml-1 text-[10px]">
+                  {unit.vehicles.length}
+                </Badge>
+              )}
+            </CardTitle>
+            {unit.ownerId && (
+              <CardAction>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddVehicle}
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1.5" />
+                      Tambah
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Daftarkan kendaraan baru</TooltipContent>
+                </Tooltip>
+              </CardAction>
+            )}
+          </CardHeader>
+          <CardContent>
             {unit.vehicles && unit.vehicles.length > 0 ? (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="divide-y">
                 {unit.vehicles.map((v) => (
                   <div
                     key={v.$id}
-                    className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0 group/row rounded-lg -mx-2 px-2 transition-colors hover:bg-accent/50"
                   >
-                    <div className="flex items-center gap-4">
-                      <VehicleIcon type={v.vehicleType} />
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        size="default"
+                        className={
+                          v.vehicleType === "motorcycle"
+                            ? "bg-orange-100 text-orange-600"
+                            : "bg-blue-100 text-blue-600"
+                        }
+                      >
+                        <AvatarFallback
+                          className={
+                            v.vehicleType === "motorcycle"
+                              ? "bg-orange-100 text-orange-600"
+                              : "bg-blue-100 text-blue-600"
+                          }
+                        >
+                          <Car className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+                        <p className="font-bold uppercase tracking-tight text-sm">
                           {v.licensePlate}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {v.brand || "Tidak diketahui"}{" "}
                           {v.color ? `(${v.color})` : ""}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      <IconButton
+                        tooltip="Edit kendaraan"
                         onClick={() => handleEditVehicle(v as Vehicle)}
                       >
                         <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-400 hover:text-red-500"
+                      </IconButton>
+                      <IconButton
+                        tooltip="Hapus kendaraan"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => setDeleteTarget(v.$id)}
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </IconButton>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
-                  <Car className="h-6 w-6 text-slate-300" />
-                </div>
-                <p className="italic text-slate-500 dark:text-slate-400">
-                  Tidak ada kendaraan yang terdaftar untuk unit ini
+              <div className="flex flex-col items-center justify-center text-center py-4 space-y-3">
+                <Avatar size="lg">
+                  <AvatarFallback>
+                    <Car className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-sm italic text-muted-foreground">
+                  Belum ada kendaraan terdaftar
                 </p>
                 {unit.ownerId ? (
                   <Button
                     variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 relative z-10"
+                    size="sm"
                     onClick={handleAddVehicle}
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Tambah Kendaraan
                   </Button>
                 ) : (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Pilih pemilik untuk menambah kendaraan
                   </p>
                 )}
               </div>
             )}
-          </DetailCard>
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* ─── Activity History ─── */}
+        <UnitHistorySection unitId={unitId} />
       </div>
 
-      <UnitHistorySection unitId={unitId} />
-
+      {/* ─── Dialogs ─── */}
       <VehicleFormDialog
         open={vehicleModalOpen}
         onOpenChange={setVehicleModalOpen}
@@ -542,6 +622,6 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
         variant="destructive"
         isLoading={removeMutation.isPending}
       />
-    </>
+    </TooltipProvider>
   );
 }
