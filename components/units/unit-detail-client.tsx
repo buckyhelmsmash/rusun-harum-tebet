@@ -21,7 +21,7 @@ import { DetailCard, DetailCardHeader } from "@/components/shared/detail-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
-import { ActivitySection } from "@/components/units/activity-section";
+import { UnitHistorySection } from "@/components/units/unit-history-section";
 import { ResidentPickerDialog } from "@/components/units/resident-picker-dialog";
 import { VehicleFormDialog } from "@/components/units/vehicle-form-dialog";
 import { useRemoveResident } from "@/hooks/api/use-unit-assignment";
@@ -485,7 +485,7 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
         </div>
       </div>
 
-      <ActivitySection unitId={unitId} />
+      <UnitHistorySection unitId={unitId} />
 
       <VehicleFormDialog
         open={vehicleModalOpen}

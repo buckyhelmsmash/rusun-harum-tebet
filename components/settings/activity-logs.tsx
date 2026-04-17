@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +12,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useGetActivity } from "@/hooks/api/use-activity";
+import {
+  formatActionLabel,
+  formatActivityTimestamp,
+  formatChangeValue,
+  formatFieldLabel,
+} from "@/lib/activity/constants";
 
 export function ActivityLogs() {
   const [page, setPage] = useState(0);
@@ -41,52 +45,50 @@ export function ActivityLogs() {
     );
   }
 
-  const formatMetadata = (metadata?: string) => {
+  const totalPages = Math.ceil(data.total / limit);
+
+  const renderChanges = (metadata?: string) => {
     if (!metadata) return null;
     try {
       const parsed = JSON.parse(metadata);
-      // Simplify the display depending on what exists in the metadata
-      if (parsed.meetingNumber) {
-        return (
-          <span className="text-xs">No. Rapat: {parsed.meetingNumber}</span>
-        );
-      }
+
       if (parsed.changes && Array.isArray(parsed.changes)) {
         return (
-          <ul className="text-xs list-disc list-inside">
+          <div className="space-y-0.5">
             {parsed.changes.map(
               (c: { field: string; old?: unknown; new?: unknown }) => (
-                <li key={c.field}>Ubah {c.field}</li>
+                <div key={c.field} className="text-xs">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {formatFieldLabel(c.field)}:
+                  </span>{" "}
+                  <span className="text-red-500 line-through">
+                    {formatChangeValue(c.old)}
+                  </span>{" "}
+                  →{" "}
+                  <span className="text-emerald-600 font-medium">
+                    {formatChangeValue(c.new)}
+                  </span>
+                </div>
               ),
             )}
-          </ul>
+          </div>
         );
       }
-      if (parsed.created !== undefined || parsed.updated !== undefined) {
-        return (
-          <span className="text-xs">
-            Baru: {parsed.created}, Diperbarui: {parsed.updated}
-          </span>
-        );
-      }
-      if (parsed.processed !== undefined) {
-        return (
-          <span className="text-xs">
-            Diproses: {parsed.processed}, Gagal: {parsed.skipped ?? 0}
-          </span>
-        );
-      }
-      return (
-        <pre className="text-[10px] whitespace-pre-wrap">
-          {JSON.stringify(parsed, null, 2)}
-        </pre>
-      );
+      return null;
     } catch {
       return null;
     }
   };
 
-  const totalPages = Math.ceil(data.total / limit);
+  const getMeetingNumber = (metadata?: string): string | null => {
+    if (!metadata) return null;
+    try {
+      const parsed = JSON.parse(metadata);
+      return parsed.meetingNumber ?? null;
+    } catch {
+      return null;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -97,8 +99,8 @@ export function ActivityLogs() {
               <TableHead>Waktu</TableHead>
               <TableHead>Aktor</TableHead>
               <TableHead>Aksi</TableHead>
-              <TableHead>Deskripsi</TableHead>
-              <TableHead>Detail</TableHead>
+              <TableHead>Perubahan</TableHead>
+              <TableHead>No. Rapat</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,26 +114,36 @@ export function ActivityLogs() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.items.map((log) => (
-                <TableRow key={log.$id}>
-                  <TableCell className="whitespace-nowrap">
-                    {format(new Date(log.$createdAt), "d MMM yyyy, HH:mm", {
-                      locale: id,
-                    })}
-                  </TableCell>
-                  <TableCell>{log.actorName || log.actorId}</TableCell>
-                  <TableCell className="whitespace-nowrap font-medium text-xs">
-                    {log.action}
-                  </TableCell>
-                  <TableCell
-                    className="max-w-[200px] truncate"
-                    title={log.description}
-                  >
-                    {log.description}
-                  </TableCell>
-                  <TableCell>{formatMetadata(log.metadata)}</TableCell>
-                </TableRow>
-              ))
+              data.items.map((log) => {
+                const meetingNumber = getMeetingNumber(log.metadata);
+                return (
+                  <TableRow key={log.$id}>
+                    <TableCell className="whitespace-nowrap text-xs">
+                      {formatActivityTimestamp(log.$createdAt)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {log.actorName || log.actorId}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                        {formatActionLabel(log.action)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="max-w-[250px]">
+                      {renderChanges(log.metadata)}
+                    </TableCell>
+                    <TableCell>
+                      {meetingNumber ? (
+                        <span className="inline-flex items-center text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded">
+                          {meetingNumber}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

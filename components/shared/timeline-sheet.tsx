@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  Clock,
-  Download,
-  FileText,
-  Loader2,
-  Plus,
-  RefreshCw,
-  Trash2,
-  UserCheck,
-  UserMinus,
-  Zap,
-} from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +12,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useGetActivity } from "@/hooks/api/use-activity";
+import {
+  formatActionLabel,
+  formatActivityTimestamp,
+  formatChangeValue,
+  formatFieldLabel,
+  getActionIcon,
+  getActionIconColor,
+} from "@/lib/activity/constants";
 import type { ActivityLog, TargetType } from "@/types";
 
 interface TimelineSheetProps {
@@ -31,134 +28,6 @@ interface TimelineSheetProps {
   title: string;
   /** Optional context for query-side bulk log merging. Keys: `unitDisplayId`, `invoiceNumber`. */
   bulkContext?: Record<string, string>;
-}
-
-function getActionIcon(action: string) {
-  if (action.endsWith(".create")) return Plus;
-  if (action.endsWith(".update")) return RefreshCw;
-  if (action.endsWith(".delete")) return Trash2;
-  if (action.endsWith(".assign")) return UserCheck;
-  if (action.endsWith(".remove")) return UserMinus;
-  if (action.endsWith(".generate")) return Zap;
-  if (action.endsWith(".sync")) return RefreshCw;
-  if (action.endsWith(".import")) return Download;
-  return FileText;
-}
-
-function getActionColor(action: string) {
-  if (action.endsWith(".create"))
-    return "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
-  if (action.endsWith(".update"))
-    return "text-blue-500 bg-blue-50 dark:bg-blue-900/20";
-  if (action.endsWith(".delete"))
-    return "text-red-500 bg-red-50 dark:bg-red-900/20";
-  if (action.endsWith(".assign"))
-    return "text-violet-500 bg-violet-50 dark:bg-violet-900/20";
-  if (action.endsWith(".remove"))
-    return "text-orange-500 bg-orange-50 dark:bg-orange-900/20";
-  if (action.endsWith(".generate"))
-    return "text-amber-500 bg-amber-50 dark:bg-amber-900/20";
-  if (action.endsWith(".sync"))
-    return "text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20";
-  if (action.endsWith(".import"))
-    return "text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20";
-  return "text-slate-500 bg-slate-50 dark:bg-slate-800";
-}
-
-function formatActionLabel(action: string) {
-  const [entity, verb] = action.split(".");
-
-  const entityMap: Record<string, string> = {
-    invoice: "Tagihan",
-    water_usage: "Penggunaan Air",
-    unit: "Unit",
-    vehicle: "Kendaraan",
-    resident: "Penghuni",
-    user: "Pengguna",
-  };
-
-  const verbMap: Record<string, string> = {
-    create: "Dibuat",
-    update: "Diperbarui",
-    delete: "Dihapus",
-    assign: "Ditugaskan",
-    remove: "Dihapus dari",
-    generate: "Dihasilkan",
-    sync: "Disinkronkan",
-    import: "Diimpor",
-  };
-
-  const entityLabel =
-    entityMap[entity] || entity.charAt(0).toUpperCase() + entity.slice(1);
-  const verbLabel =
-    verbMap[verb] || verb.charAt(0).toUpperCase() + verb.slice(1);
-
-  return `${entityLabel} ${verbLabel}`;
-}
-
-function formatTimestamp(dateStr: string) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-const FIELD_LABELS: Record<string, string> = {
-  status: "Status",
-  waterFee: "Biaya Air",
-  waterRate: "Tarif Air",
-  publicFacilityFee: "Sarana Umum",
-  guardFee: "Penjagaan Fasilitas",
-  vehicleFee: "Biaya Kendaraan",
-  iplFee: "IPL",
-  arrears: "Tunggakan",
-  totalDue: "Total Tagihan",
-  previousMeter: "Meteran Awal",
-  currentMeter: "Meteran Akhir",
-  usage: "Pemakaian",
-  amount: "Jumlah",
-  period: "Periode",
-  isBilled: "Tertagih",
-  paymentDate: "Tanggal Bayar",
-  billRecipient: "Penerima Tagihan",
-  uniqueCode: "Kode Unik",
-  fullName: "Nama Lengkap",
-  phone: "Telepon",
-  email: "Email",
-  plateNumber: "Plat Nomor",
-  brand: "Merek",
-  color: "Warna",
-  vehicleType: "Jenis",
-  publicFacilityRate: "Tarif Sarana Umum",
-  guardRate: "Tarif Penjagaan",
-  meetingNumber: "Nomor Rapat",
-  invoiceNumber: "No. Tagihan",
-};
-
-const VALUE_LABELS: Record<string, string> = {
-  paid: "Lunas",
-  unpaid: "Belum Lunas",
-  true: "Ya",
-  false: "Tidak",
-  owner: "Pemilik",
-  tenant: "Penyewa",
-  car: "Mobil",
-  motorcycle: "Motor",
-};
-
-function formatFieldLabel(field: string): string {
-  return FIELD_LABELS[field] ?? field;
-}
-
-function formatChangeValue(val: unknown): string {
-  if (val === null || val === undefined) return "—";
-  const str = String(val);
-  return VALUE_LABELS[str] ?? str;
 }
 
 interface ChangeEntry {
@@ -181,7 +50,7 @@ function parseChanges(log: ActivityLog): ChangeEntry[] {
 
 function TimelineItem({ log }: { log: ActivityLog }) {
   const Icon = getActionIcon(log.action);
-  const colorClass = getActionColor(log.action);
+  const colorClass = getActionIconColor(log.action);
   const changes = parseChanges(log);
 
   return (
@@ -203,7 +72,7 @@ function TimelineItem({ log }: { log: ActivityLog }) {
             {formatActionLabel(log.action)}
           </span>
           <time className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
-            {formatTimestamp(log.$createdAt)}
+            {formatActivityTimestamp(log.$createdAt)}
           </time>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">

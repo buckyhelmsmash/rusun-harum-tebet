@@ -1,21 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
-import {
-  ChevronDown,
-  ClipboardList,
-  Download,
-  FileText,
-  Loader2,
-  Plus,
-  RefreshCw,
-  Search,
-  Trash2,
-  UserCheck,
-  UserMinus,
-  Zap,
-} from "lucide-react";
+import { ChevronDown, ClipboardList, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,81 +21,16 @@ import {
 } from "@/components/ui/select";
 import { useGetActivity } from "@/hooks/api/use-activity";
 import { useDebounce } from "@/hooks/use-debounce";
+import {
+  TARGET_TYPE_OPTIONS,
+  formatActionLabel,
+  formatActivityTimestamp,
+  getActionBadgeStyle,
+  getActionIcon,
+} from "@/lib/activity/constants";
 import type { ActivityLog } from "@/types";
 
 const PAGE_SIZE = 25;
-
-const TARGET_TYPE_OPTIONS = [
-  { value: "all", label: "Semua Modul" },
-  { value: "invoice", label: "Tagihan" },
-  { value: "water_usage", label: "Penggunaan Air" },
-  { value: "settings", label: "Pengaturan" },
-  { value: "vehicle", label: "Kendaraan" },
-  { value: "owner", label: "Pemilik" },
-  { value: "tenant", label: "Penyewa" },
-  { value: "unit", label: "Unit" },
-] as const;
-
-function getActionIcon(action: string) {
-  if (action.endsWith(".create")) return Plus;
-  if (action.endsWith(".update")) return RefreshCw;
-  if (action.endsWith(".delete")) return Trash2;
-  if (action.endsWith(".assign")) return UserCheck;
-  if (action.endsWith(".remove")) return UserMinus;
-  if (action.endsWith(".generate")) return Zap;
-  if (action.endsWith(".sync")) return RefreshCw;
-  if (action.endsWith(".import")) return Download;
-  return FileText;
-}
-
-function getActionBadgeStyle(action: string) {
-  if (action.endsWith(".create"))
-    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
-  if (action.endsWith(".update"))
-    return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
-  if (action.endsWith(".delete"))
-    return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-  if (action.endsWith(".generate"))
-    return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
-  if (action.endsWith(".sync"))
-    return "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400";
-  if (action.endsWith(".import"))
-    return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400";
-  if (action.endsWith(".assign"))
-    return "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400";
-  if (action.endsWith(".remove"))
-    return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
-  return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
-}
-
-const ACTION_LABEL_MAP: Record<string, string> = {
-  create: "Dibuat",
-  update: "Diperbarui",
-  delete: "Dihapus",
-  assign: "Ditugaskan",
-  remove: "Dihapus",
-  generate: "Dihasilkan",
-  sync: "Disinkronkan",
-  import: "Diimpor",
-};
-
-const ENTITY_LABEL_MAP: Record<string, string> = {
-  invoice: "Tagihan",
-  water_usage: "Air",
-  unit: "Unit",
-  vehicle: "Kendaraan",
-  owner: "Pemilik",
-  tenant: "Penyewa",
-  settings: "Pengaturan",
-  news: "Berita",
-};
-
-function formatActionLabel(action: string): string {
-  const [entity, verb] = action.split(".");
-  const entityLabel = ENTITY_LABEL_MAP[entity] ?? entity;
-  const verbLabel = ACTION_LABEL_MAP[verb] ?? verb;
-  return `${entityLabel} ${verbLabel}`;
-}
 
 interface ChangeEntry {
   field: string;
@@ -369,9 +289,7 @@ function ActivityLogCard({ log }: { log: ActivityLog }) {
             </span>
           </div>
           <time className="text-[11px] text-slate-400 whitespace-nowrap flex-shrink-0">
-            {format(new Date(log.$createdAt), "d MMM yyyy, HH:mm", {
-              locale: idLocale,
-            })}
+            {formatActivityTimestamp(log.$createdAt)}
           </time>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
