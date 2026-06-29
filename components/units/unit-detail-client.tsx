@@ -278,42 +278,44 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
             </CardHeader>
             <CardContent>
               {unit.owner ? (
-                <div className="flex items-start gap-3">
-                  <Avatar size="lg" className="bg-blue-100 text-blue-600">
-                    <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-sm">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="size-14 bg-blue-100 text-blue-600">
+                    <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-base">
                       {getInitials(unit.owner.fullName)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <p className="font-semibold truncate">
-                      {unit.owner.fullName}
-                    </p>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Phone className="h-3.5 w-3.5 shrink-0" />
+                  <p className="font-semibold text-lg mt-3">
+                    {unit.owner.fullName}
+                  </p>
+
+                  <div className="w-full mt-4 rounded-lg bg-muted/50 p-3 space-y-2">
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="truncate">{unit.owner.phoneNumber}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Mail className="h-3.5 w-3.5 shrink-0" />
+                    <Separator />
+                    <div className="flex items-center gap-3 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="truncate">
                         {unit.owner.email || "Tidak ada email"}
                       </span>
                     </div>
-                    <Separator className="!my-2" />
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        KTP
-                      </p>
-                      <p className="text-xs font-mono">
-                        {unit.owner.ktpNumber}
-                      </p>
-                    </div>
+                  </div>
+
+                  <div className="w-full mt-3 flex items-center justify-between rounded-lg border border-dashed px-3 py-2">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      KTP
+                    </span>
+                    <span className="text-xs font-mono">
+                      {unit.owner.ktpNumber}
+                    </span>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center py-4 space-y-3">
-                  <Avatar size="lg">
+                  <Avatar className="size-14">
                     <AvatarFallback>
-                      <User className="h-5 w-5" />
+                      <User className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
                   <p className="text-sm italic text-muted-foreground">
@@ -362,70 +364,73 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
             </CardHeader>
             <CardContent>
               {unit.tenant ? (
-                <div className="flex items-start gap-3">
-                  <Avatar size="lg" className="bg-violet-100 text-violet-600">
-                    <AvatarFallback className="bg-violet-100 text-violet-700 font-bold text-sm">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="size-14 bg-violet-100 text-violet-600">
+                    <AvatarFallback className="bg-violet-100 text-violet-700 font-bold text-base">
                       {getInitials(unit.tenant.fullName)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <p className="font-semibold truncate">
-                      {unit.tenant.fullName}
-                    </p>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Phone className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">
-                        {unit.tenant.phoneNumber}
-                      </span>
+                  <p className="font-semibold text-lg mt-3">
+                    {unit.tenant.fullName}
+                  </p>
+
+                  <div className="w-full mt-4 rounded-lg bg-muted/50 p-3 space-y-2">
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="truncate">{unit.tenant.phoneNumber}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Mail className="h-3.5 w-3.5 shrink-0" />
+                    <Separator />
+                    <div className="flex items-center gap-3 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="truncate">
                         {unit.tenant.email || "Tidak ada email"}
                       </span>
                     </div>
                     {(unit.tenant.startDate || unit.tenant.endDate) && (
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                        {unit.tenant.startDate
-                          ? new Date(unit.tenant.startDate).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )
-                          : "—"}
-                        {" — "}
-                        {unit.tenant.endDate
-                          ? new Date(unit.tenant.endDate).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )
-                          : "∞"}
-                      </div>
+                      <>
+                        <Separator />
+                        <div className="flex items-center gap-3 text-sm">
+                          <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span>
+                            {unit.tenant.startDate
+                              ? new Date(
+                                  unit.tenant.startDate,
+                                ).toLocaleDateString("id-ID", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—"}
+                            {" — "}
+                            {unit.tenant.endDate
+                              ? new Date(
+                                  unit.tenant.endDate,
+                                ).toLocaleDateString("id-ID", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "∞"}
+                          </span>
+                        </div>
+                      </>
                     )}
-                    <Separator className="!my-2" />
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        KTP
-                      </p>
-                      <p className="text-xs font-mono">
-                        {unit.tenant.ktpNumber}
-                      </p>
-                    </div>
+                  </div>
+
+                  <div className="w-full mt-3 flex items-center justify-between rounded-lg border border-dashed px-3 py-2">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      KTP
+                    </span>
+                    <span className="text-xs font-mono">
+                      {unit.tenant.ktpNumber}
+                    </span>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center py-4 space-y-3">
-                  <Avatar size="lg">
+                  <Avatar className="size-14">
                     <AvatarFallback>
-                      <Users className="h-5 w-5" />
+                      <Users className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
                   <p className="text-sm italic text-muted-foreground">
