@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
@@ -12,7 +12,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id } = await params;
     const body = await request.json();
     const payload = body.data ?? body;
@@ -45,6 +45,9 @@ export async function PATCH(
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Invalid payload", details: error.flatten() },
@@ -64,7 +67,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id } = await params;
 
     const vehicle = await VehicleRepository.getById(id);
@@ -90,6 +93,9 @@ export async function DELETE(
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error("DELETE /api/vehicles/[id] -", getErrorMessage(error));
     return NextResponse.json(

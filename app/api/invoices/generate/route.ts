@@ -3,7 +3,7 @@ import { format, subMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
@@ -41,7 +41,7 @@ function calculateCarFee(carCount: number, settings: GlobalSettings): number {
 
 export async function POST(request: Request) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const db = await getAdminDb();
     const settings = await SettingsRepository.get();
     const now = new Date();

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -18,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id } = await params;
 
     const body = await request.json();
@@ -86,6 +86,9 @@ export async function PATCH(
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error("[water-usages-patch]", error);
     return NextResponse.json(

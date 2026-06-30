@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
 import { vehicleListParamsSchema } from "@/lib/schemas/vehicles";
 
 export async function GET(request: Request) {
   try {
-    await verifyAuth(request);
+    await requireRole(request, "admin");
 
     const { searchParams } = new URL(request.url);
     const params = vehicleListParamsSchema.parse(
@@ -19,6 +19,9 @@ export async function GET(request: Request) {
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(

@@ -2,7 +2,7 @@ import { ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -18,7 +18,7 @@ const importPayloadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const session = await verifyAuth(req);
+    const session = await requireRole(req, "admin");
 
     const body = await req.json();
     const parsed = importPayloadSchema.safeParse(body);
@@ -208,6 +208,9 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error("[water-usages-import]", error);
     return NextResponse.json(

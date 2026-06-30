@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
@@ -9,7 +9,7 @@ import { createVehicleSchema } from "@/lib/schemas/vehicles";
 
 export async function POST(request: Request) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createVehicleSchema.parse(payload);
@@ -69,6 +69,9 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(

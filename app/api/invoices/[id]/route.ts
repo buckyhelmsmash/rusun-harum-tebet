@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import { updateInvoiceSchema } from "@/lib/schemas/invoices";
@@ -11,13 +11,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await verifyAuth(request);
+    await requireRole(request, "admin");
     const { id } = await params;
     const invoice = await InvoiceRepository.getById(id);
     return NextResponse.json(invoice);
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error("GET /api/invoices/[id] -", getErrorMessage(error));
     return NextResponse.json(
@@ -32,7 +35,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id } = await params;
     const body = await request.json();
     const payload = body.data ?? body;
@@ -60,6 +63,9 @@ export async function PATCH(
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ZodError } from "zod";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { newsRepository } from "@/lib/repositories/news";
 
@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await verifyAuth(request);
+    await requireRole(request, "admin");
     const body = await request.json();
     const validated = createLabelSchema.parse(body);
 
@@ -42,6 +42,9 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(

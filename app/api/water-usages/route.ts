@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
@@ -23,10 +23,13 @@ interface RawWaterUsage {
 export async function GET(request: Request) {
   try {
     try {
-      await verifyAuth(request);
+      await requireRole(request, "admin");
     } catch (error) {
       if (error instanceof AuthError) {
         return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error instanceof ForbiddenError) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
       }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

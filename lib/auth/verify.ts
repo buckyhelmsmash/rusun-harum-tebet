@@ -63,7 +63,3 @@ export async function requireRole(request: Request, role: AppRole) {
 
   return user;
 }
-
-export async function requireSuperadmin(request: Request) {
-  return requireRole(request, "superadmin");
-}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { OwnerRepository } from "@/lib/repositories/owners";
 import { TenantRepository } from "@/lib/repositories/tenants";
@@ -25,7 +25,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id: unitId } = await params;
     const body = await request.json();
     const { type, residentId, startDate, endDate } = assignSchema.parse(body);
@@ -88,6 +88,9 @@ export async function POST(
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Invalid payload", details: error.flatten() },
@@ -107,7 +110,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "admin");
     const { id: unitId } = await params;
     const body = await request.json();
     const { type } = removeSchema.parse(body);
@@ -198,6 +201,9 @@ export async function DELETE(
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
 
@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const session = await verifyAuth(request);
+    const session = await requireRole(request, "superadmin");
 
     const body = await request.json();
     const parsed = updateSchema.safeParse(body);
@@ -65,6 +65,9 @@ export async function PATCH(request: Request) {
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error("[settings-patch]", error);
     return NextResponse.json(

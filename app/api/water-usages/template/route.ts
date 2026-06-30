@@ -1,7 +1,7 @@
 import { Query } from "appwrite";
 import { NextResponse } from "next/server";
 import * as xlsx from "xlsx";
-import { AuthError, verifyAuth } from "@/lib/auth/verify";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
 import { getAdminDb } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
@@ -11,10 +11,13 @@ const DB_ID = APPWRITE.DATABASE_ID;
 export async function GET(req: Request) {
   try {
     try {
-      await verifyAuth(req);
+      await requireRole(req, "admin");
     } catch (error) {
       if (error instanceof AuthError) {
         return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error instanceof ForbiddenError) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
       }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
