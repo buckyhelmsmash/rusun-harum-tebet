@@ -15,12 +15,6 @@ export const APPWRITE = {
     WATER_USAGES: process.env.APPWRITE_COLLECTION_WATER_USAGES as string,
     SETTINGS: process.env.APPWRITE_COLLECTION_SETTINGS as string,
   },
-  AUTH: {
-    ADMIN_EMAILS: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  },
   STORAGE: {
     NEWS_COVERS: process.env.APPWRITE_STORAGE_NEWS_COVERS as string,
   },

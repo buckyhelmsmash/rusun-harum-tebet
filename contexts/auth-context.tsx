@@ -6,19 +6,30 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { account } from "@/lib/appwrite/client";
+import type { AppRole } from "@/lib/auth/verify";
 
 interface AuthContextType {
   user: Models.User<Models.Preferences> | null;
   isLoading: boolean;
+  role: AppRole | null;
+  isSuperadmin: boolean;
   loginWithGoogle: () => void;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function resolveRole(user: Models.User<Models.Preferences> | null): AppRole | null {
+  if (!user?.labels) return null;
+  if (user.labels.includes("superadmin")) return "superadmin";
+  if (user.labels.includes("admin")) return "admin";
+  return null;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Models.User<Models.Preferences> | null>(
@@ -64,9 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const role = useMemo(() => resolveRole(user), [user]);
+  const isSuperadmin = role === "superadmin";
+
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, loginWithGoogle, logout, checkSession }}
+      value={{ user, isLoading, role, isSuperadmin, loginWithGoogle, logout, checkSession }}
     >
       {children}
     </AuthContext.Provider>

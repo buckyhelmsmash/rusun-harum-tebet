@@ -4,10 +4,9 @@ import { goeyToast } from "goey-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { APPWRITE } from "@/lib/constants";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, logout } = useAuth();
+  const { user, role, isLoading, logout } = useAuth();
   const router = useRouter();
   const isKickingOut = useRef(false);
 
@@ -16,7 +15,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
     if (!user) {
       if (isKickingOut.current) return;
-      // User is not logged in
       goeyToast.error("Akses Ditolak", {
         description: "Anda harus login untuk mengakses halaman admin.",
       });
@@ -24,13 +22,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Check Whitelist
-    const userEmail = user.email ? user.email.toLowerCase() : "";
-    const isWhitelisted = APPWRITE.AUTH.ADMIN_EMAILS.includes(userEmail);
-
-    if (!isWhitelisted) {
+    if (!role) {
       isKickingOut.current = true;
-      // User is logged in with Google, but not on the admin email whitelist
       goeyToast.error("Akses Ditolak", {
         description: "Anda tidak memiliki hak akses untuk login sebagai admin.",
       });
@@ -38,14 +31,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         router.replace("/admin/login");
       });
     }
-  }, [user, isLoading, router, logout]);
+  }, [user, role, isLoading, router, logout]);
 
-  // Optionally show a loading spinner while checking auth status
-  if (
-    isLoading ||
-    !user ||
-    !APPWRITE.AUTH.ADMIN_EMAILS.includes(user.email.toLowerCase())
-  ) {
+  if (isLoading || !user || !role) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">

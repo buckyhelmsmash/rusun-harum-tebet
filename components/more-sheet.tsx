@@ -7,6 +7,7 @@ import {
   LogOut,
   Newspaper,
   Settings,
+  User as UserIcon,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -23,7 +24,7 @@ interface MoreSheetProps {
 }
 
 export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
-  const { logout } = useAuth();
+  const { user, role, logout } = useAuth();
 
   const handleLogout = async () => {
     onOpenChange(false);
@@ -35,6 +36,26 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>Lainnya</DrawerTitle>
+          {user && (
+            <div className="flex items-start gap-3 mt-2 px-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+                <UserIcon className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col items-start overflow-hidden">
+                <span className="text-sm font-medium truncate">
+                  {user.name || "Admin"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </span>
+                {role && (
+                  <span className="mt-0.5 inline-block w-fit rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    {role}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </DrawerHeader>
         <nav className="px-2 pb-6">
           <ul className="space-y-1">
