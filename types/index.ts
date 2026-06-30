@@ -109,7 +109,9 @@ export type ActivityAction =
   | "settings.update"
   | "news.create"
   | "news.update"
-  | "news.delete";
+  | "news.delete"
+  | "admin.invite"
+  | "admin.delete";
 
 export type TargetType =
   | "unit"
@@ -119,7 +121,8 @@ export type TargetType =
   | "invoice"
   | "water_usage"
   | "settings"
-  | "news";
+  | "news"
+  | "admin";
 
 export interface ActivityLog extends Models.Document {
   actorId: string;
