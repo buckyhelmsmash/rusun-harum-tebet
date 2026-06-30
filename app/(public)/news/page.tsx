@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { newsRepository } from "@/lib/repositories/news";
 import { getNewsImage } from "@/lib/mock-news";
+import { newsRepository } from "@/lib/repositories/news";
 
 export const metadata: Metadata = {
   title: "Indeks Berita | Warta Harum",

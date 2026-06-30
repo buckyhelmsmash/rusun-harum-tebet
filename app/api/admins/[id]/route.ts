@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity/logger";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { AdminRepository } from "@/lib/repositories/admins";
+import { adminRepository } from "@/lib/repositories/admins";
 import { getErrorMessage } from "@/lib/repositories/base";
 
 export async function DELETE(
@@ -21,7 +21,7 @@ export async function DELETE(
       );
     }
 
-    await AdminRepository.removeAdmin(id);
+    await adminRepository.removeAdmin(id);
 
     logActivity({
       actorId: session.$id,

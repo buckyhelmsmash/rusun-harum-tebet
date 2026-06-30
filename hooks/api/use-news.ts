@@ -62,7 +62,9 @@ export function useUpdateNews() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: newsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: newsKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: newsKeys.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: activityKeys.lists() });
     },
   });

@@ -377,7 +377,9 @@ export function UnitDetailClient({ unitId }: UnitDetailClientProps) {
                   <div className="w-full mt-4 rounded-lg bg-muted/50 p-3 space-y-2">
                     <div className="flex items-center gap-3 text-sm">
                       <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="truncate">{unit.tenant.phoneNumber}</span>
+                      <span className="truncate">
+                        {unit.tenant.phoneNumber}
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex items-center gap-3 text-sm">

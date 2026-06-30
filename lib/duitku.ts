@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 interface DuitkuConfig {
   merchantCode: string;
@@ -35,22 +35,24 @@ export class DuitkuClient {
   constructor() {
     const merchantCode = process.env.DUITKU_MERCHANT_CODE;
     const apiKey = process.env.DUITKU_API_KEY;
-    const isSandbox = process.env.DUITKU_SANDBOX === 'true';
+    const isSandbox = process.env.DUITKU_SANDBOX === "true";
 
     if (!merchantCode || !apiKey) {
-      console.warn('Duitku environment variables are missing (Merchant Code or API Key). Check your .env file.');
+      console.warn(
+        "Duitku environment variables are missing (Merchant Code or API Key). Check your .env file.",
+      );
     }
 
-    this.config = { 
-      merchantCode: merchantCode || '', 
-      apiKey: apiKey || '', 
-      isSandbox 
+    this.config = {
+      merchantCode: merchantCode || "",
+      apiKey: apiKey || "",
+      isSandbox,
     };
 
     // Duitku POP endpoints have a specific base URL
     this.baseUrl = isSandbox
-      ? 'https://api-sandbox.duitku.com/api/merchant'
-      : 'https://api-prod.duitku.com/api/merchant';
+      ? "https://api-sandbox.duitku.com/api/merchant"
+      : "https://api-prod.duitku.com/api/merchant";
   }
 
   /**
@@ -60,10 +62,13 @@ export class DuitkuClient {
   public verifyCallbackSignature(
     orderId: string,
     amount: string,
-    providedSignature: string
+    providedSignature: string,
   ): boolean {
     const data = `${this.config.merchantCode}${amount}${orderId}${this.config.apiKey}`;
-    const expectedSignature = crypto.createHash('md5').update(data).digest('hex');
+    const expectedSignature = crypto
+      .createHash("md5")
+      .update(data)
+      .digest("hex");
     return expectedSignature === providedSignature;
   }
 
@@ -76,7 +81,10 @@ export class DuitkuClient {
 
     // 2. Signature Formula for API POP Header: SHA256(merchantCode + timestamp + apiKey)
     const signatureData = `${this.config.merchantCode}${timestamp}${this.config.apiKey}`;
-    const signature = crypto.createHash('sha256').update(signatureData).digest('hex');
+    const signature = crypto
+      .createHash("sha256")
+      .update(signatureData)
+      .digest("hex");
 
     // Split names safely since user might only have one word
     const nameParts = req.customerVaName.split(" ");
@@ -109,7 +117,7 @@ export class DuitkuClient {
           city: "Jakarta",
           postalCode: "12870",
           phone: req.phoneNumber,
-          countryCode: "ID"
+          countryCode: "ID",
         },
         shippingAddress: {
           firstName: firstName,
@@ -118,26 +126,26 @@ export class DuitkuClient {
           city: "Jakarta",
           postalCode: "12870",
           phone: req.phoneNumber,
-          countryCode: "ID"
-        }
+          countryCode: "ID",
+        },
       },
       itemDetails: [
         {
           name: req.productDetails,
           price: req.paymentAmount,
-          quantity: 1
-        }
-      ]
+          quantity: 1,
+        },
+      ],
     };
 
     const response = await fetch(`${this.baseUrl}/createInvoice`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'x-duitku-signature': signature,
-        'x-duitku-timestamp': timestamp,
-        'x-duitku-merchantcode': this.config.merchantCode
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "x-duitku-signature": signature,
+        "x-duitku-timestamp": timestamp,
+        "x-duitku-merchantcode": this.config.merchantCode,
       },
       body: JSON.stringify(payload),
     });

@@ -1,7 +1,7 @@
 import { ID, Query } from "node-appwrite";
+import type { News, NewsLabel } from "@/types";
 import { APPWRITE } from "../constants";
 import { getAdminDb } from "./base";
-import type { News, NewsLabel } from "@/types";
 
 // Next.js Server Components require plain objects, and the Node SDK objects sometimes
 // have prototypes that Next.js serialization rejects.
@@ -12,7 +12,7 @@ function toPlain<T>(obj: T): T {
 
 async function populateLabels(newsItems: News[]): Promise<News[]> {
   if (!newsItems.length) return newsItems;
-  
+
   const db = await getAdminDb();
   // Fetch all labels once
   const result = await db.listRows({
@@ -26,7 +26,11 @@ async function populateLabels(newsItems: News[]): Promise<News[]> {
   }
 
   const populated = newsItems.map((item) => {
-    if (item.labelId && item.labelId !== "none" && labelsMap.has(item.labelId)) {
+    if (
+      item.labelId &&
+      item.labelId !== "none" &&
+      labelsMap.has(item.labelId)
+    ) {
       item.label = labelsMap.get(item.labelId);
     }
     return item;
@@ -128,10 +132,10 @@ export const newsRepository = {
 
   async createNews(data: Partial<News>) {
     const db = await getAdminDb();
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { label, ...dataToSave } = data;
-    
+
     const row = await db.createRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -144,10 +148,10 @@ export const newsRepository = {
 
   async updateNews(id: string, data: Partial<News>) {
     const db = await getAdminDb();
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { label, ...dataToSave } = data;
-    
+
     const row = await db.updateRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,

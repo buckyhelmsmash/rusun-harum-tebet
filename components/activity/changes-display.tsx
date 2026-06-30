@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  formatChangeValue,
-  formatFieldLabel,
-} from "@/lib/activity/constants";
+import { formatChangeValue, formatFieldLabel } from "@/lib/activity/constants";
 import type { ChangeEntry } from "@/lib/activity/types";
 
 interface ChangesDisplayProps {

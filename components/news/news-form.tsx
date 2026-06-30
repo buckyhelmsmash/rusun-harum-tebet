@@ -2,14 +2,21 @@
 
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
-import { z } from "zod";
 import Link from "next/link";
 import { useRef } from "react";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -17,17 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
-import type { News } from "@/types";
+import { Switch } from "@/components/ui/switch";
 import { useGetNewsLabels } from "@/hooks/api/use-news";
 import { generateSlug } from "@/lib/utils/slug";
+import type { News } from "@/types";
 
 const FormSchema = z.object({
   title: z.string().min(1, "Judul wajib diisi"),
@@ -53,7 +53,11 @@ interface NewsFormProps {
   isSubmitting?: boolean;
 }
 
-export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps) {
+export function NewsForm({
+  initialData,
+  onSubmit,
+  isSubmitting,
+}: NewsFormProps) {
   const { data: labels } = useGetNewsLabels();
   const slugManuallyEdited = useRef(!!initialData?.slug);
 
@@ -85,7 +89,9 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
         <CardTitle>
           {initialData ? "Edit Artikel Berita" : "Buat Artikel Berita"}
         </CardTitle>
-        <CardDescription>Isi detail artikel berita di bawah ini.</CardDescription>
+        <CardDescription>
+          Isi detail artikel berita di bawah ini.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -126,7 +132,13 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) =>
+                            typeof err === "string"
+                              ? err
+                              : err?.message || JSON.stringify(err),
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </>
@@ -155,7 +167,9 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     {field.state.value && (
                       <p className="text-xs text-muted-foreground">
                         URL publik:{" "}
-                        <span className="font-mono">/news/{field.state.value}</span>
+                        <span className="font-mono">
+                          /news/{field.state.value}
+                        </span>
                       </p>
                     )}
                   </>
@@ -181,7 +195,13 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) =>
+                            typeof err === "string"
+                              ? err
+                              : err?.message || JSON.stringify(err),
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </>
@@ -251,7 +271,13 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) =>
+                            typeof err === "string"
+                              ? err
+                              : err?.message || JSON.stringify(err),
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </>
@@ -316,7 +342,8 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                         Status Publikasi
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Aktifkan untuk mempublikasikan artikel kepada seluruh warga.
+                        Aktifkan untuk mempublikasikan artikel kepada seluruh
+                        warga.
                       </p>
                     </div>
                     <Switch
@@ -325,7 +352,8 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                       onCheckedChange={(checked) => {
                         field.handleChange(checked);
                         if (checked) {
-                          const currentDate = form.getFieldValue("publishedDate");
+                          const currentDate =
+                            form.getFieldValue("publishedDate");
                           if (!currentDate) {
                             form.setFieldValue(
                               "publishedDate",
@@ -354,7 +382,13 @@ export function NewsForm({ initialData, onSubmit, isSubmitting }: NewsFormProps)
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map(err => typeof err === "string" ? err : err?.message || JSON.stringify(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) =>
+                            typeof err === "string"
+                              ? err
+                              : err?.message || JSON.stringify(err),
+                          )
+                          .join(", ")}
                       </p>
                     )}
                   </>

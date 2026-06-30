@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   Download,
   FileText,
@@ -8,7 +9,6 @@ import {
   UserMinus,
   Zap,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 type BadgeVariant = "success" | "info" | "destructive" | "default" | "warning";
 

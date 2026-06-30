@@ -2,7 +2,10 @@ import { Mail, Phone, Share2 } from "lucide-react";
 
 export function WartaContact() {
   return (
-    <section id="kontak" className="py-12 md:py-24 bg-white border-t border-black">
+    <section
+      id="kontak"
+      className="py-12 md:py-24 bg-white border-t border-black"
+    >
       <div className="section-container text-center">
         <h2 className="text-3xl sm:text-5xl md:text-6xl font-black font-headline tracking-tighter uppercase mb-10 md:mb-20 text-center">
           Hubungi kami

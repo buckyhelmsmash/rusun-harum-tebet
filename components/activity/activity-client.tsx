@@ -22,11 +22,11 @@ import {
 import { useGetActivity } from "@/hooks/api/use-activity";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
-  TARGET_TYPE_OPTIONS,
   formatActionLabel,
   formatActivityTimestamp,
   getActionBadgeStyle,
   getActionIcon,
+  TARGET_TYPE_OPTIONS,
 } from "@/lib/activity/constants";
 import type { ActivityLog } from "@/types";
 import { MetadataRenderer } from "./metadata-renderer";

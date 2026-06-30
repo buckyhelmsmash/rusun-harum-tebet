@@ -7,6 +7,7 @@ import {
   LogOut,
   Newspaper,
   Settings,
+  ShieldCheck,
   User as UserIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -109,6 +110,18 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
                 Pengaturan
               </Link>
             </li>
+            {role === "superadmin" && (
+              <li>
+                <Link
+                  href="/admin/admins"
+                  onClick={() => onOpenChange(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                >
+                  <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+                  Kelola Admin
+                </Link>
+              </li>
+            )}
             <li>
               <button
                 type="button"

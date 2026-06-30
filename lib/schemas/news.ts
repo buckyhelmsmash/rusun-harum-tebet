@@ -13,4 +13,3 @@ export const createNewsSchema = z.object({
 });
 
 export const updateNewsSchema = createNewsSchema.partial();
-

@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  parseActivityMetadata,
   extractChanges,
   extractMeetingNumber,
+  parseActivityMetadata,
 } from "@/lib/activity/types";
 import { ChangesDisplay } from "./changes-display";
 
@@ -67,11 +67,7 @@ export function MetadataRenderer({
     );
   }
 
-  if (
-    "period" in parsed &&
-    "totalDue" in parsed &&
-    !("usage" in parsed)
-  ) {
+  if ("period" in parsed && "totalDue" in parsed && !("usage" in parsed)) {
     const meta = parsed as { period: string; totalDue: number };
     sections.push(
       <p key="invoice" className="text-xs text-slate-500">

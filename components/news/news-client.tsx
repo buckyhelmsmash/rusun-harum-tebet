@@ -7,9 +7,6 @@ import { useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TimelineSheet } from "@/components/shared/timeline-sheet";
-import { useGetNews, useDeleteNews } from "@/hooks/api/use-news";
-import type { News } from "@/types";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +18,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { useDeleteNews, useGetNews } from "@/hooks/api/use-news";
+import type { News } from "@/types";
 
 function ActionCell({ row }: { row: Row<News> }) {
   const { mutateAsync: deleteNews, isPending } = useDeleteNews();
@@ -57,7 +57,7 @@ function ActionCell({ row }: { row: Row<News> }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Artikel?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tindakan ini tidak dapat dibatalkan. Artikel {" "}
+              Tindakan ini tidak dapat dibatalkan. Artikel{" "}
               <span className="font-semibold text-foreground">
                 {row.original.title}
               </span>{" "}
@@ -97,7 +97,7 @@ export function NewsClient() {
   const filteredNews = useMemo(() => {
     if (!search) return news;
     return news.filter((n) =>
-      n.title.toLowerCase().includes(search.toLowerCase())
+      n.title.toLowerCase().includes(search.toLowerCase()),
     );
   }, [news, search]);
 
@@ -119,7 +119,7 @@ export function NewsClient() {
           if (!row.original.publishedDate) return "-";
           return new Date(row.original.publishedDate).toLocaleDateString(
             "id-ID",
-            { day: "2-digit", month: "short", year: "numeric" }
+            { day: "2-digit", month: "short", year: "numeric" },
           );
         },
       },
@@ -149,7 +149,7 @@ export function NewsClient() {
         cell: ({ row }) => <ActionCell row={row} />,
       },
     ],
-    []
+    [],
   );
 
   return (
@@ -164,10 +164,7 @@ export function NewsClient() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <TimelineSheet
-            targetType="news"
-            title="Riwayat Berita"
-          />
+          <TimelineSheet targetType="news" title="Riwayat Berita" />
           <Link href="/admin/news/create">
             <Button>
               <Plus className="w-4 h-4 mr-2" />

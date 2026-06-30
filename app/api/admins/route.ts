@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { AdminRepository } from "@/lib/repositories/admins";
+import { adminRepository } from "@/lib/repositories/admins";
 import { getErrorMessage } from "@/lib/repositories/base";
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     // Only superadmins can list other admins
     await requireRole(request, "superadmin");
 
-    const admins = await AdminRepository.list();
+    const admins = await adminRepository.list();
     return NextResponse.json(admins);
   } catch (error: unknown) {
     if (error instanceof AuthError) {

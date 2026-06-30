@@ -1,10 +1,10 @@
 "use client";
 
-import { NewsForm } from "@/components/news/news-form";
-import { useNewsItem, useUpdateNews } from "@/hooks/api/use-news";
-import { useRouter, useParams } from "next/navigation";
-import { goeyToast } from "@/components/ui/goey-toaster";
 import { Loader2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { NewsForm } from "@/components/news/news-form";
+import { goeyToast } from "@/components/ui/goey-toaster";
+import { useNewsItem, useUpdateNews } from "@/hooks/api/use-news";
 
 export default function EditNewsPage() {
   const params = useParams();
@@ -13,7 +13,9 @@ export default function EditNewsPage() {
   const { mutateAsync: updateNews, isPending } = useUpdateNews();
   const router = useRouter();
 
-  const handleSubmit = async (data: Parameters<typeof updateNews>[0]["data"]) => {
+  const handleSubmit = async (
+    data: Parameters<typeof updateNews>[0]["data"],
+  ) => {
     try {
       await updateNews({
         id: newsId,
@@ -25,7 +27,8 @@ export default function EditNewsPage() {
           coverImageId: data.coverImageId || undefined,
           publishedDate: data.publishedDate || undefined,
           isLeadArticle: data.isLeadArticle,
-          labelId: data.labelId === "none" ? undefined : data.labelId || undefined,
+          labelId:
+            data.labelId === "none" ? undefined : data.labelId || undefined,
           isPublished: data.isPublished,
         },
       });

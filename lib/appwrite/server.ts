@@ -1,4 +1,4 @@
-import { Client, TablesDB, Users, Messaging } from "node-appwrite";
+import { Client, Messaging, TablesDB, Users } from "node-appwrite";
 import { APPWRITE } from "../constants";
 
 export const createAdminClient = async () => {

@@ -49,9 +49,7 @@ export function UnitHistorySection({ unitId }: { unitId: string }) {
                   className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">
-                      {log.description}
-                    </p>
+                    <p className="text-sm truncate">{log.description}</p>
                     <MetadataRenderer
                       metadata={log.metadata}
                       variant="compact"

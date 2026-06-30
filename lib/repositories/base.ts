@@ -1,4 +1,4 @@
-import type { TablesDB } from "node-appwrite";
+import type { TablesDB, Users } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwrite/server";
 
 let cachedDb: TablesDB | null = null;
@@ -9,6 +9,16 @@ export async function getAdminDb(): Promise<TablesDB> {
     cachedDb = tablesDb;
   }
   return cachedDb;
+}
+
+let cachedUsers: Users | null = null;
+
+export async function getAdminUsers(): Promise<Users> {
+  if (!cachedUsers) {
+    const { users } = await createAdminClient();
+    cachedUsers = users;
+  }
+  return cachedUsers;
 }
 
 export function getErrorMessage(error: unknown): string {

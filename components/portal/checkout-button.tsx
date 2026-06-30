@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, CreditCard } from "lucide-react";
-import { toast } from "sonner";
+import { CreditCard, Loader2 } from "lucide-react";
 import Script from "next/script";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface CheckoutButtonProps {
   invoiceId: string;
@@ -58,7 +58,7 @@ export function CheckoutButton({
           customerName,
           customerEmail,
           customerPhone,
-          paymentMethod: "" // Empty string triggers POP selection screen instead of direct API
+          paymentMethod: "", // Empty string triggers POP selection screen instead of direct API
         }),
       });
 
@@ -72,7 +72,7 @@ export function CheckoutButton({
 
       // 2. Trigger Duitku POP UI
       const duitkuWindow = window as unknown as DuitkuWindow;
-      
+
       duitkuWindow.checkout.process(reference, {
         successEvent: (result) => {
           console.log("Success Event:", result);
@@ -85,7 +85,8 @@ export function CheckoutButton({
         pendingEvent: (result) => {
           console.log("Pending Event:", result);
           toast.info("Menunggu Pembayaran", {
-            description: "Silakan selesaikan instruksi pembayaran yang diberikan.",
+            description:
+              "Silakan selesaikan instruksi pembayaran yang diberikan.",
           });
         },
         errorEvent: (result) => {
@@ -99,11 +100,13 @@ export function CheckoutButton({
           toast("Sesi Pembayaran Ditutup");
         },
       });
-
     } catch (error) {
       console.error("[CHECKOUT_ERROR]", error);
       toast.error("Terjadi Kesalahan", {
-        description: error instanceof Error ? error.message : "Sistem pembayaran Duitku sedang gangguan.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Sistem pembayaran Duitku sedang gangguan.",
       });
     } finally {
       setIsLoading(false);
@@ -113,9 +116,9 @@ export function CheckoutButton({
   return (
     <>
       <Script src={scriptUrl} strategy="lazyOnload" />
-      
-      <Button 
-        onClick={handlePayment} 
+
+      <Button
+        onClick={handlePayment}
         disabled={isLoading}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 rounded-2xl shadow-lg shadow-blue-600/20"
       >

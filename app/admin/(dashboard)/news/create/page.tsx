@@ -1,9 +1,9 @@
 "use client";
 
-import { NewsForm } from "@/components/news/news-form";
-import { useCreateNews } from "@/hooks/api/use-news";
 import { useRouter } from "next/navigation";
+import { NewsForm } from "@/components/news/news-form";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { useCreateNews } from "@/hooks/api/use-news";
 
 export default function CreateNewsPage() {
   const { mutateAsync: createNews, isPending } = useCreateNews();
@@ -19,7 +19,8 @@ export default function CreateNewsPage() {
         coverImageId: data.coverImageId || undefined,
         publishedDate: data.publishedDate || undefined,
         isLeadArticle: data.isLeadArticle,
-        labelId: data.labelId === "none" ? undefined : data.labelId || undefined,
+        labelId:
+          data.labelId === "none" ? undefined : data.labelId || undefined,
         isPublished: data.isPublished,
       });
       goeyToast.success("Artikel berhasil dibuat!");

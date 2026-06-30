@@ -24,7 +24,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function resolveRole(user: Models.User<Models.Preferences> | null): AppRole | null {
+function resolveRole(
+  user: Models.User<Models.Preferences> | null,
+): AppRole | null {
   if (!user?.labels) return null;
   if (user.labels.includes("superadmin")) return "superadmin";
   if (user.labels.includes("admin")) return "admin";
@@ -80,7 +82,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, role, isSuperadmin, loginWithGoogle, logout, checkSession }}
+      value={{
+        user,
+        isLoading,
+        role,
+        isSuperadmin,
+        loginWithGoogle,
+        logout,
+        checkSession,
+      }}
     >
       {children}
     </AuthContext.Provider>

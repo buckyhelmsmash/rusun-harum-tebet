@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { getErrorMessage } from "@/lib/repositories/base";
 import { newsRepository } from "@/lib/repositories/news";

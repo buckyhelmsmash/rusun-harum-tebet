@@ -2,19 +2,19 @@
 
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import Autoplay from "embla-carousel-autoplay";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef, useCallback, useEffect } from "react";
-import { getNewsImage } from "@/lib/mock-news";
-import type { News } from "@/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
-  type CarouselApi,
 } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import { getNewsImage } from "@/lib/mock-news";
 import { cn } from "@/lib/utils";
+import type { News } from "@/types";
 
 type Props = {
   articles: News[];

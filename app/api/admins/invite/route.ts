@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { z, ZodError } from "zod";
-import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { AdminRepository } from "@/lib/repositories/admins";
-import { getErrorMessage } from "@/lib/repositories/base";
 import { ID } from "node-appwrite";
+import { ZodError, z } from "zod";
+import { logActivity } from "@/lib/activity/logger";
 import { createAdminClient } from "@/lib/appwrite/server";
+import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { adminRepository } from "@/lib/repositories/admins";
+import { getErrorMessage } from "@/lib/repositories/base";
 
 const inviteSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -14,11 +14,11 @@ const inviteSchema = z.object({
 export async function POST(request: Request) {
   try {
     const session = await requireRole(request, "superadmin");
-    
+
     const body = await request.json();
     const { email } = inviteSchema.parse(body);
 
-    const newUser = await AdminRepository.invite(email);
+    const newUser = await adminRepository.invite(email);
 
     // Send welcome email via Appwrite Messaging
     try {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
             <p>Anda telah diundang sebagai Admin.</p>
             <p>Karena platform ini menggunakan Google OAuth, Anda tidak memerlukan password. Silakan login menggunakan akun Google Anda.</p>
             <p>
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login" 
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login" 
                  style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
                 Login ke Dashboard
               </a>
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         [], // bcc
         [], // attachments
         false, // draft
-        true // html
+        true, // html
       );
     } catch (msgError) {
       console.error("Failed to send welcome email:", msgError);

@@ -1,11 +1,11 @@
 import type {
   ActivityLog,
   Invoice,
+  News,
   Owner,
   Tenant,
   Unit,
   Vehicle,
-  News,
 } from "@/types";
 
 export interface PaginatedResponse<T> {

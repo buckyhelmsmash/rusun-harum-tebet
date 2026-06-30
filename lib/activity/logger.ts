@@ -42,7 +42,10 @@ export function logActivity<A extends ActivityAction>(
         console.warn(
           `[Activity Logger] Metadata exceeds ${MAX_METADATA_BYTES}B for ${params.action}, truncating.`,
         );
-        serialized = JSON.stringify({ _truncated: true, action: params.action });
+        serialized = JSON.stringify({
+          _truncated: true,
+          action: params.action,
+        });
       }
     }
 

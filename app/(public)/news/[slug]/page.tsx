@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { ArrowLeft, Share2 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { newsRepository } from "@/lib/repositories/news";
 import { getNewsImage } from "@/lib/mock-news";
+import { newsRepository } from "@/lib/repositories/news";
 
 export const revalidate = 60;
 
@@ -48,14 +48,12 @@ export default async function NewsDetailPage({
       })
     : null;
 
-  const pureText = (news.content || "").replace(/<[^>]*>?/gm, '');
+  const pureText = (news.content || "").replace(/<[^>]*>?/gm, "");
   const wordCount = pureText.split(/\s+/).filter(Boolean).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   const otherArticles = await newsRepository.getPublishedNews(4);
-  const otherNews = otherArticles
-    .filter((n) => n.$id !== news.$id)
-    .slice(0, 3);
+  const otherNews = otherArticles.filter((n) => n.$id !== news.$id).slice(0, 3);
 
   return (
     <main>
@@ -118,7 +116,7 @@ export default async function NewsDetailPage({
             </p>
           )}
 
-          <article 
+          <article
             className="prose prose-neutral prose-lg md:prose-xl max-w-none font-serif-body warta-article"
             dangerouslySetInnerHTML={{ __html: news.content || "" }}
           />

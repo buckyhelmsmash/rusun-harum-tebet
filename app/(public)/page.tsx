@@ -24,15 +24,15 @@ export const revalidate = 60; // revalidate every minute
 export default async function HomePage() {
   const [leadArticles, sidebarArticles] = await Promise.all([
     newsRepository.getPublishedLeadNews(),
-    newsRepository.getPublishedSidebarNews(5)
+    newsRepository.getPublishedSidebarNews(5),
   ]);
 
-  const sanitizedLeadArticles = leadArticles.map(doc => ({
-    ...doc
+  const sanitizedLeadArticles = leadArticles.map((doc) => ({
+    ...doc,
   }));
 
-  const sanitizeSideArticles = sidebarArticles.map(doc => ({
-    ...doc
+  const sanitizeSideArticles = sidebarArticles.map((doc) => ({
+    ...doc,
   }));
 
   return (

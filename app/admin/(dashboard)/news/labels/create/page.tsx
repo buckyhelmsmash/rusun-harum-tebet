@@ -1,22 +1,22 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { goeyToast } from "@/components/ui/goey-toaster";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCreateNewsLabel } from "@/hooks/api/use-news";
 
 const FormSchema = z.object({
@@ -57,7 +57,9 @@ export default function CreateNewsLabelPage() {
           <ArrowLeft className="w-4 h-4" />
           Kembali ke Berita
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">Tambah Label Berita</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Tambah Label Berita
+        </h1>
         <p className="text-muted-foreground">
           Buat label baru untuk kategorisasi berita.
         </p>

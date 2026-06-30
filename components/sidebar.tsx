@@ -10,6 +10,7 @@ import {
   LogOut,
   Newspaper,
   Settings,
+  ShieldCheck,
   User as UserIcon,
   Users,
 } from "lucide-react";
@@ -113,6 +114,42 @@ export function Sidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {role === "superadmin" && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/admin/admins")}
+                    tooltip="Kelola Admin"
+                    className={cn(
+                      "transition-colors group py-5",
+                      isActive("/admin/admins") &&
+                        "border-l-4 border-primary rounded-l-none relative overflow-hidden",
+                    )}
+                  >
+                    <Link href="/admin/admins">
+                      {isActive("/admin/admins") && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-transparent opacity-50 pointer-events-none" />
+                      )}
+                      <ShieldCheck
+                        className={cn(
+                          "relative z-10",
+                          isActive("/admin/admins")
+                            ? "text-blue-400"
+                            : "text-slate-400 group-hover:text-white",
+                        )}
+                      />
+                      <span className="relative z-10">Kelola Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-slate-800/50">
         <SidebarMenu>

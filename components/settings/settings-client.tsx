@@ -15,6 +15,7 @@ import { goeyToast } from "@/components/ui/goey-toaster";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/auth-context";
 import { account } from "@/lib/appwrite/client";
 import { ActivityLogs } from "./activity-logs";
 
@@ -68,6 +69,9 @@ const CAR_FEE_FIELDS = [
 ];
 
 export function SettingsClient() {
+  const { role } = useAuth();
+  const isSuperadmin = role === "superadmin";
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SettingsData>({
@@ -165,14 +169,16 @@ export function SettingsClient() {
             tagihan
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving || !hasChanges}>
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Changes
-        </Button>
+        {isSuperadmin && (
+          <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Save Changes
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="pengaturan" className="space-y-6">
@@ -206,6 +212,7 @@ export function SettingsClient() {
                     id={field.key}
                     suffix={field.suffix}
                     value={settings[field.key]}
+                    disabled={!isSuperadmin}
                     onChange={(e) =>
                       handleFieldChange(field.key, e.target.value)
                     }
@@ -239,6 +246,7 @@ export function SettingsClient() {
                     id={field.key}
                     suffix="/ bulan"
                     value={settings[field.key]}
+                    disabled={!isSuperadmin}
                     onChange={(e) =>
                       handleFieldChange(field.key, e.target.value)
                     }

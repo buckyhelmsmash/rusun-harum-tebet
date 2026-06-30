@@ -1,6 +1,9 @@
 export function WartaAbout() {
   return (
-    <section id="tentang" className="mt-12 md:mt-20 py-12 md:py-20 bg-[#f9f8f6] border-t border-black">
+    <section
+      id="tentang"
+      className="mt-12 md:mt-20 py-12 md:py-20 bg-[#f9f8f6] border-t border-black"
+    >
       <div className="section-container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           <div className="lg:col-span-4">
@@ -18,10 +21,10 @@ export function WartaAbout() {
               </h3>
               <p className="text-[0.95rem] font-serif-body leading-relaxed text-neutral-600">
                 Warta Harum merupakan portal berita dan informasi resmi yang
-                dikelola secara kolektif untuk melayani seluruh warga Rumah Susun
-                Harum Tebet. Kami berkomitmen untuk menyajikan pembaruan terkini
-                mengenai kegiatan komunitas, pengumuman teknis, hingga jadwal
-                pelayanan publik.
+                dikelola secara kolektif untuk melayani seluruh warga Rumah
+                Susun Harum Tebet. Kami berkomitmen untuk menyajikan pembaruan
+                terkini mengenai kegiatan komunitas, pengumuman teknis, hingga
+                jadwal pelayanan publik.
               </p>
             </div>
             <div>

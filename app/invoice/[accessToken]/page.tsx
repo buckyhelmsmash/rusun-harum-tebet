@@ -1,10 +1,16 @@
 "use client";
 
-import { Building2, Loader2, ChevronDown, CreditCard, Landmark } from "lucide-react";
+import {
+  Building2,
+  ChevronDown,
+  CreditCard,
+  Landmark,
+  Loader2,
+} from "lucide-react";
 import { use, useEffect, useState } from "react";
+import { CheckoutButton } from "@/components/portal/checkout-button";
 import { HistorySection } from "@/components/portal/history-section";
 import { PaymentInstructions } from "@/components/portal/payment-instructions";
-import { CheckoutButton } from "@/components/portal/checkout-button";
 
 interface PortalInvoice {
   $id: string;
@@ -68,7 +74,9 @@ export default function ResidentInvoicePortal({
   const [invoice, setInvoice] = useState<PortalInvoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeAccordion, setActiveAccordion] = useState<"auto" | "manual" | null>("auto");
+  const [activeAccordion, setActiveAccordion] = useState<
+    "auto" | "manual" | null
+  >("auto");
 
   useEffect(() => {
     async function fetchInvoice() {
@@ -247,30 +255,46 @@ export default function ResidentInvoicePortal({
           {invoice.status === "unpaid" && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2 px-1">
-                <span className="text-slate-900 font-extrabold text-lg tracking-tight">Pilih Metode Pembayaran</span>
+                <span className="text-slate-900 font-extrabold text-lg tracking-tight">
+                  Pilih Metode Pembayaran
+                </span>
               </div>
 
               {/* Duitku Auto Payment Accordion */}
-              <div className={`border rounded-2xl overflow-hidden transition-all duration-200 ${activeAccordion === "auto" ? "border-blue-200 shadow-md shadow-blue-500/5 bg-white" : "border-slate-200 bg-slate-50 opacity-80"}`}>
-                <button 
+              <div
+                className={`border rounded-2xl overflow-hidden transition-all duration-200 ${activeAccordion === "auto" ? "border-blue-200 shadow-md shadow-blue-500/5 bg-white" : "border-slate-200 bg-slate-50 opacity-80"}`}
+              >
+                <button
                   type="button"
-                  onClick={() => setActiveAccordion(activeAccordion === "auto" ? null : "auto")}
+                  onClick={() =>
+                    setActiveAccordion(
+                      activeAccordion === "auto" ? null : "auto",
+                    )
+                  }
                   className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-100/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`size-10 rounded-xl flex items-center justify-center ${activeAccordion === "auto" ? "bg-blue-100 text-blue-600" : "bg-slate-200 text-slate-500"}`}>
+                    <div
+                      className={`size-10 rounded-xl flex items-center justify-center ${activeAccordion === "auto" ? "bg-blue-100 text-blue-600" : "bg-slate-200 text-slate-500"}`}
+                    >
                       <CreditCard className="size-5" />
                     </div>
                     <div className="text-left">
-                      <span className="block font-bold text-slate-900">Pembayaran Otomatis</span>
-                      <span className="block text-xs font-medium text-slate-500">Virtual Account & E-Wallet</span>
+                      <span className="block font-bold text-slate-900">
+                        Pembayaran Otomatis
+                      </span>
+                      <span className="block text-xs font-medium text-slate-500">
+                        Virtual Account & E-Wallet
+                      </span>
                     </div>
                   </div>
-                  <ChevronDown className={`size-5 text-slate-400 transition-transform duration-300 ${activeAccordion === "auto" ? "rotate-180 text-blue-500" : ""}`} />
+                  <ChevronDown
+                    className={`size-5 text-slate-400 transition-transform duration-300 ${activeAccordion === "auto" ? "rotate-180 text-blue-500" : ""}`}
+                  />
                 </button>
                 {activeAccordion === "auto" && (
                   <div className="p-5 border-t border-slate-100 bg-blue-50/20">
-                    <CheckoutButton 
+                    <CheckoutButton
                       invoiceId={invoice.$id}
                       amount={invoice.totalDue}
                       customerName={residentName}
@@ -280,22 +304,36 @@ export default function ResidentInvoicePortal({
               </div>
 
               {/* Manual Bank Transfer Accordion */}
-              <div className={`border rounded-2xl overflow-hidden transition-all duration-200 ${activeAccordion === "manual" ? "border-amber-200 shadow-md shadow-amber-500/5 bg-white" : "border-slate-200 bg-slate-50 opacity-80"}`}>
-                <button 
+              <div
+                className={`border rounded-2xl overflow-hidden transition-all duration-200 ${activeAccordion === "manual" ? "border-amber-200 shadow-md shadow-amber-500/5 bg-white" : "border-slate-200 bg-slate-50 opacity-80"}`}
+              >
+                <button
                   type="button"
-                  onClick={() => setActiveAccordion(activeAccordion === "manual" ? null : "manual")}
+                  onClick={() =>
+                    setActiveAccordion(
+                      activeAccordion === "manual" ? null : "manual",
+                    )
+                  }
                   className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-100/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`size-10 rounded-xl flex items-center justify-center ${activeAccordion === "manual" ? "bg-amber-100 text-amber-600" : "bg-slate-200 text-slate-500"}`}>
+                    <div
+                      className={`size-10 rounded-xl flex items-center justify-center ${activeAccordion === "manual" ? "bg-amber-100 text-amber-600" : "bg-slate-200 text-slate-500"}`}
+                    >
                       <Landmark className="size-5" />
                     </div>
                     <div className="text-left">
-                      <span className="block font-bold text-slate-900">Transfer Manual Bank</span>
-                      <span className="block text-xs font-medium text-slate-500">BCA, Mandiri, dll</span>
+                      <span className="block font-bold text-slate-900">
+                        Transfer Manual Bank
+                      </span>
+                      <span className="block text-xs font-medium text-slate-500">
+                        BCA, Mandiri, dll
+                      </span>
                     </div>
                   </div>
-                  <ChevronDown className={`size-5 text-slate-400 transition-transform duration-300 ${activeAccordion === "manual" ? "rotate-180 text-amber-500" : ""}`} />
+                  <ChevronDown
+                    className={`size-5 text-slate-400 transition-transform duration-300 ${activeAccordion === "manual" ? "rotate-180 text-amber-500" : ""}`}
+                  />
                 </button>
                 {activeAccordion === "manual" && (
                   <div className="p-5 border-t border-slate-100 bg-amber-50/10">
