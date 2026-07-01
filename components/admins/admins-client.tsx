@@ -2,6 +2,17 @@
 
 import { Loader2, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -67,8 +78,6 @@ export function AdminsClient() {
       goeyToast.error("Anda tidak dapat menghapus akses Anda sendiri");
       return;
     }
-
-    if (!confirm("Apakah Anda yakin ingin mencabut akses admin ini?")) return;
 
     try {
       await deleteMutation.mutateAsync(id);
@@ -151,24 +160,48 @@ export function AdminsClient() {
                         <TableCell>{admin.email}</TableCell>
                         <TableCell>{roleBadge}</TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                            disabled={
-                              admin.$id === currentUser?.$id ||
-                              (deleteMutation.isPending &&
-                                deleteMutation.variables === admin.$id)
-                            }
-                            onClick={() => handleRemove(admin.$id)}
-                          >
-                            {deleteMutation.isPending &&
-                            deleteMutation.variables === admin.$id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                disabled={
+                                  admin.$id === currentUser?.$id ||
+                                  (deleteMutation.isPending &&
+                                    deleteMutation.variables === admin.$id)
+                                }
+                              >
+                                {deleteMutation.isPending &&
+                                deleteMutation.variables === admin.$id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Cabut Akses Admin?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Apakah Anda yakin ingin mencabut akses admin
+                                  ini? Pengguna tidak akan bisa lagi mengakses
+                                  dashboard ini.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                                  onClick={() => handleRemove(admin.$id)}
+                                >
+                                  Ya, Cabut Akses
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     );
