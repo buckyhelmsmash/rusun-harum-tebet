@@ -126,8 +126,7 @@ export const newsRepository = {
   async createNews(data: Partial<News>) {
     const db = await getAdminDb();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { label, ...dataToSave } = data;
+    const { label: _label, ...dataToSave } = data;
 
     const row = await db.createRow({
       databaseId: APPWRITE.DATABASE_ID,
@@ -142,8 +141,7 @@ export const newsRepository = {
   async updateNews(id: string, data: Partial<News>) {
     const db = await getAdminDb();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { label, ...dataToSave } = data;
+    const { label: _label, ...dataToSave } = data;
 
     const row = await db.updateRow({
       databaseId: APPWRITE.DATABASE_ID,
