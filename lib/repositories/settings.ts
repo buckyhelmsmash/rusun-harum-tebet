@@ -1,5 +1,5 @@
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb } from "./base";
+import { getDb } from "./base";
 
 const DB_ID = APPWRITE.DATABASE_ID;
 const TABLE_ID = APPWRITE.COLLECTIONS.SETTINGS;
@@ -26,7 +26,7 @@ const DEFAULTS: GlobalSettings = {
 
 export const SettingsRepository = {
   async get(): Promise<GlobalSettings> {
-    const db = await getAdminDb();
+    const db = await getDb();
     try {
       const row = await db.getRow({
         databaseId: DB_ID,
@@ -50,7 +50,7 @@ export const SettingsRepository = {
   },
 
   async update(data: Partial<GlobalSettings>): Promise<GlobalSettings> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.updateRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
 import { excelImportRowSchema } from "@/lib/schemas/water-usages";
 import type { Unit } from "@/types";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     const { period, rows } = parsed.data;
-    const db = await getAdminDb();
+    const db = await getDb();
     const settings = await SettingsRepository.get();
 
     // 1. Fetch all units to map Unit ID to internal $id

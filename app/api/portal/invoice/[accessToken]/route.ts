@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb, getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { Owner, Tenant, Unit } from "@/types";
 
@@ -24,7 +24,7 @@ export async function GET(
     let tenantName: string | undefined;
 
     if (unit) {
-      const db = await getAdminDb();
+      const db = await getDb();
 
       // If unit is just a string ID, fetch the full document
       if (typeof unit === "string") {

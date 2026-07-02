@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb, getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { Invoice } from "@/types";
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.INVOICES,

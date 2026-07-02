@@ -5,7 +5,7 @@ import { Query } from "node-appwrite";
 import { logActivity } from "@/lib/activity/logger";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb, getErrorMessage } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { GlobalSettings } from "@/lib/repositories/settings";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -42,7 +42,7 @@ function calculateCarFee(carCount: number, settings: GlobalSettings): number {
 export async function POST(request: Request) {
   try {
     const session = await requireRole(request, "admin");
-    const db = await getAdminDb();
+    const db = await getDb();
     const settings = await SettingsRepository.get();
     const now = new Date();
     const billingPeriod = format(subMonths(now, 1), "yyyy-MM");

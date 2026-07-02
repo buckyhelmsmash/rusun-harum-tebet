@@ -1,12 +1,12 @@
 import { ID, Query } from "node-appwrite";
 import type { News, NewsLabel } from "@/types";
 import { APPWRITE } from "../constants";
-import { getAdminDb, toPlain } from "./base";
+import { getDb, toPlain } from "./base";
 
 async function populateLabels(newsItems: News[]): Promise<News[]> {
   if (!newsItems.length) return newsItems;
 
-  const db = await getAdminDb();
+  const db = await getDb();
   // Fetch all labels once
   const result = await db.listRows({
     databaseId: APPWRITE.DATABASE_ID,
@@ -34,7 +34,7 @@ async function populateLabels(newsItems: News[]): Promise<News[]> {
 
 export const newsRepository = {
   async getNews() {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -44,7 +44,7 @@ export const newsRepository = {
   },
 
   async getPublishedLeadNews() {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -58,7 +58,7 @@ export const newsRepository = {
   },
 
   async getPublishedSidebarNews(limit = 10) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -72,7 +72,7 @@ export const newsRepository = {
   },
 
   async getPublishedNews(limit = 50) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -86,7 +86,7 @@ export const newsRepository = {
   },
 
   async getNewsItem(id: string) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.getRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -97,7 +97,7 @@ export const newsRepository = {
   },
 
   async getNewsBySlug(slug: string) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -114,7 +114,7 @@ export const newsRepository = {
   },
 
   async slugExists(slug: string) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -124,7 +124,7 @@ export const newsRepository = {
   },
 
   async createNews(data: Partial<News>) {
-    const db = await getAdminDb();
+    const db = await getDb();
 
     const { label: _label, ...dataToSave } = data;
 
@@ -139,7 +139,7 @@ export const newsRepository = {
   },
 
   async updateNews(id: string, data: Partial<News>) {
-    const db = await getAdminDb();
+    const db = await getDb();
 
     const { label: _label, ...dataToSave } = data;
 
@@ -154,7 +154,7 @@ export const newsRepository = {
   },
 
   async deleteNews(id: string) {
-    const db = await getAdminDb();
+    const db = await getDb();
     await db.deleteRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS,
@@ -164,7 +164,7 @@ export const newsRepository = {
   },
 
   async getNewsLabels() {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,
@@ -174,7 +174,7 @@ export const newsRepository = {
   },
 
   async getNewsLabelByName(name: string) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,
@@ -184,7 +184,7 @@ export const newsRepository = {
   },
 
   async createNewsLabel(data: Pick<NewsLabel, "name" | "color">) {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.createRow({
       databaseId: APPWRITE.DATABASE_ID,
       tableId: APPWRITE.COLLECTIONS.NEWS_LABELS,

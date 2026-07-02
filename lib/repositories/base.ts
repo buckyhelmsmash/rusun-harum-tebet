@@ -1,9 +1,9 @@
-import type { TablesDB, Users } from "node-appwrite";
+import type { Storage, TablesDB, Users } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwrite/server";
 
 let cachedDb: TablesDB | null = null;
 
-export async function getAdminDb(): Promise<TablesDB> {
+export async function getDb(): Promise<TablesDB> {
   if (!cachedDb) {
     const { tablesDb } = await createAdminClient();
     cachedDb = tablesDb;
@@ -13,12 +13,22 @@ export async function getAdminDb(): Promise<TablesDB> {
 
 let cachedUsers: Users | null = null;
 
-export async function getAdminUsers(): Promise<Users> {
+export async function getUsers(): Promise<Users> {
   if (!cachedUsers) {
     const { users } = await createAdminClient();
     cachedUsers = users;
   }
   return cachedUsers;
+}
+
+let cachedStorage: Storage | null = null;
+
+export async function getStorage(): Promise<Storage> {
+  if (!cachedStorage) {
+    const { storage } = await createAdminClient();
+    cachedStorage = storage;
+  }
+  return cachedStorage;
 }
 
 export function getErrorMessage(error: unknown): string {

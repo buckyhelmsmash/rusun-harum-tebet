@@ -1,5 +1,5 @@
-import { Client, Messaging, TablesDB, Users } from "node-appwrite";
-import { APPWRITE } from "../constants";
+import { Client, Messaging, Storage, TablesDB, Users } from "node-appwrite";
+import { APPWRITE } from "@/lib/constants";
 
 export const createAdminClient = async () => {
   if (!process.env.APPWRITE_API_KEY) {
@@ -20,6 +20,9 @@ export const createAdminClient = async () => {
     },
     get messaging() {
       return new Messaging(client);
+    },
+    get storage() {
+      return new Storage(client);
     },
   };
 };

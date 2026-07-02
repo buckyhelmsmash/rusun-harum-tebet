@@ -6,7 +6,7 @@ import type {
   UpdateTenantInput,
 } from "@/lib/schemas/residents";
 import type { Tenant } from "@/types";
-import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
+import { DEFAULT_LIMIT, getDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.TENANTS;
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -17,7 +17,7 @@ function mapRowToTenant(row: unknown): Tenant {
 
 export const TenantRepository = {
   async list(params: ResidentListParams): Promise<PaginatedResult<Tenant>> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 
@@ -44,7 +44,7 @@ export const TenantRepository = {
   },
 
   async getById(id: string): Promise<Tenant> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.getRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -54,7 +54,7 @@ export const TenantRepository = {
   },
 
   async getByKtpNumber(ktpNumber: string): Promise<Tenant | null> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -65,7 +65,7 @@ export const TenantRepository = {
   },
 
   async create(data: CreateTenantInput): Promise<Tenant> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.createRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -76,7 +76,7 @@ export const TenantRepository = {
   },
 
   async update(id: string, data: UpdateTenantInput): Promise<Tenant> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.updateRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -87,7 +87,7 @@ export const TenantRepository = {
   },
 
   async delete(id: string): Promise<void> {
-    const db = await getAdminDb();
+    const db = await getDb();
     await db.deleteRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,

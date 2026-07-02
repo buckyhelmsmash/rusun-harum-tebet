@@ -2,7 +2,7 @@ import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import type { UnitListParams, UpdateUnitInput } from "@/lib/schemas/units";
 import type { Owner, Tenant, Unit, Vehicle } from "@/types";
-import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
+import { DEFAULT_LIMIT, getDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.UNITS;
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -28,7 +28,7 @@ function mapRowToUnit(row: unknown): Unit {
 
 export const UnitRepository = {
   async list(params: UnitListParams): Promise<PaginatedResult<Unit>> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 
@@ -94,7 +94,7 @@ export const UnitRepository = {
   },
 
   async getById(id: string): Promise<Unit> {
-    const db = await getAdminDb();
+    const db = await getDb();
 
     const [unitRow, vehiclesResult] = await Promise.all([
       db.getRow({
@@ -161,7 +161,7 @@ export const UnitRepository = {
   },
 
   async update(id: string, data: UpdateUnitInput): Promise<Unit> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.updateRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,

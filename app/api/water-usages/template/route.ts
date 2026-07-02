@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import * as xlsx from "xlsx";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getAdminDb();
+    const db = await getDb();
 
     const unitsResult = await db.listRows({
       databaseId: DB_ID,

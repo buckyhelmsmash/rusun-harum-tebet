@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb, getErrorMessage } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
 
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -44,7 +44,7 @@ export async function PATCH(
     const settings = await SettingsRepository.get();
     const amount = usage * settings.waterRate;
 
-    const db = await getAdminDb();
+    const db = await getDb();
 
     const oldRow = await db.getRow({
       databaseId: DB_ID,

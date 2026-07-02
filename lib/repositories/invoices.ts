@@ -6,7 +6,7 @@ import type {
   UpdateInvoiceInput,
 } from "@/lib/schemas/invoices";
 import type { Invoice } from "@/types";
-import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
+import { DEFAULT_LIMIT, getDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.INVOICES;
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -25,7 +25,7 @@ function mapRowToInvoice(row: unknown): Invoice {
 const VALID_ORDER_FIELDS = ["arrears", "totalDue", "period", "$createdAt"];
 
 async function getUnitIdsForBlock(block: string): Promise<string[]> {
-  const db = await getAdminDb();
+  const db = await getDb();
   const result = await db.listRows({
     databaseId: DB_ID,
     tableId: APPWRITE.COLLECTIONS.UNITS,
@@ -40,7 +40,7 @@ async function getUnitIdsForBlock(block: string): Promise<string[]> {
 
 export const InvoiceRepository = {
   async list(params: InvoiceListParams): Promise<PaginatedResult<Invoice>> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 
@@ -137,7 +137,7 @@ export const InvoiceRepository = {
   },
 
   async getById(id: string): Promise<Invoice> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.getRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -147,7 +147,7 @@ export const InvoiceRepository = {
   },
 
   async getByAccessToken(token: string): Promise<Invoice | null> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -158,7 +158,7 @@ export const InvoiceRepository = {
   },
 
   async create(data: CreateInvoiceInput): Promise<Invoice> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.createRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -169,7 +169,7 @@ export const InvoiceRepository = {
   },
 
   async update(id: string, data: UpdateInvoiceInput): Promise<Invoice> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.updateRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,

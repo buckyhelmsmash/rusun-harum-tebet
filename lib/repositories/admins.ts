@@ -1,9 +1,9 @@
 import { ID, Query } from "node-appwrite";
-import { getAdminUsers, toPlain } from "./base";
+import { getUsers, toPlain } from "./base";
 
 export const adminRepository = {
   async list() {
-    const users = await getAdminUsers();
+    const users = await getUsers();
     // Appwrite user search or filtering can be done via queries
     // To list admins, we fetch users with the 'admin' or 'superadmin' label.
     // If Query.contains isn't perfectly supported in the user's version, we can list all and filter.
@@ -19,7 +19,7 @@ export const adminRepository = {
   },
 
   async invite(email: string) {
-    const users = await getAdminUsers();
+    const users = await getUsers();
 
     // Check if user already exists
     try {
@@ -64,7 +64,7 @@ export const adminRepository = {
   },
 
   async removeAdmin(userId: string) {
-    const users = await getAdminUsers();
+    const users = await getUsers();
     const user = await users.get(userId);
 
     // Soft delete: remove admin labels

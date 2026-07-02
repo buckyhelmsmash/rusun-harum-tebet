@@ -1,6 +1,6 @@
 import { ID } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import type { ActivityAction, TargetType } from "@/types";
 import type { ActivityMetadataMap } from "./types";
 
@@ -49,7 +49,7 @@ export function logActivity<A extends ActivityAction>(
       }
     }
 
-    const db = await getAdminDb();
+    const db = await getDb();
     await db.createRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,

@@ -2,7 +2,7 @@ import { Query } from "node-appwrite";
 import { APPWRITE } from "@/lib/constants";
 import type { ActivityListParams } from "@/lib/schemas/activity-logs";
 import type { ActivityLog } from "@/types";
-import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
+import { DEFAULT_LIMIT, getDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.ACTIVITY_LOGS;
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -11,7 +11,7 @@ export const ActivityLogRepository = {
   async list(
     params: ActivityListParams,
   ): Promise<PaginatedResult<ActivityLog>> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 

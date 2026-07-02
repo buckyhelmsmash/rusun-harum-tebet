@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { APPWRITE } from "@/lib/constants";
-import { getAdminDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb, getErrorMessage } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getAdminDb();
+    const db = await getDb();
     const { searchParams } = new URL(request.url);
     const limit = Number(searchParams.get("limit") || "25");
     const offset = Number(searchParams.get("offset") || "0");

@@ -6,7 +6,7 @@ import type {
   VehicleListParams,
 } from "@/lib/schemas/vehicles";
 import type { Vehicle } from "@/types";
-import { DEFAULT_LIMIT, getAdminDb, type PaginatedResult } from "./base";
+import { DEFAULT_LIMIT, getDb, type PaginatedResult } from "./base";
 
 const TABLE_ID = APPWRITE.COLLECTIONS.VEHICLES;
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -26,7 +26,7 @@ function mapRowToVehicle(row: unknown): Vehicle {
 
 export const VehicleRepository = {
   async list(params: VehicleListParams): Promise<PaginatedResult<Vehicle>> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const limit = params.limit ?? DEFAULT_LIMIT;
     const offset = params.offset ?? 0;
 
@@ -56,7 +56,7 @@ export const VehicleRepository = {
   },
 
   async getById(id: string): Promise<Vehicle> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.getRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -66,7 +66,7 @@ export const VehicleRepository = {
   },
 
   async getByLicensePlate(licensePlate: string): Promise<Vehicle | null> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -78,7 +78,7 @@ export const VehicleRepository = {
   },
 
   async create(data: CreateVehicleInput): Promise<Vehicle> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.createRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -89,7 +89,7 @@ export const VehicleRepository = {
   },
 
   async update(id: string, data: UpdateVehicleInput): Promise<Vehicle> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const row = await db.updateRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -100,7 +100,7 @@ export const VehicleRepository = {
   },
 
   async delete(id: string): Promise<void> {
-    const db = await getAdminDb();
+    const db = await getDb();
     await db.deleteRow({
       databaseId: DB_ID,
       tableId: TABLE_ID,
@@ -109,7 +109,7 @@ export const VehicleRepository = {
   },
 
   async countCarsByUnit(unitId: string): Promise<number> {
-    const db = await getAdminDb();
+    const db = await getDb();
     const result = await db.listRows({
       databaseId: DB_ID,
       tableId: TABLE_ID,
