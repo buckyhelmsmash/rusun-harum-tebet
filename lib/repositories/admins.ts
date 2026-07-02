@@ -1,12 +1,5 @@
 import { ID, Query } from "node-appwrite";
-import { getAdminUsers } from "./base";
-
-// Next.js Server Components require plain objects, and the Node SDK objects sometimes
-// have prototypes that Next.js serialization rejects.
-function toPlain<T>(obj: T): T {
-  if (!obj) return obj;
-  return JSON.parse(JSON.stringify(obj)) as T;
-}
+import { getAdminUsers, toPlain } from "./base";
 
 export const adminRepository = {
   async list() {

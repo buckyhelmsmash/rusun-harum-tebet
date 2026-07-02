@@ -35,3 +35,12 @@ export interface PaginatedResult<T> {
 
 export const DEFAULT_LIMIT = 25;
 export const MAX_LIMIT = 100;
+
+/**
+ * Next.js Server Components require plain objects, and the Node SDK objects
+ * sometimes have prototypes that Next.js serialization rejects.
+ */
+export function toPlain<T>(obj: T): T {
+  if (!obj) return obj;
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
