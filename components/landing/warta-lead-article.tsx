@@ -140,6 +140,7 @@ export function WartaLeadArticle({ articles }: Props) {
         <div className="flex justify-center items-center gap-2 mt-8">
           {articles.map((_, i) => (
             <button
+              // biome-ignore lint/suspicious/noArrayIndexKey: index is fine here since it's only used for the slider>``
               key={i}
               type="button"
               onClick={() => api?.scrollTo(i)}
