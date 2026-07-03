@@ -518,7 +518,7 @@ function CoverImageUpload({
           <AttachmentMedia variant="image" className="w-20">
             {/** biome-ignore lint/performance/noImgElement: <img used for direct Appwrite URL> */}
             <img
-              src={localPreview || getNewsCoverUrl(value, 200)}
+              src={localPreview || getNewsCoverUrl(value)}
               alt="Sampul"
               className="aspect-square w-full object-cover"
             />

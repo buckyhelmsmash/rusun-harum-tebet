@@ -1,9 +1,10 @@
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { getNewsImage } from "@/lib/mock-news";
 import { newsRepository } from "@/lib/repositories/news";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 
 export const metadata: Metadata = {
   title: "Indeks Berita | Warta Harum",
@@ -35,7 +36,7 @@ export default async function NewsPage() {
       </div>
 
       <div className="grid gap-0">
-        {items.map((item, index) => {
+        {items.map((item) => {
           const publishedDate = item.publishedDate
             ? format(new Date(item.publishedDate), "dd MMMM yyyy", {
                 locale: localeId,
@@ -44,6 +45,9 @@ export default async function NewsPage() {
           const badgeLabel = item.label?.name ?? "Berita";
           const badgeColor = item.label?.color ?? "#000000";
           const href = item.slug ? `/news/${item.slug}` : `/news/${item.$id}`;
+          const coverUrl = item.coverImageId
+            ? getNewsCoverUrl(item.coverImageId)
+            : null;
 
           return (
             <Link
@@ -51,12 +55,20 @@ export default async function NewsPage() {
               href={href}
               className="group grid grid-cols-1 md:grid-cols-12 gap-6 py-8 border-b border-neutral-200 hover:bg-neutral-50/50 transition-colors -mx-4 px-4"
             >
-              <div className="md:col-span-4 aspect-[16/10] overflow-hidden border border-black/5">
-                <img
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  src={item.coverImageId || getNewsImage(index)}
-                />
+              <div className="md:col-span-4 relative aspect-[16/10] overflow-hidden border border-black/5">
+                {coverUrl ? (
+                  <Image
+                    src={coverUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 400px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
+                    Tidak ada gambar
+                  </div>
+                )}
               </div>
               <div className="md:col-span-8 flex flex-col justify-between py-1">
                 <div>

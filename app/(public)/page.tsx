@@ -45,7 +45,7 @@ export default async function HomePage() {
             <WartaLeadArticle articles={sanitizedLeadArticles} />
           </div>
           <div className="lg:col-span-4 lg:pl-10 pb-8">
-            <WartaSidebarFeed articles={sanitizeSideArticles} startIndex={0} />
+            <WartaSidebarFeed articles={sanitizeSideArticles} />
           </div>
         </div>
       </section>

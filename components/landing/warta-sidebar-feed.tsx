@@ -1,15 +1,15 @@
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import Image from "next/image";
 import Link from "next/link";
-import { getNewsImage } from "@/lib/mock-news";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 import type { News } from "@/types";
 
 type Props = {
   articles: News[];
-  startIndex: number;
 };
 
-export function WartaSidebarFeed({ articles, startIndex }: Props) {
+export function WartaSidebarFeed({ articles }: Props) {
   return (
     <div>
       <div className="border-b-4 !border-black pb-2 mb-6">
@@ -19,8 +19,7 @@ export function WartaSidebarFeed({ articles, startIndex }: Props) {
       </div>
       <div className="space-y-6">
         <ul className="space-y-6">
-          {articles.map((item, i) => {
-            const imageIndex = startIndex + i;
+          {articles.map((item) => {
             const badgeLabel = item.label?.name ?? "Berita";
             const badgeColor = item.label?.color;
             const publishedDate = item.publishedDate
@@ -37,12 +36,20 @@ export function WartaSidebarFeed({ articles, startIndex }: Props) {
                 className="group cursor-pointer border-b border-neutral-200 pb-6 last:border-0"
               >
                 <Link href={href} className="flex gap-4">
-                  <div className="w-24 h-24 flex-shrink-0 border border-black/5 overflow-hidden">
-                    <img
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      src={item.coverImageId || getNewsImage(imageIndex)}
-                    />
+                  <div className="w-24 h-24 relative flex-shrink-0 border border-black/5 overflow-hidden">
+                    {item.coverImageId ? (
+                      <Image
+                        src={getNewsCoverUrl(item.coverImageId)}
+                        alt={item.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="96px"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-neutral-400 text-xs">
+                        —
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col justify-between py-1">
                     <div>

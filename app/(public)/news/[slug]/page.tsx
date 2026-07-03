@@ -1,11 +1,13 @@
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { ArrowLeft, Share2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getNewsImage } from "@/lib/mock-news";
+import { ShareButton } from "@/components/news/share-button";
 import { newsRepository } from "@/lib/repositories/news";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 
 export const revalidate = 60;
 
@@ -18,6 +20,10 @@ export async function generateMetadata({
   const news = await newsRepository.getNewsBySlug(slug);
   if (!news) return {};
 
+  const ogImage = news.coverImageId
+    ? getNewsCoverUrl(news.coverImageId)
+    : undefined;
+
   return {
     title: `${news.title} | Warta Harum`,
     description: news.summary ?? news.title,
@@ -25,7 +31,7 @@ export async function generateMetadata({
       title: news.title,
       description: news.summary ?? news.title,
       type: "article",
-      images: news.coverImageId ? [news.coverImageId] : [],
+      ...(ogImage && { images: [ogImage] }),
     },
   };
 }
@@ -54,6 +60,10 @@ export default async function NewsDetailPage({
 
   const otherArticles = await newsRepository.getPublishedNews(4);
   const otherNews = otherArticles.filter((n) => n.$id !== news.$id).slice(0, 3);
+
+  const coverUrl = news.coverImageId
+    ? getNewsCoverUrl(news.coverImageId)
+    : null;
 
   return (
     <main>
@@ -88,8 +98,12 @@ export default async function NewsDetailPage({
           </h1>
           <div className="flex flex-wrap items-center gap-4 text-[0.7rem] font-bold text-black/40 uppercase tracking-tighter">
             <span>Oleh Redaksi Warta</span>
-            <span className="w-1 h-1 bg-black/20 rounded-full" />
-            {publishedDate && <span>{publishedDate}</span>}
+            {publishedDate && (
+              <>
+                <span className="w-1 h-1 bg-black/20 rounded-full" />
+                <span>{publishedDate}</span>
+              </>
+            )}
             <span className="w-1 h-1 bg-black/20 rounded-full" />
             <span>{readingTime} menit baca</span>
           </div>
@@ -97,15 +111,20 @@ export default async function NewsDetailPage({
       </div>
 
       {/* Hero image */}
-      <div className="section-container pb-10">
-        <div className="aspect-[21/9] overflow-hidden border border-black/5">
-          <img
-            alt={news.title}
-            className="w-full h-full object-cover"
-            src={news.coverImageId || getNewsImage(0)}
-          />
+      {coverUrl && (
+        <div className="section-container pb-10">
+          <div className="relative aspect-[21/9] overflow-hidden border border-black/5">
+            <Image
+              src={coverUrl}
+              alt={news.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 1200px"
+              priority
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Article body */}
       <div className="section-container pb-16">
@@ -123,13 +142,7 @@ export default async function NewsDetailPage({
 
           {/* Actions */}
           <div className="flex items-center gap-4 mt-12 pt-8 border-t border-neutral-200">
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 border border-black text-[0.7rem] font-black tracking-widest uppercase hover:bg-black hover:text-white transition-all"
-              type="button"
-            >
-              <Share2 className="w-4 h-4" />
-              Bagikan
-            </button>
+            <ShareButton title={news.title} text={news.summary || news.title} />
             <Link
               className="flex items-center gap-2 px-4 py-2.5 border border-black text-[0.7rem] font-black tracking-widest uppercase hover:bg-black hover:text-white transition-all"
               href="/news"
@@ -151,7 +164,7 @@ export default async function NewsDetailPage({
               </h2>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
-              {otherNews.map((item, index) => {
+              {otherNews.map((item) => {
                 const itemDate = item.publishedDate
                   ? format(new Date(item.publishedDate), "dd MMM yyyy", {
                       locale: localeId,
@@ -162,15 +175,26 @@ export default async function NewsDetailPage({
                 const itemHref = item.slug
                   ? `/news/${item.slug}`
                   : `/news/${item.$id}`;
+                const itemCoverUrl = item.coverImageId
+                  ? getNewsCoverUrl(item.coverImageId)
+                  : null;
 
                 return (
                   <Link key={item.$id} href={itemHref} className="group">
-                    <div className="aspect-[16/10] overflow-hidden border border-black/5 mb-4">
-                      <img
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        src={item.coverImageId || getNewsImage(index)}
-                      />
+                    <div className="relative aspect-[16/10] overflow-hidden border border-black/5 mb-4">
+                      {itemCoverUrl ? (
+                        <Image
+                          src={itemCoverUrl}
+                          alt={item.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 400px"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
+                          Tidak ada gambar
+                        </div>
+                      )}
                     </div>
                     <span
                       className="inline-block px-2 py-0.5 text-white text-[0.5rem] font-black tracking-widest uppercase mb-2"

@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import Autoplay from "embla-carousel-autoplay";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -12,8 +13,8 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { getNewsImage } from "@/lib/mock-news";
 import { cn } from "@/lib/utils";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 import type { News } from "@/types";
 
 type Props = {
@@ -77,12 +78,21 @@ export function WartaLeadArticle({ articles }: Props) {
                 <article>
                   <div className="group cursor-pointer">
                     <Link href={href}>
-                      <div className="aspect-[16/9] overflow-hidden mb-4 border border-black/5 bg-muted">
-                        <img
-                          alt={article.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          src={article.coverImageId || getNewsImage(index)}
-                        />
+                      <div className="relative aspect-[16/9] overflow-hidden mb-4 border border-black/5 bg-muted">
+                        {article.coverImageId ? (
+                          <Image
+                            src={getNewsCoverUrl(article.coverImageId)}
+                            alt={article.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, 800px"
+                            priority={index === 0}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm">
+                            Tidak ada gambar
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 mb-2">
                         {article.label ? (
