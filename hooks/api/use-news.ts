@@ -106,3 +106,26 @@ export function useCreateNewsLabel() {
     },
   });
 }
+
+export function useUploadNewsCover() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return ApiClient.upload<{ fileId: string }>(
+        "/api/news/covers",
+        formData,
+      );
+    },
+  });
+}
+
+export function useDeleteNewsCover() {
+  return useMutation({
+    mutationFn: async (fileId: string) => {
+      return ApiClient.delete<{ success: boolean }>(
+        `/api/news/covers?fileId=${fileId}`,
+      );
+    },
+  });
+}

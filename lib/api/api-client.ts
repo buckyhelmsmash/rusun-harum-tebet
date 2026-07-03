@@ -29,8 +29,10 @@ async function apiRequest<T>(
     ...restOptions
   } = options;
 
+  const isFormData = restOptions.body instanceof FormData;
+
   const finalHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...headers,
   };
 
@@ -97,4 +99,15 @@ export const ApiClient = {
     endpoint: string,
     options?: ApiRequestOptions,
   ) => apiRequest<TResponse>(endpoint, { method: "DELETE", ...options }),
+  upload: <TResponse = unknown>(
+    endpoint: string,
+    formData: FormData,
+    options?: ApiRequestOptions,
+  ) =>
+    apiRequest<TResponse>(endpoint, {
+      method: "POST",
+      body: formData,
+      headers: {},
+      ...options,
+    }),
 };

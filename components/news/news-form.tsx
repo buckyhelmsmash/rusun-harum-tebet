@@ -1,10 +1,21 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
+
+import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+
 import Link from "next/link";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +36,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useGetNewsLabels } from "@/hooks/api/use-news";
+import {
+  useDeleteNewsCover,
+  useGetNewsLabels,
+  useUploadNewsCover,
+} from "@/hooks/api/use-news";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 import { generateSlug } from "@/lib/utils/slug";
 import type { News } from "@/types";
 
@@ -34,11 +50,7 @@ const FormSchema = z.object({
   slug: z.string().optional().or(z.literal("")),
   summary: z.string().min(1, "Ringkasan wajib diisi"),
   content: z.string().min(1, "Konten wajib diisi"),
-  coverImageId: z
-    .string()
-    .url("Harus berupa URL yang valid")
-    .optional()
-    .or(z.literal("")),
+  coverImageId: z.string().optional().or(z.literal("")),
   publishedDate: z.string().optional().or(z.literal("")),
   isLeadArticle: z.boolean().default(false),
   labelId: z.string().optional().or(z.literal("")),
@@ -109,7 +121,8 @@ export function NewsForm({
               <form.Field
                 name="title"
                 validators={{ onChange: FormSchema.shape.title }}
-                children={(field) => (
+              >
+                {(field) => (
                   <>
                     <Label htmlFor={field.name}>Judul</Label>
                     <Input
@@ -143,14 +156,13 @@ export function NewsForm({
                     )}
                   </>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Slug */}
             <div className="space-y-2 sm:col-span-2">
-              <form.Field
-                name="slug"
-                children={(field) => (
+              <form.Field name="slug">
+                {(field) => (
                   <>
                     <Label htmlFor={field.name}>Slug URL</Label>
                     <Input
@@ -174,7 +186,7 @@ export function NewsForm({
                     )}
                   </>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Summary */}
@@ -182,7 +194,8 @@ export function NewsForm({
               <form.Field
                 name="summary"
                 validators={{ onChange: FormSchema.shape.summary }}
-                children={(field) => (
+              >
+                {(field) => (
                   <>
                     <Label htmlFor={field.name}>Ringkasan</Label>
                     <Input
@@ -206,7 +219,7 @@ export function NewsForm({
                     )}
                   </>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Label */}
@@ -214,7 +227,8 @@ export function NewsForm({
               <form.Field
                 name="labelId"
                 validators={{ onChange: FormSchema.shape.labelId as any }}
-                children={(field) => (
+              >
+                {(field) => (
                   <>
                     <Label htmlFor={field.name}>Label</Label>
                     <Select
@@ -250,46 +264,25 @@ export function NewsForm({
                     </p>
                   </>
                 )}
-              />
+              </form.Field>
             </div>
 
-            {/* Cover Image URL */}
+            {/* Cover Image Upload */}
             <div className="space-y-2">
-              <form.Field
-                name="coverImageId"
-                validators={{ onChange: FormSchema.shape.coverImageId as any }}
-                children={(field) => (
-                  <>
-                    <Label htmlFor={field.name}>URL Gambar Sampul</Label>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="https://..."
-                    />
-                    {field.state.meta.errors.length > 0 && (
-                      <p className="text-sm text-destructive">
-                        {field.state.meta.errors
-                          .map((err) =>
-                            typeof err === "string"
-                              ? err
-                              : err?.message || JSON.stringify(err),
-                          )
-                          .join(", ")}
-                      </p>
-                    )}
-                  </>
+              <form.Field name="coverImageId">
+                {(field) => (
+                  <CoverImageUpload
+                    value={field.state.value ?? ""}
+                    onChange={field.handleChange}
+                  />
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Publish Date */}
             <div className="space-y-2">
-              <form.Field
-                name="publishedDate"
-                children={(field) => (
+              <form.Field name="publishedDate">
+                {(field) => (
                   <>
                     <Label htmlFor={field.name}>Tanggal Terbit</Label>
                     <Input
@@ -302,7 +295,7 @@ export function NewsForm({
                     />
                   </>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Lead Article Toggle */}
@@ -310,7 +303,8 @@ export function NewsForm({
               <form.Field
                 name="isLeadArticle"
                 validators={{ onChange: FormSchema.shape.isLeadArticle as any }}
-                children={(field) => (
+              >
+                {(field) => (
                   <div className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <Label htmlFor={field.name} className="text-base">
@@ -327,7 +321,7 @@ export function NewsForm({
                     />
                   </div>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Published Toggle */}
@@ -335,7 +329,8 @@ export function NewsForm({
               <form.Field
                 name="isPublished"
                 validators={{ onChange: FormSchema.shape.isPublished as any }}
-                children={(field) => (
+              >
+                {(field) => (
                   <div className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <Label htmlFor={field.name} className="text-base">
@@ -365,7 +360,7 @@ export function NewsForm({
                     />
                   </div>
                 )}
-              />
+              </form.Field>
             </div>
 
             {/* Rich Content */}
@@ -373,7 +368,8 @@ export function NewsForm({
               <form.Field
                 name="content"
                 validators={{ onChange: FormSchema.shape.content }}
-                children={(field) => (
+              >
+                {(field) => (
                   <>
                     <Label>Konten Artikel</Label>
                     <RichTextEditor
@@ -393,7 +389,7 @@ export function NewsForm({
                     )}
                   </>
                 )}
-              />
+              </form.Field>
             </div>
           </div>
         </form>
@@ -401,7 +397,8 @@ export function NewsForm({
       <CardFooter className="justify-end gap-2">
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit]) => (
+        >
+          {([canSubmit]) => (
             <Button
               type="submit"
               form="news-form"
@@ -414,8 +411,180 @@ export function NewsForm({
                   : "Buat Artikel"}
             </Button>
           )}
-        />
+        </form.Subscribe>
       </CardFooter>
     </Card>
+  );
+}
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_SIZE_MB = 5;
+
+function CoverImageUpload({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (fileId: string) => void;
+}) {
+  const uploadMutation = useUploadNewsCover();
+  const deleteMutation = useDeleteNewsCover();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (localPreview) {
+        URL.revokeObjectURL(localPreview);
+      }
+    };
+  }, [localPreview]);
+
+  const validateFile = useCallback((file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return `Tipe file tidak didukung. Gunakan: JPEG, PNG, atau WebP`;
+    }
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      return `Ukuran file maksimal ${MAX_SIZE_MB} MB`;
+    }
+    return null;
+  }, []);
+
+  const handleUpload = useCallback(
+    async (file: File) => {
+      const validationError = validateFile(file);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+      const objectUrl = URL.createObjectURL(file);
+      setLocalPreview(objectUrl);
+      try {
+        const result = await uploadMutation.mutateAsync(file);
+        onChange(result.fileId);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Gagal mengunggah gambar",
+        );
+        setLocalPreview(null);
+        URL.revokeObjectURL(objectUrl);
+      }
+    },
+    [uploadMutation, onChange, validateFile],
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (!value) return;
+    try {
+      await deleteMutation.mutateAsync(value);
+      onChange("");
+      setLocalPreview(null);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menghapus gambar");
+    }
+  }, [value, deleteMutation, onChange]);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleUpload(file);
+    },
+    [handleUpload],
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleUpload(file);
+      e.target.value = "";
+    },
+    [handleUpload],
+  );
+
+  const isUploading = uploadMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
+
+  if (value) {
+    return (
+      <div className="space-y-2">
+        <Label>Gambar Sampul</Label>
+        <Attachment state={isDeleting ? "processing" : "done"}>
+          <AttachmentMedia variant="image" className="w-20">
+            {/** biome-ignore lint/performance/noImgElement: <img used for direct Appwrite URL> */}
+            <img
+              src={localPreview || getNewsCoverUrl(value, 200)}
+              alt="Sampul"
+              className="aspect-square w-full object-cover"
+            />
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>Gambar sampul</AttachmentTitle>
+            <AttachmentDescription>
+              {isDeleting ? "Menghapus..." : "Terunggah"}
+            </AttachmentDescription>
+          </AttachmentContent>
+          <AttachmentActions>
+            <AttachmentAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              aria-label="Hapus gambar"
+            >
+              {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
+            </AttachmentAction>
+          </AttachmentActions>
+        </Attachment>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label>Gambar Sampul</Label>
+      <Attachment
+        state={isUploading ? "uploading" : "idle"}
+        className="w-full cursor-pointer"
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <AttachmentMedia
+          variant="icon"
+          className={isDragging ? "text-primary" : ""}
+        >
+          {isUploading ? <Loader2 className="animate-spin" /> : <ImagePlus />}
+        </AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>
+            {isUploading
+              ? "Mengunggah..."
+              : isDragging
+                ? "Lepas file di sini"
+                : "Klik atau seret gambar"}
+          </AttachmentTitle>
+          <AttachmentDescription>
+            JPEG, PNG, WebP — maks {MAX_SIZE_MB} MB
+          </AttachmentDescription>
+        </AttachmentContent>
+      </Attachment>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ALLOWED_TYPES.join(",")}
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
   );
 }

@@ -18,13 +18,3 @@ export const storageRepository = {
     await storage.deleteFile(BUCKET_ID, fileId);
   },
 };
-
-/**
- * Builds a public Appwrite file preview URL from a file ID.
- * Uses NEXT_PUBLIC_ env vars so it works in both server and client contexts.
- */
-export function getNewsCoverUrl(fileId: string, width = 1200): string {
-  const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
-  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-  return `${endpoint}/storage/buckets/${BUCKET_ID}/files/${fileId}/preview?project=${projectId}&width=${width}`;
-}
