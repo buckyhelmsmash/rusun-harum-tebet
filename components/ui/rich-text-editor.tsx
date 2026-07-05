@@ -70,7 +70,7 @@ export function RichTextEditor({
 
   const handleImageUpload = async (file: File) => {
     try {
-      const result = await uploadMutation.mutateAsync(file);
+      const result = await uploadMutation.mutateAsync({ file });
       const url = getNewsCoverUrl(result.fileId);
 
       if (editor) {

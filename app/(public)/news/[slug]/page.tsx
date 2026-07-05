@@ -129,13 +129,7 @@ export default async function NewsDetailPage({
 
       {/* Article body */}
       <div className="section-container pb-16">
-        <div className="max-w-3xl">
-          {news.summary && (
-            <p className="font-serif-body text-xl leading-relaxed text-neutral-700 mb-8 pb-8 border-b border-neutral-200 italic">
-              {news.summary}
-            </p>
-          )}
-
+        <div className="">
           <article
             className="prose prose-neutral prose-lg md:prose-xl max-w-none font-serif-body warta-article"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: Sanitized with DOMPurify

@@ -44,6 +44,8 @@ import {
 import { getNewsCoverUrl } from "@/lib/utils/news-cover";
 import { generateSlug } from "@/lib/utils/slug";
 import type { News } from "@/types";
+import { NewsEditor } from "../news-editor/news-editor";
+import { SimpleEditor } from "../tiptap-templates/simple/simple-editor";
 
 const FormSchema = z.object({
   title: z.string().min(1, "Judul wajib diisi"),
@@ -372,7 +374,11 @@ export function NewsForm({
                 {(field) => (
                   <>
                     <Label>Konten Artikel</Label>
-                    <RichTextEditor
+                    {/* <RichTextEditor
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                    /> */}
+                    <NewsEditor
                       value={field.state.value}
                       onChange={field.handleChange}
                     />
@@ -463,7 +469,7 @@ function CoverImageUpload({
       const objectUrl = URL.createObjectURL(file);
       setLocalPreview(objectUrl);
       try {
-        const result = await uploadMutation.mutateAsync(file);
+        const result = await uploadMutation.mutateAsync({ file });
         onChange(result.fileId);
       } catch (err) {
         setError(

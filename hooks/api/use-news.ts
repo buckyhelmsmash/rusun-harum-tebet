@@ -109,12 +109,21 @@ export function useCreateNewsLabel() {
 
 export function useUploadNewsCover() {
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({
+      file,
+      onProgress,
+      abortSignal,
+    }: {
+      file: File;
+      onProgress?: (event: { progress: number }) => void;
+      abortSignal?: AbortSignal;
+    }) => {
       const formData = new FormData();
       formData.append("file", file);
-      return ApiClient.upload<{ fileId: string }>(
+      return ApiClient.uploadWithProgress<{ fileId: string }>(
         "/api/news/covers",
         formData,
+        { onProgress, abortSignal },
       );
     },
   });

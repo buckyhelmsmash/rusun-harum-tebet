@@ -10,6 +10,13 @@ interface ApiRequestOptions extends Omit<RequestInit, "headers"> {
   customUrl?: string;
 }
 
+export interface UploadProgressOptions {
+  onProgress?: (event: { progress: number }) => void;
+  abortSignal?: AbortSignal;
+  skipAuth?: boolean;
+  headers?: Record<string, string>;
+}
+
 function joinUrl(base: string, path: string): string {
   const cleanBase = base.replace(/\/$/, "");
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -72,6 +79,78 @@ async function apiRequest<T>(
   return (res?.result !== undefined ? res.result : res) as T;
 }
 
+async function apiUploadWithProgress<T>(
+  endpoint: string,
+  formData: FormData,
+  options: UploadProgressOptions = {},
+): Promise<T> {
+  const url = joinUrl(API_BASE_URL, endpoint);
+  const { onProgress, abortSignal, skipAuth = false, headers = {} } = options;
+
+  const finalHeaders: Record<string, string> = { ...headers };
+
+  if (!skipAuth && typeof window !== "undefined") {
+    try {
+      const session = await account.createJWT();
+      if (session.jwt) {
+        finalHeaders.Authorization = `Bearer ${session.jwt}`;
+      }
+    } catch (_error) {}
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+
+    for (const [key, value] of Object.entries(finalHeaders)) {
+      xhr.setRequestHeader(key, value);
+    }
+
+    if (onProgress && xhr.upload) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded * 100) / event.total);
+          onProgress({ progress });
+        }
+      };
+    }
+
+    if (abortSignal) {
+      abortSignal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new Error("Upload dibatalkan"));
+      });
+    }
+
+    xhr.onload = () => {
+      let res: Record<string, unknown> | null = null;
+      try {
+        if (xhr.responseText) {
+          res = JSON.parse(xhr.responseText);
+        }
+      } catch (e) {
+        // Not JSON
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve((res?.result !== undefined ? res.result : res) as T);
+      } else {
+        const errorMessage =
+          (res?.error as string) ||
+          (res?.message as string) ||
+          `API Error: ${xhr.status} ${xhr.statusText}`;
+        reject(new Error(errorMessage));
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(new Error("Network Error"));
+    };
+
+    xhr.send(formData);
+  });
+}
+
 export const ApiClient = {
   get: <T>(endpoint: string, options?: ApiRequestOptions) =>
     apiRequest<T>(endpoint, { method: "GET", ...options }),
@@ -110,4 +189,9 @@ export const ApiClient = {
       headers: {},
       ...options,
     }),
+  uploadWithProgress: <TResponse = unknown>(
+    endpoint: string,
+    formData: FormData,
+    options?: UploadProgressOptions,
+  ) => apiUploadWithProgress<TResponse>(endpoint, formData, options),
 };
