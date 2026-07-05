@@ -13,11 +13,12 @@ import {
   Italic,
   List,
   ListOrdered,
+  Loader2,
   Quote,
   Strikethrough,
   VideoIcon,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +27,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { getNewsCoverUrl } from "@/lib/utils/news-cover";
+import { useUploadNewsCover } from "@/hooks/api/use-news";
 
 interface RichTextEditorProps {
   value: string;
@@ -38,8 +41,10 @@ export function RichTextEditor({
   onChange,
   className,
 }: RichTextEditorProps) {
-  const [imageUrl, setImageUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadMutation = useUploadNewsCover();
+  const isUploading = uploadMutation.isPending;
 
   const editor = useEditor({
     extensions: [
@@ -63,12 +68,19 @@ export function RichTextEditor({
     },
   });
 
-  const addImage = useCallback(() => {
-    if (imageUrl && editor) {
-      editor.chain().focus().setImage({ src: imageUrl }).run();
-      setImageUrl("");
+  const handleImageUpload = async (file: File) => {
+    try {
+      const result = await uploadMutation.mutateAsync(file);
+      const url = getNewsCoverUrl(result.fileId);
+
+      if (editor) {
+        editor.chain().focus().setImage({ src: url }).run();
+      }
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat mengunggah gambar");
     }
-  }, [editor, imageUrl]);
+  };
 
   const addYoutubeVideo = useCallback(() => {
     if (youtubeUrl && editor) {
@@ -213,33 +225,35 @@ export function RichTextEditor({
 
         <div className="w-px h-6 bg-border mx-1" />
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <ImageIcon className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="flex space-x-2">
-              <Input
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Image URL..."
-              />
-              <Button
-                onClick={() => {
-                  addImage();
-                }}
-              >
-                Add
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Note: Appwrite image bucket uploading would ideally be integrated
-              here, but for now URL is supported.
-            </p>
-          </PopoverContent>
-        </Popover>
+        <input
+          type="file"
+          accept="image/jpeg, image/png, image/webp"
+          className="hidden"
+          ref={fileInputRef}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              await handleImageUpload(file);
+            }
+            e.target.value = "";
+          }}
+          disabled={isUploading}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ImageIcon className="h-4 w-4" />
+          )}
+        </Button>
 
         <Popover>
           <PopoverTrigger asChild>
