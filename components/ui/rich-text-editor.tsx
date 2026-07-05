@@ -11,7 +11,6 @@ import {
   Heading3,
   ImageIcon,
   Italic,
-  LinkIcon,
   List,
   ListOrdered,
   Quote,

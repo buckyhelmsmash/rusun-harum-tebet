@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import DOMPurify from "isomorphic-dompurify";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -137,7 +138,18 @@ export default async function NewsDetailPage({
 
           <article
             className="prose prose-neutral prose-lg md:prose-xl max-w-none font-serif-body warta-article"
-            dangerouslySetInnerHTML={{ __html: news.content || "" }}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: Sanitized with DOMPurify
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(news.content || "", {
+                ADD_TAGS: ["iframe"],
+                ADD_ATTR: [
+                  "allow",
+                  "allowfullscreen",
+                  "frameborder",
+                  "scrolling",
+                ],
+              }),
+            }}
           />
 
           {/* Actions */}
