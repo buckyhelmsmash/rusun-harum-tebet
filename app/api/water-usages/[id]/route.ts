@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
-import { getDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
 
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -13,25 +13,12 @@ const updateMeterSchema = z.object({
   currentMeter: z.number().min(0),
 });
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await requireRole(request, "admin");
+export const PATCH = withApiHandler<{ id: string }>(
+  async (request, { params, session }) => {
     const { id } = await params;
 
     const body = await request.json();
-    const parsed = updateMeterSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: parsed.error.format() },
-        { status: 400 },
-      );
-    }
-
-    const { previousMeter, currentMeter } = parsed.data;
+    const { previousMeter, currentMeter } = updateMeterSchema.parse(body);
 
     if (currentMeter < previousMeter) {
       return NextResponse.json(
@@ -83,17 +70,6 @@ export async function PATCH(
     }
 
     return NextResponse.json({ result: updated });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("[water-usages-patch]", error);
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "PATCH /api/water-usages/[id]" },
+);

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { duitkuClient } from "@/lib/duitku";
 
-export async function POST(req: Request) {
-  try {
+export const POST = withApiHandler(
+  async (req) => {
     const body = await req.json();
 
     // In a real scenario, these values come from your database
@@ -35,13 +36,6 @@ export async function POST(req: Request) {
     const result = await duitkuClient.createTransaction(reqData);
 
     return NextResponse.json({ success: true, data: result });
-  } catch (error) {
-    console.error("[DUITKU_CREATE_ERROR]", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { label: "POST /api/payments/create" },
+);

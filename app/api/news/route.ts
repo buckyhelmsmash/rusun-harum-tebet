@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { newsRepository } from "@/lib/repositories/news";
 import { createNewsSchema } from "@/lib/schemas/news";
 import { generateSlug } from "@/lib/utils/slug";
 
-export async function GET(request: Request) {
-  try {
+export const GET = withApiHandler(
+  async (request) => {
     const url = new URL(request.url);
     const search = url.searchParams.get("search");
 
@@ -20,23 +18,16 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ items, total: items.length });
-  } catch (error) {
-    console.error("Error fetching news:", getErrorMessage(error));
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { label: "GET /api/news" },
+);
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireRole(request, "admin");
+export const POST = withApiHandler(
+  async (request, { session }) => {
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createNewsSchema.parse(payload);
 
-    // Generate a unique slug from title + date
     const baseSlug = generateSlug(
       validated.title,
       validated.publishedDate || undefined,
@@ -60,23 +51,6 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ result: newsItem }, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/news -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/news" },
+);

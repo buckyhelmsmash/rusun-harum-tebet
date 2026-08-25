@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
 import { updateVehicleSchema } from "@/lib/schemas/vehicles";
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await requireRole(request, "admin");
+export const PATCH = withApiHandler<{ id: string }>(
+  async (request, { params, session }) => {
     const { id } = await params;
     const body = await request.json();
     const payload = body.data ?? body;
@@ -41,33 +35,12 @@ export async function PATCH(
     });
 
     return NextResponse.json({ result: vehicle });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("PATCH /api/vehicles/[id] -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "PATCH /api/vehicles/[id]" },
+);
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await requireRole(request, "admin");
+export const DELETE = withApiHandler<{ id: string }>(
+  async (_request, { params, session }) => {
     const { id } = await params;
 
     const vehicle = await VehicleRepository.getById(id);
@@ -90,17 +63,6 @@ export async function DELETE(
     });
 
     return NextResponse.json({ result: { success: true } });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("DELETE /api/vehicles/[id] -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "DELETE /api/vehicles/[id]" },
+);

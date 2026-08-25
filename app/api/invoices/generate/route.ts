@@ -3,9 +3,9 @@ import { format, subMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
-import { getDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { GlobalSettings } from "@/lib/repositories/settings";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -39,9 +39,8 @@ function calculateCarFee(carCount: number, settings: GlobalSettings): number {
   return settings.car3Fee;
 }
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireRole(request, "admin");
+export const POST = withApiHandler(
+  async (_request, { session }) => {
     const db = await getDb();
     const settings = await SettingsRepository.get();
     const now = new Date();
@@ -294,14 +293,6 @@ export async function POST(request: Request) {
       period: billingPeriod,
       message: `Membuat ${created} tagihan baru, memperbarui ${updated} tagihan untuk periode ${billingPeriod}`,
     });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    console.error("[generate-invoices] Error:", error);
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/invoices/generate" },
+);

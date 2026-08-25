@@ -1,26 +1,22 @@
 import { NextResponse } from "next/server";
 import { ID } from "node-appwrite";
-import { ZodError, z } from "zod";
+import { z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { createAdminClient } from "@/lib/appwrite/server";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
 import { adminRepository } from "@/lib/repositories/admins";
-import { getErrorMessage } from "@/lib/repositories/base";
 
 const inviteSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireRole(request, "superadmin");
-
+export const POST = withApiHandler(
+  async (request, { session }) => {
     const body = await request.json();
     const { email } = inviteSchema.parse(body);
 
     const newUser = await adminRepository.invite(email);
 
-    // Send welcome email via Appwrite Messaging
     try {
       const { messaging } = await createAdminClient();
       await messaging.createEmail(
@@ -63,23 +59,6 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ result: newUser });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/admins/invite -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "superadmin", label: "POST /api/admins/invite" },
+);

@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { storageRepository } from "@/lib/repositories/storage";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-export async function POST(request: Request) {
-  try {
-    await requireRole(request, "admin");
-
+export const POST = withApiHandler(
+  async (request) => {
     const formData = await request.formData();
     const file = formData.get("file");
 
@@ -41,25 +38,12 @@ export async function POST(request: Request) {
     const fileId = await storageRepository.uploadNewsCover(buffer, file.name);
 
     return NextResponse.json({ result: { fileId } }, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("POST /api/news/covers -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/news/covers" },
+);
 
-export async function DELETE(request: Request) {
-  try {
-    await requireRole(request, "admin");
-
+export const DELETE = withApiHandler(
+  async (request) => {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get("fileId");
 
@@ -72,17 +56,6 @@ export async function DELETE(request: Request) {
 
     await storageRepository.deleteNewsCover(fileId);
     return NextResponse.json({ result: { success: true } });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("DELETE /api/news/covers -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "DELETE /api/news/covers" },
+);

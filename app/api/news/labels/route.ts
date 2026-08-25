@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { ZodError, z } from "zod";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { z } from "zod";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { newsRepository } from "@/lib/repositories/news";
 
 const createLabelSchema = z.object({
@@ -9,22 +8,16 @@ const createLabelSchema = z.object({
   color: z.string().min(1, "Warna wajib dipilih"),
 });
 
-export async function GET() {
-  try {
+export const GET = withApiHandler(
+  async () => {
     const items = await newsRepository.getNewsLabels();
     return NextResponse.json(items);
-  } catch (error) {
-    console.error("Error fetching news labels:", getErrorMessage(error));
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { label: "GET /api/news/labels" },
+);
 
-export async function POST(request: Request) {
-  try {
-    await requireRole(request, "admin");
+export const POST = withApiHandler(
+  async (request) => {
     const body = await request.json();
     const validated = createLabelSchema.parse(body);
 
@@ -38,23 +31,6 @@ export async function POST(request: Request) {
 
     const label = await newsRepository.createNewsLabel(validated);
     return NextResponse.json({ result: label }, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/news/labels -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/news/labels" },
+);

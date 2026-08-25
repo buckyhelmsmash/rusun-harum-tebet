@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { UnitRepository } from "@/lib/repositories/units";
 import { VehicleRepository } from "@/lib/repositories/vehicles";
 import { createVehicleSchema } from "@/lib/schemas/vehicles";
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireRole(request, "admin");
+export const POST = withApiHandler(
+  async (request, { session }) => {
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createVehicleSchema.parse(payload);
@@ -66,23 +63,6 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ result: vehicle });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/vehicles -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/vehicles" },
+);

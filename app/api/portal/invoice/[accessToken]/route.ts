@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
-import { getDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { Owner, Tenant, Unit } from "@/types";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ accessToken: string }> },
-) {
-  try {
+export const GET = withApiHandler<{ accessToken: string }>(
+  async (_request, { params }) => {
     const { accessToken } = await params;
     const invoice = await InvoiceRepository.getByAccessToken(accessToken);
 
@@ -99,14 +97,9 @@ export async function GET(
     };
 
     return NextResponse.json(safeInvoice);
-  } catch (error: unknown) {
-    console.error(
-      "GET /api/portal/invoice/[accessToken] -",
-      getErrorMessage(error),
-    );
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 },
-    );
-  }
-}
+  },
+  {
+    label: "GET /api/portal/invoice/[accessToken]",
+    genericErrorMessage: "Terjadi kesalahan server",
+  },
+);

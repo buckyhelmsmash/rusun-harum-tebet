@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getChanges, logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { SettingsRepository } from "@/lib/repositories/settings";
 
 const updateSchema = z.object({
@@ -15,64 +14,39 @@ const updateSchema = z.object({
   meetingNumber: z.string().min(1, "Meeting number is required"),
 });
 
-export async function GET() {
-  try {
+export const GET = withApiHandler(
+  async () => {
     const settings = await SettingsRepository.get();
     return NextResponse.json(settings);
-  } catch (error: unknown) {
-    console.error("[settings-get]", error);
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { label: "GET /api/settings" },
+);
 
-export async function PATCH(request: Request) {
-  try {
-    const session = await requireRole(request, "superadmin");
-
+export const PATCH = withApiHandler(
+  async (request, { session }) => {
     const body = await request.json();
-    const parsed = updateSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: parsed.error.format() },
-        { status: 400 },
-      );
-    }
+    const validated = updateSchema.parse(body);
 
     const oldSettings = await SettingsRepository.get();
-    const updated = await SettingsRepository.update(parsed.data);
+    const updated = await SettingsRepository.update(validated);
 
-    const changes = getChanges(oldSettings, parsed.data);
+    const changes = getChanges(oldSettings, validated);
 
     if (changes.length > 0) {
       logActivity({
         actorId: session.$id,
         actorName: session.name || session.email,
         action: "settings.update",
-        description: `Memperbarui pengaturan sistem (No. Rapat: ${parsed.data.meetingNumber})`,
+        description: `Memperbarui pengaturan sistem (No. Rapat: ${validated.meetingNumber})`,
         targetType: "settings",
         metadata: {
           changes,
-          meetingNumber: parsed.data.meetingNumber,
+          meetingNumber: validated.meetingNumber,
         },
       });
     }
 
     return NextResponse.json(updated);
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("[settings-patch]", error);
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "superadmin", label: "PATCH /api/settings" },
+);

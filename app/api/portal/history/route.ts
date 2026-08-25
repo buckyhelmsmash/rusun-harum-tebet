@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
-import { getDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import type { Invoice } from "@/types";
 
-export async function POST(request: Request) {
-  try {
+export const POST = withApiHandler(
+  async (request) => {
     const body = await request.json();
     const { accessToken, pinCode } = body as {
       accessToken: string;
@@ -65,11 +66,9 @@ export async function POST(request: Request) {
     }));
 
     return NextResponse.json({ history });
-  } catch (error: unknown) {
-    console.error("POST /api/portal/history -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 },
-    );
-  }
-}
+  },
+  {
+    label: "POST /api/portal/history",
+    genericErrorMessage: "Terjadi kesalahan server",
+  },
+);

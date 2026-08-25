@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
-import { getDb, getErrorMessage } from "@/lib/repositories/base";
+import { getDb } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
@@ -20,20 +20,8 @@ interface RawWaterUsage {
   isBilled: boolean;
 }
 
-export async function GET(request: Request) {
-  try {
-    try {
-      await requireRole(request, "admin");
-    } catch (error) {
-      if (error instanceof AuthError) {
-        return NextResponse.json({ error: error.message }, { status: 401 });
-      }
-      if (error instanceof ForbiddenError) {
-        return NextResponse.json({ error: error.message }, { status: 403 });
-      }
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+export const GET = withApiHandler(
+  async (request) => {
     const db = await getDb();
     const { searchParams } = new URL(request.url);
     const limit = Number(searchParams.get("limit") || "25");
@@ -120,11 +108,6 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ ...result, rows: enrichedRows });
-  } catch (error) {
-    console.error("[water-usages-list]", error);
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "GET /api/water-usages" },
+);

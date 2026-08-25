@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { ZodError, z } from "zod";
+import { z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { OwnerRepository } from "@/lib/repositories/owners";
 import { TenantRepository } from "@/lib/repositories/tenants";
 import { UnitRepository } from "@/lib/repositories/units";
@@ -20,12 +19,8 @@ const removeSchema = z.object({
   type: z.enum(["owner", "tenant"]),
 });
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await requireRole(request, "admin");
+export const POST = withApiHandler<{ id: string }>(
+  async (request, { params, session }) => {
     const { id: unitId } = await params;
     const body = await request.json();
     const { type, residentId, startDate, endDate } = assignSchema.parse(body);
@@ -84,33 +79,12 @@ export async function POST(
 
     const updated = await UnitRepository.getById(unitId);
     return NextResponse.json({ result: updated });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/units/[id]/assign -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/units/[id]/assign" },
+);
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await requireRole(request, "admin");
+export const DELETE = withApiHandler<{ id: string }>(
+  async (request, { params, session }) => {
     const { id: unitId } = await params;
     const body = await request.json();
     const { type } = removeSchema.parse(body);
@@ -198,23 +172,6 @@ export async function DELETE(
 
     const updated = await UnitRepository.getById(unitId);
     return NextResponse.json({ result: updated });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("DELETE /api/units/[id]/assign -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "DELETE /api/units/[id]/assign" },
+);

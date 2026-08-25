@@ -1,49 +1,26 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { InvoiceRepository } from "@/lib/repositories/invoices";
 import {
   createInvoiceSchema,
   invoiceListParamsSchema,
 } from "@/lib/schemas/invoices";
 
-export async function GET(request: Request) {
-  try {
-    await requireRole(request, "admin");
-
+export const GET = withApiHandler(
+  async (request) => {
     const { searchParams } = new URL(request.url);
     const params = invoiceListParamsSchema.parse(
       Object.fromEntries(searchParams),
     );
     const result = await InvoiceRepository.list(params);
-
     return NextResponse.json(result);
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid query parameters", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("GET /api/invoices -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "GET /api/invoices" },
+);
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireRole(request, "admin");
+export const POST = withApiHandler(
+  async (request, { session }) => {
     const body = await request.json();
     const payload = body.data ?? body;
     const validated = createInvoiceSchema.parse(payload);
@@ -65,23 +42,6 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ result: invoice });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid payload", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("POST /api/invoices -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/invoices" },
+);

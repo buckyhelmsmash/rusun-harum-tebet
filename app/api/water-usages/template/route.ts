@@ -1,27 +1,14 @@
 import { Query } from "appwrite";
-import { NextResponse } from "next/server";
 import * as xlsx from "xlsx";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
 import { getDb } from "@/lib/repositories/base";
 import type { Unit } from "@/types";
 
 const DB_ID = APPWRITE.DATABASE_ID;
 
-export async function GET(req: Request) {
-  try {
-    try {
-      await requireRole(req, "admin");
-    } catch (error) {
-      if (error instanceof AuthError) {
-        return NextResponse.json({ error: error.message }, { status: 401 });
-      }
-      if (error instanceof ForbiddenError) {
-        return NextResponse.json({ error: error.message }, { status: 403 });
-      }
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+export const GET = withApiHandler(
+  async () => {
     const db = await getDb();
 
     const unitsResult = await db.listRows({
@@ -63,11 +50,6 @@ export async function GET(req: Request) {
           'attachment; filename="water-usages-template.xlsx"',
       },
     });
-  } catch (error) {
-    console.error("[water-usages-template]", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "GET /api/water-usages/template" },
+);

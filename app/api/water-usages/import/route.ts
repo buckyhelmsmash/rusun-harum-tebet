@@ -2,7 +2,7 @@ import { ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logActivity } from "@/lib/activity/logger";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { APPWRITE } from "@/lib/constants";
 import { getDb } from "@/lib/repositories/base";
 import { SettingsRepository } from "@/lib/repositories/settings";
@@ -16,21 +16,11 @@ const importPayloadSchema = z.object({
   rows: z.array(excelImportRowSchema),
 });
 
-export async function POST(req: Request) {
-  try {
-    const session = await requireRole(req, "admin");
-
+export const POST = withApiHandler(
+  async (req, { session }) => {
     const body = await req.json();
-    const parsed = importPayloadSchema.safeParse(body);
+    const { period, rows } = importPayloadSchema.parse(body);
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid payload format", details: parsed.error.format() },
-        { status: 400 },
-      );
-    }
-
-    const { period, rows } = parsed.data;
     const db = await getDb();
     const settings = await SettingsRepository.get();
 
@@ -205,17 +195,6 @@ export async function POST(req: Request) {
       skipped,
       errors,
     });
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    console.error("[water-usages-import]", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "POST /api/water-usages/import" },
+);

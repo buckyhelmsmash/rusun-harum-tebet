@@ -1,36 +1,14 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
-import { AuthError, ForbiddenError, requireRole } from "@/lib/auth/verify";
-import { getErrorMessage } from "@/lib/repositories/base";
+import { withApiHandler } from "@/lib/api/with-api-handler";
 import { UnitRepository } from "@/lib/repositories/units";
 import { unitListSchema } from "@/lib/schemas/units";
 
-export async function GET(request: Request) {
-  try {
-    await requireRole(request, "admin");
-
+export const GET = withApiHandler(
+  async (request) => {
     const { searchParams } = new URL(request.url);
     const params = unitListSchema.parse(Object.fromEntries(searchParams));
     const result = await UnitRepository.list(params);
-
     return NextResponse.json(result);
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid query parameters", details: error.flatten() },
-        { status: 400 },
-      );
-    }
-    console.error("GET /api/units -", getErrorMessage(error));
-    return NextResponse.json(
-      { error: getErrorMessage(error) },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { role: "admin", label: "GET /api/units" },
+);
